@@ -1,15 +1,52 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { useLocation } from '../context/LocationContext';
+import { getDistanceKm, formatDistance } from '../utils/distance';
+
+// Mock workers (same data as Services.jsx – in production this would come from an API)
+const ALL_WORKERS = [
+  { id: 1,  name: "John Doe",      profession: "Electrician",    rating: 4.8, price: "$40/hr", mockOffset: { lat: 0.012,  lon: 0.008  } },
+  { id: 2,  name: "Jane Smith",    profession: "Plumber",        rating: 4.9, price: "$50/hr", mockOffset: { lat: -0.005, lon: 0.020  } },
+  { id: 3,  name: "Mike Johnson",  profession: "Carpenter",      rating: 4.5, price: "$35/hr", mockOffset: { lat: 0.030,  lon: -0.015 } },
+  { id: 4,  name: "Ravi Kumar",    profession: "Painter",        rating: 4.6, price: "$30/hr", mockOffset: { lat: -0.022, lon: -0.010 } },
+  { id: 5,  name: "Amit Sharma",   profession: "AC Technician",  rating: 4.7, price: "$45/hr", mockOffset: { lat: 0.008,  lon: -0.025 } },
+  { id: 6,  name: "Suresh Patel",  profession: "Cleaner",        rating: 4.3, price: "$25/hr", mockOffset: { lat: 0.050,  lon: 0.030  } },
+  { id: 7,  name: "David Lee",     profession: "Mechanic",       rating: 4.8, price: "$55/hr", mockOffset: { lat: -0.040, lon: 0.015  } },
+  { id: 8,  name: "Priya Singh",   profession: "Gardener",       rating: 4.4, price: "$20/hr", mockOffset: { lat: 0.003,  lon: 0.004  } },
+  { id: 9,  name: "Imran Khan",    profession: "Appliance Repair", rating: 4.6, price: "$35/hr", mockOffset: { lat: -0.018, lon: -0.030 } },
+  { id: 10, name: "Neha Gupta",    profession: "Pest Control",   rating: 4.5, price: "$40/hr", mockOffset: { lat: 0.025,  lon: -0.005 } },
+];
+
+const iconMap = {
+  Electrician: "⚡", Plumber: "🚰", Carpenter: "🪵", Painter: "🎨",
+  "AC Technician": "❄️", Cleaner: "🧹", Mechanic: "🔧", Gardener: "🌱",
+  "Appliance Repair": "🔌", "Pest Control": "🐜",
+};
 
 const Home = () => {
+  const { coords, loading: geoLoading, error: geoError } = useLocation();
+
+  // Compute distances and pick the 3 closest workers
+  const nearbyWorkers = useMemo(() => {
+    if (!coords) return [];
+    return ALL_WORKERS
+      .map((w) => {
+        const workerLat = coords.latitude  + w.mockOffset.lat;
+        const workerLon = coords.longitude + w.mockOffset.lon;
+        return { ...w, distanceKm: getDistanceKm(coords.latitude, coords.longitude, workerLat, workerLon) };
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .slice(0, 3);
+  }, [coords]);
+
   return (
     <div className="bg-white">
-      
+
       {/* Hero Section */}
       <div className="relative bg-gradient-to-b from-gray-50 to-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
           <div className="text-center">
-            
+
             <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl leading-tight">
               <span className="block">Find Reliable Workers</span>
               <span className="block text-blue-600">In Your Neighborhood</span>
@@ -33,10 +70,101 @@ const Home = () => {
         </div>
       </div>
 
+      {/* ── Near You Section ── */}
+      {(geoLoading || coords || geoError) && (
+        <div className="py-20 bg-gradient-to-br from-blue-50 via-white to-green-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+                <span className={`w-2 h-2 rounded-full bg-green-500 ${coords ? 'animate-pulse' : ''}`} />
+                {coords ? 'Live Location' : geoLoading ? 'Detecting Location…' : 'Location Unavailable'}
+              </div>
+              <h2 className="text-4xl font-extrabold text-gray-900">Closest to You</h2>
+              <p className="mt-3 text-lg text-gray-500">
+                {coords
+                  ? 'Top professionals sorted by proximity to your current location.'
+                  : geoLoading
+                  ? 'Fetching your location to show nearby workers…'
+                  : 'Enable location access to see workers near you.'}
+              </p>
+            </div>
+
+            {geoLoading && (
+              <div className="flex flex-col items-center justify-center gap-4 py-12">
+                <div className="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin" />
+                <p className="text-gray-400 font-medium">Requesting location permission…</p>
+              </div>
+            )}
+
+            {geoError && !geoLoading && (
+              <div className="text-center py-10 bg-amber-50 rounded-2xl border border-amber-100 max-w-lg mx-auto">
+                <div className="text-4xl mb-3">⚠️</div>
+                <p className="text-amber-800 font-semibold mb-2">Location access required</p>
+                <p className="text-amber-600 text-sm mb-6">{geoError}</p>
+                <Link to="/services" className="inline-block px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition">
+                  Browse All Services →
+                </Link>
+              </div>
+            )}
+
+            {coords && nearbyWorkers.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {nearbyWorkers.map((worker) => (
+                    <div
+                      key={worker.id}
+                      className="group bg-white rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 hover:border-blue-200 transition-all duration-300 overflow-hidden flex flex-col"
+                    >
+                      <div className="p-7 flex-1">
+                        <div className="flex items-start justify-between mb-5">
+                          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            {iconMap[worker.profession] || '👷'}
+                          </div>
+                          {/* Distance badge */}
+                          <div className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                            📍 {formatDistance(worker.distanceKm)}
+                          </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-0.5 group-hover:text-blue-600 transition-colors">{worker.name}</h3>
+                        <p className="text-blue-600 font-semibold text-sm mb-4">{worker.profession}</p>
+                        <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-400">★</span>
+                            <span className="font-bold text-gray-900">{worker.rating}</span>
+                          </div>
+                          <div className="w-px h-4 bg-gray-300" />
+                          <div className="font-bold text-gray-900">{worker.price}</div>
+                        </div>
+                      </div>
+                      <div className="px-7 pb-7">
+                        <Link
+                          to={`/worker/${worker.id}`}
+                          className="block w-full text-center bg-gray-900 hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-blue-200"
+                        >
+                          View &amp; Book
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center mt-10">
+                  <Link
+                    to="/services"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-white border-2 border-blue-200 hover:border-blue-500 text-blue-600 font-bold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    See All Services →
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* How it Works Section */}
       <div className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           <div className="text-center mb-16">
             <h2 className="text-4xl font-extrabold text-gray-900">
               How It Works
@@ -47,13 +175,13 @@ const Home = () => {
           </div>
 
           <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
-            
+
             {/* Connector Line */}
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-200"></div>
 
             {/* Step 1 */}
             <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
-              
+
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm px-3 py-1 rounded-full shadow">
                 1
               </div>
@@ -70,7 +198,7 @@ const Home = () => {
 
             {/* Step 2 */}
             <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
-              
+
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-sm px-3 py-1 rounded-full shadow">
                 2
               </div>
@@ -87,7 +215,7 @@ const Home = () => {
 
             {/* Step 3 */}
             <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
-              
+
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white text-sm px-3 py-1 rounded-full shadow">
                 3
               </div>
