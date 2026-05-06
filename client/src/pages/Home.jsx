@@ -274,29 +274,88 @@ const Home = () => {
       </div>
 
       {/* Popular Categories */}
-      <div className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">
-            Popular Categories
-          </h2>
+      {/* Popular Categories */}
+<div className="py-20 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['Electrician', 'Plumber', 'Carpenter', 'Cleaning', 'Painting', 'AC Repair', 'Pest Control', 'Moving'].map((category, idx) => (
-              
-              <Link
-                key={idx}
-                to="/services"
-                className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center hover:border-blue-500 hover:text-blue-600 hover:shadow-md transition"
-              >
-                <div className="text-3xl mb-3">{icon}</div>
-                <span className="font-medium text-lg">{name}</span>
-              </Link>
-            ))}
+    <h2 className="text-4xl font-extrabold text-gray-900 mb-4 text-center">
+      Popular Categories
+    </h2>
+
+    <p className="text-center text-gray-500 mb-12">
+      Explore services based on your needs — from home repairs to cleaning and maintenance.
+    </p>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+      {[
+        {
+          name: "Electrician",
+          icon: "⚡",
+          desc: "Wiring, repairs & installations"
+        },
+        {
+          name: "Plumber",
+          icon: "🚰",
+          desc: "Pipes, leaks & fittings"
+        },
+        {
+          name: "Carpenter",
+          icon: "🪵",
+          desc: "Furniture & woodwork"
+        },
+        {
+          name: "Cleaner",
+          icon: "🧹",
+          desc: "Home & office cleaning"
+        },
+        {
+          name: "Painter",
+          icon: "🎨",
+          desc: "Wall painting & polishing"
+        },
+        {
+          name: "AC Repair",
+          icon: "❄️",
+          desc: "Cooling system service"
+        },
+        {
+          name: "Pest Control",
+          icon: "🐜",
+          desc: "Remove insects & rodents"
+        },
+        {
+          name: "Mechanic",
+          icon: "🔧",
+          desc: "Vehicle & machine repair"
+        }
+      ].map((category, idx) => (
+
+        <Link
+          key={idx}
+          to={`/services?category=${category.name}`}
+          className="group bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center hover:border-blue-500 hover:shadow-xl transition-all duration-300"
+        >
+
+          <div className="text-4xl mb-4 group-hover:scale-110 transition">
+            {category.icon}
           </div>
 
-        </div>
-      </div>
+          <h3 className="font-semibold text-lg text-gray-800 group-hover:text-blue-600 transition">
+            {category.name}
+          </h3>
+
+          <p className="text-sm text-gray-500 mt-2">
+            {category.desc}
+          </p>
+
+        </Link>
+      ))}
+
+    </div>
+
+  </div>
+</div>
 
       {/* Final CTA Section */}
       <div className="py-20 bg-blue-600 text-center text-white">
