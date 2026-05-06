@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useState, useEffect, useMemo } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 import { useLocation } from '../context/LocationContext';
 import { getDistanceKm, formatDistance } from '../utils/distance';
 
@@ -181,20 +182,26 @@ const Services = () => {
           {error}
         </div>
       ) : filteredWorkers.length === 0 ? (
-        <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-          <div className="text-6xl mb-4">🔦</div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">No workers found</h3>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto">We couldn't find any professionals matching your search. Try broadening your filters.</p>
-          <button
-            onClick={() => {
+        <EmptyState
+          icon="🔍"
+          title={
+            searchQuery || categoryFilter !== 'All'
+              ? 'No results found'
+              : 'No services available'
+          }
+          description={
+            searchQuery || categoryFilter !== 'All'
+              ? 'Try broadening your search or clearing filters to discover more professionals.'
+              : 'Check back later or explore a different service category.'
+          }
+          primaryAction={{
+            label: 'Reset filters',
+            onClick: () => {
               setSearchQuery('');
               setCategoryFilter('All');
-            }}
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition transform hover:scale-105"
-          >
-            Reset All Filters
-          </button>
-        </div>
+            },
+          }}
+        />
       ) : (
         <>
           <p className="text-sm text-gray-500 mb-6 font-medium">

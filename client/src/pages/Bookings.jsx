@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import EmptyState from "../components/EmptyState";
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -119,18 +120,27 @@ const Bookings = () => {
 
       {/* Empty State */}
       {!loading && filteredBookings.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <h3 className="text-lg font-medium">No bookings found</h3>
-          <p className="text-gray-500 mt-2">
-            Try a different filter or book a service.
-          </p>
-          <Link
-            to="/services"
-            className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Find Services
-          </Link>
-        </div>
+        <EmptyState
+          icon="📭"
+          title={
+            search || statusFilter !== "All"
+              ? "No bookings match your filters"
+              : "No bookings yet"
+          }
+          description={
+            search || statusFilter !== "All"
+              ? "Try adjusting your search or resetting filters to see your bookings."
+              : "Start by booking your first service and your bookings will appear here."
+          }
+          primaryAction={{ label: "Browse Services", to: "/services" }}
+          secondaryAction={{
+            label: "Reset filters",
+            onClick: () => {
+              setSearch("");
+              setStatusFilter("All");
+            },
+          }}
+        />
       )}
 
       {/* Booking List */}

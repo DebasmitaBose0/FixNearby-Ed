@@ -1,3 +1,5 @@
+import EmptyState from '../components/EmptyState';
+
 const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -7,10 +9,12 @@ const Dashboard = () => {
         <p className="mt-1 max-w-2xl text-sm text-gray-500">This is a placeholder dashboard. Contributors will add user-specific data here.</p>
         
         <div className="mt-6 border-t border-gray-200 pt-4">
-          {/* TODO: Connect API here to fetch user data/bookings */}
-          <div className="text-center py-10 bg-gray-50 rounded border border-dashed border-gray-300">
-            <span className="text-gray-500">No active bookings yet.</span>
-          </div>
+          <EmptyState
+            icon="🗓️"
+            title="No active bookings yet"
+            description="You haven't booked any services recently. Browse trusted professionals and book a service today."
+            primaryAction={{ label: 'Browse Services', to: '/services' }}
+          />
         </div>
       </div>
     </div>
