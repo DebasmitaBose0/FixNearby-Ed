@@ -9,7 +9,9 @@ import Dashboard from './pages/Dashboard';
 import Services from './pages/Services';
 import WorkerProfile from './pages/WorkerProfile';
 import Profile from './pages/Profile';
+import Contact from "./pages/Contact";
 import Bookings from './pages/Bookings';
+import Feedback from "./pages/Feedback";
 import WorkerRegister from './pages/WorkerRegister';
 import HelpCenter from './pages/HelpCenter';
 import TermsOfService from './pages/TermsOfService';
@@ -40,6 +42,7 @@ function AppContent() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </main>
       <Footer />
@@ -50,6 +53,25 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <LocationBanner />
+        <main className="flex-grow bg-gray-50">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/worker/:id" element={<WorkerProfile />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/feedback" element={<Feedback />} />
+            {/* TODO: Add more routes here */}
+          </Routes>
+        </main>
+        <Footer />
+      </div>
       <AppContent />
     </Router>
   );

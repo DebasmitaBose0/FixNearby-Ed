@@ -220,6 +220,58 @@ const Home = () => {
             <p className="mt-3 text-lg sm:text-xl text-slate-600">Search, book, and relax — three steps to get it done.</p>
           </div>
 
+            <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl leading-tight">
+              <span className="block">Find Reliable Workers</span>
+              <span className="block text-blue-600">In Your Neighborhood</span>
+            </h1>
+
+            <p className="mt-4 max-w-2xl mx-auto text-base text-gray-500 sm:text-lg md:text-xl">
+              FixNearby connects you with trusted electricians, plumbers, carpenters, and more. Fast, secure, and hassle-free.
+            </p>
+
+            {/* 🔍 Search Bar (Quick Access) */}
+<div className="mt-6 max-w-2xl mx-auto">
+
+  <div className="flex items-center bg-white shadow-md rounded-xl overflow-hidden border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500 transition">
+
+    <input
+      type="text"
+      placeholder="Search services like Electrician, Plumber..."
+      className="flex-1 px-5 py-3 outline-none text-gray-700"
+    />
+
+    <Link
+      to="/services"
+      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 font-medium transition"
+    >
+      Search
+    </Link>
+
+  </div>
+
+  {/* ⚡ Quick Access Buttons */}
+  <div className="mt-4 flex flex-wrap justify-center gap-3">
+    {["Electrician", "Plumber", "Cleaner", "AC Technician"].map((item) => (
+      <Link
+        key={item}
+        to={`/services?category=${item}`}
+        className="px-4 py-2 bg-gray-100 hover:bg-blue-100 text-sm rounded-full transition"
+      >
+        {item}
+      </Link>
+    ))}
+  </div>
+
+</div>
+
+            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+              
+              <Link
+                to="/services"
+                className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition"
+              >
+                Browse Services
+              </Link>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-14 text-center relative">
             <div className="hidden md:block absolute top-[46px] left-0 w-full h-px bg-slate-200" />
 
@@ -434,6 +486,94 @@ const Home = () => {
         </section>
       )}
 
+      {/* How it Works Section */}
+      <div className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-extrabold text-gray-900">
+              How It Works
+            </h2>
+            <p className="mt-4 text-lg text-gray-500">
+              Get your tasks done in three simple steps.
+            </p>
+          </div>
+
+          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+
+            {/* Connector Line */}
+            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gray-200"></div>
+
+            {/* Step 1 */}
+            <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
+
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm px-3 py-1 rounded-full shadow">
+                1
+              </div>
+
+              <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-5 text-lg font-bold group-hover:scale-110 transition">
+                1
+              </div>
+
+              <h3 className="text-xl font-semibold mb-2">Search</h3>
+              <p className="text-gray-500">
+                Find the right professional based on reviews, skills, and proximity.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
+
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-sm px-3 py-1 rounded-full shadow">
+                2
+              </div>
+
+              <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-5 text-lg font-bold group-hover:scale-110 transition">
+                2
+              </div>
+
+          <div className="grid md:grid-cols-3 gap-10">
+
+            {[
+              {
+                step: "1",
+                title: "Search",
+                desc: "Find nearby professionals based on skills, ratings, and location.",
+                color: "blue"
+              },
+              {
+                step: "2",
+                title: "Book",
+                desc: "Choose a time slot and confirm your booking instantly.",
+                color: "green"
+              },
+              {
+                step: "3",
+                title: "Relax",
+                desc: "Sit back while the expert completes your task efficiently.",
+                color: "yellow"
+              }
+            ].map((item, i) => (
+
+              <div key={i} className="p-8 rounded-2xl border hover:shadow-xl transition group">
+
+                <div className={`w-14 h-14 mx-auto mb-5 rounded-full flex items-center justify-center text-white text-lg font-bold bg-${item.color}-500 group-hover:scale-110 transition`}>
+                  {item.step}
+                </div>
+
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <p className="text-gray-500">{item.desc}</p>
+            {/* Step 3 */}
+            <div className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-xl transition group">
+
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-white text-sm px-3 py-1 rounded-full shadow">
+                3
+              </div>
+
+              </div>
+
+            ))}
+
       {/* How It Works Section */}
       <div className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -548,6 +688,16 @@ const Home = () => {
 
   </div>
 </div>
+
+      {/* Final CTA Section */}
+      <div className="py-20 bg-blue-600 text-center text-white">
+        <h2 className="text-3xl font-bold mb-4">
+          Need Help Today?
+        </h2>
+        <p className="mb-6 text-blue-100">
+          Book trusted professionals instantly and get your job done without hassle.
+        </p>
+        
       <div className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">Popular Categories</h2>
@@ -578,6 +728,12 @@ const Home = () => {
         >
           Get Started
         </Link>
+        <Link
+  to="/feedback"
+  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition"
+>
+  Give Feedback
+</Link>
       </div>
 
       {/* Final CTA */}
