@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Services from './pages/Services';
 import WorkerProfile from './pages/WorkerProfile';
 import Profile from './pages/Profile';
+import Contact from "./pages/Contact";
 import Bookings from './pages/Bookings';
 import Feedback from "./pages/Feedback";
 import WorkerRegister from './pages/WorkerRegister';
@@ -41,6 +42,7 @@ function AppContent() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </main>
       <Footer />
