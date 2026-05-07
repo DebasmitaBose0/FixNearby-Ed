@@ -212,6 +212,171 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Trust Signals Section */}
+<section className="py-20 bg-gradient-to-b from-white to-slate-50 border-t border-slate-100">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    {/* Heading */}
+    <div className="text-center max-w-3xl mx-auto">
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 border border-blue-100 text-sm font-semibold">
+        ⭐ Trusted By Thousands
+      </div>
+
+      <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+        Why People Choose{" "}
+        <span className="text-[#0056D2]">FixNearby</span>
+      </h2>
+
+      <p className="mt-5 text-lg text-slate-600 leading-relaxed">
+        We focus on safety, reliability, and quality service so customers can
+        book professionals confidently.
+      </p>
+    </div>
+
+    {/* Stats */}
+    <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-6">
+
+      {[
+        {
+          number: "10K+",
+          label: "Happy Customers",
+          icon: "😊",
+        },
+        {
+          number: "500+",
+          label: "Verified Professionals",
+          icon: "🛠️",
+        },
+        {
+          number: "24/7",
+          label: "Customer Support",
+          icon: "📞",
+        },
+        {
+          number: "4.9★",
+          label: "Average Rating",
+          icon: "⭐",
+        },
+      ].map((item, idx) => (
+
+        <div
+          key={idx}
+          className="group bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+        >
+
+          <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
+            {item.icon}
+          </div>
+
+          <div className="text-4xl font-extrabold text-slate-900">
+            {item.number}
+          </div>
+
+          <p className="mt-2 text-slate-500 font-medium">
+            {item.label}
+          </p>
+
+        </div>
+      ))}
+    </div>
+
+    {/* Features */}
+    <div className="mt-20 grid md:grid-cols-3 gap-8">
+
+      {[
+        {
+          title: "Verified Professionals",
+          desc: "Every worker profile is reviewed and verified for better safety and trust.",
+          icon: "🛡️",
+        },
+        {
+          title: "Secure Booking",
+          desc: "Simple and secure booking process with transparent communication.",
+          icon: "🔒",
+        },
+        {
+          title: "Fast Response",
+          desc: "Connect instantly with nearby professionals available in your area.",
+          icon: "⚡",
+        },
+      ].map((feature, idx) => (
+
+        <div
+          key={idx}
+          className="group bg-white rounded-3xl border border-slate-200 p-8 hover:border-[#0056D2]/40 hover:shadow-xl transition-all duration-300"
+        >
+
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            {feature.icon}
+          </div>
+
+          <h3 className="text-2xl font-bold text-slate-900">
+            {feature.title}
+          </h3>
+
+          <p className="mt-4 text-slate-600 leading-relaxed">
+            {feature.desc}
+          </p>
+
+        </div>
+      ))}
+    </div>
+
+    {/* Mini Testimonials */}
+    <div className="mt-20">
+
+      <div className="text-center mb-12">
+        <h3 className="text-3xl font-extrabold text-slate-900">
+          What Customers Say
+        </h3>
+
+        <p className="mt-3 text-slate-500">
+          Real feedback from happy users.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-8">
+
+        {[
+          {
+            name: "Amit Sharma",
+            text: "Booking an electrician was incredibly fast and hassle-free. Great experience!",
+          },
+          {
+            name: "Priya Singh",
+            text: "The cleaner arrived on time and did an amazing job. Highly recommended.",
+          },
+          {
+            name: "Rahul Verma",
+            text: "Very professional platform with trustworthy workers and smooth booking.",
+          },
+        ].map((review, idx) => (
+
+          <div
+            key={idx}
+            className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-lg transition"
+          >
+
+            <div className="flex text-yellow-400 text-lg mb-4">
+              ★★★★★
+            </div>
+
+            <p className="text-slate-600 leading-relaxed">
+              "{review.text}"
+            </p>
+
+            <div className="mt-6 font-bold text-slate-900">
+              {review.name}
+            </div>
+
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>
+
       {/* How it works */}
       <section id="how-it-works" className="py-24 sm:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
