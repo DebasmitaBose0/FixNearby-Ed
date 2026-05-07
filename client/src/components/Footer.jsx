@@ -50,6 +50,7 @@ const Footer = () => {
             <a href="#" className="hover:text-blue-400 transition">
               <FaGithub />
             </a>
+          </div>
           <div className="mt-4 text-sm text-gray-400 space-y-1">
             <div className="font-semibold text-gray-200">Trust-first marketplace</div>
             <div>Vetted pros • Secure booking • Clear pricing</div>
@@ -72,6 +73,7 @@ const Footer = () => {
             <li><a href="/#how-it-works" className="hover:text-blue-400">How it works</a></li>
             <li><a href="/services" className="hover:text-blue-400">Services</a></li>
             <li><a href="/register" className="hover:text-blue-400">Join as a Pro</a></li>
+            <li><Link to="/register" className={linkClass("/register")}>Join as a Pro</Link></li>
           </ul>
         </div>
 

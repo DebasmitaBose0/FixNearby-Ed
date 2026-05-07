@@ -3,17 +3,6 @@ import { useMemo } from 'react';
 import { useLocation } from '../context/LocationContext';
 import { getDistanceKm, formatDistance } from '../utils/distance';
 
-const ALL_WORKERS = [
-  { id: 1,  name: "John Doe",      profession: "Electrician",      rating: 4.8, price: "$40/hr", mockOffset: { lat: 0.012,  lon: 0.008  } },
-  { id: 2,  name: "Jane Smith",    profession: "Plumber",          rating: 4.9, price: "$50/hr", mockOffset: { lat: -0.005, lon: 0.020  } },
-  { id: 3,  name: "Mike Johnson",  profession: "Carpenter",        rating: 4.5, price: "$35/hr", mockOffset: { lat: 0.030,  lon: -0.015 } },
-  { id: 4,  name: "Ravi Kumar",    profession: "Painter",          rating: 4.6, price: "$30/hr", mockOffset: { lat: -0.022, lon: -0.010 } },
-  { id: 5,  name: "Amit Sharma",   profession: "AC Technician",    rating: 4.7, price: "$45/hr", mockOffset: { lat: 0.008,  lon: -0.025 } },
-  { id: 6,  name: "Suresh Patel",  profession: "Cleaner",          rating: 4.3, price: "$25/hr", mockOffset: { lat: 0.050,  lon: 0.030  } },
-  { id: 7,  name: "David Lee",     profession: "Mechanic",         rating: 4.8, price: "$55/hr", mockOffset: { lat: -0.040, lon: 0.015  } },
-  { id: 8,  name: "Priya Singh",   profession: "Gardener",         rating: 4.4, price: "$20/hr", mockOffset: { lat: 0.003,  lon: 0.004  } },
-  { id: 9,  name: "Imran Khan",    profession: "Appliance Repair", rating: 4.6, price: "$35/hr", mockOffset: { lat: -0.018, lon: -0.030 } },
-  { id: 10, name: "Neha Gupta",    profession: "Pest Control",     rating: 4.5, price: "$40/hr", mockOffset: { lat: 0.025,  lon: -0.005 } },
 const Icon = ({ children, className = '' }) => (
   <svg
     viewBox="0 0 24 24"
@@ -126,7 +115,7 @@ const IconBox = ({ className = '' }) => (
   </Icon>
 );
 
-// Mock workers (same data as Services.jsx – in production this would come from an API)
+// Mock workers
 const ALL_WORKERS = [
   { id: 1, name: "John Doe", profession: "Electrician", rating: 4.8, price: "$40/hr", mockOffset: { lat: 0.012, lon: 0.008 } },
   { id: 2, name: "Jane Smith", profession: "Plumber", rating: 4.9, price: "$50/hr", mockOffset: { lat: -0.005, lon: 0.020 } },
@@ -139,17 +128,6 @@ const ALL_WORKERS = [
   { id: 9, name: "Imran Khan", profession: "Appliance Repair", rating: 4.6, price: "$35/hr", mockOffset: { lat: -0.018, lon: -0.030 } },
   { id: 10, name: "Neha Gupta", profession: "Pest Control", rating: 4.5, price: "$40/hr", mockOffset: { lat: 0.025, lon: -0.005 } },
 ];
-
-const categoryIconMap = {
-  Electrician: IconBolt,
-  Plumber: IconPipe,
-  Carpenter: IconSaw,
-  Cleaning: IconBroom,
-  Painting: IconBrush,
-  "AC Repair": IconSnowflake,
-  "Pest Control": IconBug,
-  Moving: IconBox,
-};
 
 const workerIconMap = {
   Electrician: IconBolt,
@@ -164,20 +142,7 @@ const workerIconMap = {
   "Pest Control": IconBug,
 };
 
-const categoryIconMap = {
-  Electrician: "⚡", Plumber: "🚰", Carpenter: "🪵", Cleaning: "🧹",
-  Painting: "🎨", "AC Repair": "❄️", "Pest Control": "🐜", Moving: "📦",
-};
-const CATEGORIES = [
-  'Electrician', 'Plumber', 'Carpenter', 'Cleaning',
-  'Painting', 'AC Repair', 'Pest Control', 'Moving',
-];
-
-const HOW_IT_WORKS = [
-  { step: "1", title: "Search",  desc: "Find nearby professionals based on skills, ratings, and location.", color: "blue" },
-  { step: "2", title: "Book",    desc: "Choose a time slot and confirm your booking instantly.",            color: "green" },
-  { step: "3", title: "Relax",   desc: "Sit back while the expert completes your task efficiently.",       color: "yellow" },
-];
+const categoryIconMap = workerIconMap;
 
 const Home = () => {
   const { coords, loading: geoLoading, error: geoError } = useLocation();
@@ -202,9 +167,7 @@ const Home = () => {
       {/* Hero */}
       <section className="relative overflow-hidden bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          {/* Wrapper reserves space for the card (so it won't get clipped) */}
           <div className="relative pb-24 sm:pb-28">
-            {/* Image panel stays rounded + clipped */}
             <div className="relative rounded-[36px] shadow-[0_18px_40px_rgba(15,23,42,0.18)] overflow-hidden">
               <div className="relative h-[320px] sm:h-[380px] lg:h-[420px]">
                 <img
@@ -217,7 +180,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Card sits lower and can overflow below the image (no clipping) */}
             <div className="absolute left-1/2 top-[220px] sm:top-[260px] lg:top-[290px] -translate-x-1/2 w-full px-5 sm:px-8">
               <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_14px_32px_rgba(15,23,42,0.18)] px-7 py-7 sm:px-10 sm:py-9">
                 <div className="text-center">
@@ -237,7 +199,7 @@ const Home = () => {
                     Find a Pro
                   </Link>
                   <Link
-                    to="/register"
+                    to="/worker-register"
                     className="inline-flex items-center justify-center rounded-lg bg-white px-5 py-2 text-sm font-semibold text-slate-800 border border-slate-300 hover:bg-slate-50 transition"
                   >
                     Become a Pro
@@ -258,7 +220,6 @@ const Home = () => {
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-14 text-center relative">
-            {/* connector line */}
             <div className="hidden md:block absolute top-[46px] left-0 w-full h-px bg-slate-200" />
 
             {[
@@ -267,7 +228,6 @@ const Home = () => {
               { step: '3', title: 'Relax & Enjoy', desc: 'Let the expert handle the job with peace of mind.', IconComp: IconCheckCircle },
             ].map((s) => (
               <div key={s.step} className="relative">
-                {/* arrow to next */}
                 {s.step !== '3' ? (
                   <div className="hidden md:block absolute top-[36px] right-[-22px] text-slate-300 text-xl">
                     →
@@ -285,16 +245,6 @@ const Home = () => {
         </div>
       </section>
 
-            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-              <Link
-                to="/services"
-                className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition"
-              >
-                Browse Services
-              </Link>
-              <Link
-                to="/worker-register"
-                className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg text-blue-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm hover:shadow-md transition"
       {/* Popular categories */}
       <section className="py-20 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -303,34 +253,21 @@ const Home = () => {
           </div>
 
           <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-7 sm:gap-8 max-w-5xl mx-auto">
-            {['Electrician', 'Plumber', 'Carpenter', 'Cleaning', 'Painting', 'AC Repair'].map((category) => (
-              (() => {
-                const CategoryIcon = categoryIconMap[category];
-                return (
-              <Link
-                key={category}
-                to="/services"
-                className="group rounded-2xl border-2 border-slate-800/70 bg-white px-7 py-8 sm:px-10 sm:py-10 hover:border-[#0056D2] transition min-h-[128px] sm:min-h-[150px] flex items-center justify-center"
-              >
-                <div className="flex flex-col items-center text-center gap-3">
-                  {CategoryIcon ? (
+            {['Electrician', 'Plumber', 'Carpenter', 'Cleaning', 'Painting', 'AC Repair'].map((category) => {
+              const CategoryIcon = categoryIconMap[category] || IconBolt;
+              return (
+                <Link
+                  key={category}
+                  to="/services"
+                  className="group rounded-2xl border-2 border-slate-800/70 bg-white px-7 py-8 sm:px-10 sm:py-10 hover:border-[#0056D2] transition min-h-[128px] sm:min-h-[150px] flex items-center justify-center"
+                >
+                  <div className="flex flex-col items-center text-center gap-3">
                     <CategoryIcon className="h-12 w-12 sm:h-14 sm:w-14 text-slate-900 group-hover:text-[#0056D2] transition-colors" />
-                  ) : (
-                    <IconBolt className="h-12 w-12 sm:h-14 sm:w-14 text-slate-900 group-hover:text-[#0056D2] transition-colors" />
-                  )}
-                  <div className="font-semibold text-slate-900 text-base sm:text-lg">{category}</div>
-                </div>
-              </Link>
-            </div>
-
-            <div className="mt-6 flex justify-center gap-8 text-sm text-gray-500">
-              <div>✅ 10,000+ Users</div>
-              <div>✅ Verified Professionals</div>
-            </div>
-
-                );
-              })()
-            ))}
+                    <div className="font-semibold text-slate-900 text-base sm:text-lg">{category}</div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
           <div className="mt-10 text-center">
@@ -341,7 +278,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Near You Section */}
       {/* Nearby (location-driven) */}
       {(geoLoading || coords || geoError) && (
         <section className="py-16 sm:py-20 bg-white">
@@ -385,72 +321,45 @@ const Home = () => {
             )}
 
             {coords && nearbyWorkers.length > 0 && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {nearbyWorkers.map((worker) => (
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {nearbyWorkers.map((worker) => {
+                  const WorkerIcon = workerIconMap[worker.profession] || IconBolt;
+                  return (
                     <div
                       key={worker.id}
-                      className="group bg-white rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 hover:border-blue-200 transition-all duration-300 overflow-hidden flex flex-col"
+                      className="group bg-white rounded-2xl shadow-sm hover:shadow-lg border border-slate-200 hover:border-[#0056D2]/40 transition-all duration-200 overflow-hidden flex flex-col"
                     >
                       <div className="p-7 flex-1">
                         <div className="flex items-start justify-between mb-5">
-                          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            {iconMap[worker.profession] || '👷'}
+                          <div className="w-14 h-14 bg-white rounded-2xl border border-slate-200 flex items-center justify-center shadow-sm">
+                            <WorkerIcon className="h-8 w-8 text-slate-900" />
                           </div>
-                          <div className="flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+                          <div className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
                             📍 {formatDistance(worker.distanceKm)}
                           </div>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-0.5 group-hover:text-blue-600 transition-colors">{worker.name}</h3>
-                        <p className="text-blue-600 font-semibold text-sm mb-4">{worker.profession}</p>
-                        <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                        <h3 className="text-xl font-bold text-slate-900 mb-0.5 group-hover:text-[#0056D2] transition-colors">{worker.name}</h3>
+                        <p className="text-[#0056D2] font-semibold text-sm mb-4">{worker.profession}</p>
+                        <div className="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
                           <div className="flex items-center gap-1">
                             <span className="text-yellow-400">★</span>
-                            <span className="font-bold text-gray-900">{worker.rating}</span>
+                            <span className="font-bold text-slate-900">{worker.rating}</span>
                           </div>
-                          <div className="w-px h-4 bg-gray-300" />
-                          <div className="font-bold text-gray-900">{worker.price}</div>
-              <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {nearbyWorkers.map((worker) => (
-                  <div
-                    key={worker.id}
-                    className="group bg-white rounded-2xl shadow-sm hover:shadow-lg border border-slate-200 hover:border-[#0056D2]/40 transition-all duration-200 overflow-hidden flex flex-col"
-                  >
-                    <div className="p-7 flex-1">
-                      <div className="flex items-start justify-between mb-5">
-                        {(() => {
-                          const WorkerIcon = workerIconMap[worker.profession];
-                          return (
-                            <div className="w-14 h-14 bg-white rounded-2xl border border-slate-200 flex items-center justify-center shadow-sm">
-                              {WorkerIcon ? <WorkerIcon className="h-8 w-8 text-slate-900" /> : <IconBolt className="h-8 w-8 text-slate-900" />}
-                            </div>
-                          );
-                        })()}
-                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-                          📍 {formatDistance(worker.distanceKm)}
+                          <div className="w-px h-4 bg-slate-300" />
+                          <div className="font-bold text-slate-900">{worker.price}</div>
                         </div>
                       </div>
-                      <h3 className="text-xl font-bold text-slate-900 mb-0.5 group-hover:text-[#0056D2] transition-colors">{worker.name}</h3>
-                      <p className="text-[#0056D2] font-semibold text-sm mb-4">{worker.profession}</p>
-                      <div className="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <div className="flex items-center gap-1">
-                          <span className="text-yellow-400">★</span>
-                          <span className="font-bold text-slate-900">{worker.rating}</span>
-                        </div>
-                        <div className="w-px h-4 bg-slate-300" />
-                        <div className="font-bold text-slate-900">{worker.price}</div>
+                      <div className="px-7 pb-7">
+                        <Link
+                          to={`/worker/${worker.id}`}
+                          className="block w-full text-center bg-slate-900 hover:bg-[#0056D2] text-white font-bold py-3.5 rounded-xl transition shadow-sm"
+                        >
+                          View &amp; Book
+                        </Link>
                       </div>
                     </div>
-                    <div className="px-7 pb-7">
-                      <Link
-                        to={`/worker/${worker.id}`}
-                        className="block w-full text-center bg-slate-900 hover:bg-[#0056D2] text-white font-bold py-3.5 rounded-xl transition shadow-sm"
-                      >
-                        View &amp; Book
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -618,7 +527,7 @@ const Home = () => {
               Find a Pro
             </Link>
             <Link
-              to="/register"
+              to="/worker-register"
               className="bg-transparent border border-white/40 text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition"
             >
               Become a Pro
