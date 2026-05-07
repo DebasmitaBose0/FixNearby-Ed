@@ -50,6 +50,7 @@ const Footer = () => {
             <a href="#" className="hover:text-blue-400 transition">
               <FaGithub />
             </a>
+          </div>
           <div className="mt-4 text-sm text-gray-400 space-y-1">
             <div className="font-semibold text-gray-200">Trust-first marketplace</div>
             <div>Vetted pros • Secure booking • Clear pricing</div>
@@ -66,12 +67,7 @@ const Footer = () => {
             <li><Link to="/services" className={linkClass("/services")}>Services</Link></li>
             <li><Link to="/bookings" className={linkClass("/bookings")}>Bookings</Link></li>
             <li><Link to="/about" className={linkClass("/about")}>About</Link></li>
-          <h3 className="text-white font-semibold mb-4">Navigation</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/" className="hover:text-blue-400">Home</a></li>
-            <li><a href="/#how-it-works" className="hover:text-blue-400">How it works</a></li>
-            <li><a href="/services" className="hover:text-blue-400">Services</a></li>
-            <li><a href="/register" className="hover:text-blue-400">Join as a Pro</a></li>
+            <li><Link to="/register" className={linkClass("/register")}>Join as a Pro</Link></li>
           </ul>
         </div>
 
@@ -110,20 +106,6 @@ const Footer = () => {
               Subscribe
             </button>
           </form>
-        {/* Legal */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">Legal</h3>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/privacy" className={linkClass("/privacy")}>Privacy Policy</Link></li>
-            <li><Link to="/terms" className={linkClass("/terms")}>Terms of Service</Link></li>
-          </ul>
-          <div className="mt-5">
-            <h3 className="text-white font-medium mb-3">Contact</h3>
-            <div className="text-sm text-gray-400 space-y-2">
-              <div><span className="text-gray-300 font-semibold">Email:</span> support@fixnearby.com</div>
-              <div><span className="text-gray-300 font-semibold">Phone:</span> +1 (000) 000-0000</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -164,10 +146,6 @@ const Footer = () => {
             <FaEnvelope />
             Contact
           </Link>
-        <div className="flex space-x-4 mt-3 md:mt-0">
-          <a href="#" className="hover:text-blue-400">Help</a>
-          <a href="#" className="hover:text-blue-400">Privacy</a>
-          <a href="#" className="hover:text-blue-400">Terms</a>
         </div>
       </div>
     </footer>

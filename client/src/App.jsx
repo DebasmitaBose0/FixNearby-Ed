@@ -16,14 +16,15 @@ import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import NotFound from "./pages/NotFound";
 
-function AppShell() {
+function AppContent() {
   const location = useLocation();
+  // Only show LocationBanner if not on the Home page
   const showLocationBanner = location.pathname !== '/';
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      {showLocationBanner ? <LocationBanner /> : null}
+      {showLocationBanner && <LocationBanner />}
       <main className="flex-grow bg-gray-50">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -34,7 +35,11 @@ function AppShell() {
           <Route path="/worker/:id" element={<WorkerProfile />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/bookings" element={<Bookings />} />
-          {/* TODO: Add more routes here */}
+          <Route path="/worker-register" element={<WorkerRegister />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />
@@ -45,27 +50,7 @@ function AppShell() {
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <LocationBanner />
-        <main className="flex-grow bg-gray-50">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/worker/:id" element={<WorkerProfile />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/worker-register" element={<WorkerRegister />} />
-            <Route path="*" element={<NotFound />} />
-            {/* TODO: Add more routes here */}
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-      <AppShell />
+      <AppContent />
     </Router>
   );
 }
