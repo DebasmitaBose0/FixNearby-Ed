@@ -9,7 +9,7 @@ const Dashboard = () => {
         <div className="mt-6 border-t border-gray-200 pt-4">
           {/* TODO: Connect API here to fetch user data/bookings */}
           <div className="text-center py-10 bg-gray-50 rounded border border-dashed border-gray-300">
-            <span className="text-gray-500">No active bookings yet.</span>
+            <span className="text-slate-600 leading-relaxed">No active bookings yet.</span>
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@ const Dashboard = () => {
           <h1 className="text-4xl font-extrabold text-slate-900">
             User Dashboard
           </h1>
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-slate-700">
             Manage your bookings, track progress, and view activity.
           </p>
         </div>
