@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useLocation } from '../context/LocationContext';
 import { getDistanceKm, formatDistance } from '../utils/distance';
 
@@ -156,9 +156,9 @@ const Home = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-white">
+      <section className="relative bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="relative pb-24 sm:pb-28">
+          <div className="relative pb-56 sm:pb-64 lg:pb-72">
             <div className="relative rounded-[36px] shadow-[0_18px_40px_rgba(15,23,42,0.18)] overflow-hidden">
               <div className="relative h-[320px] sm:h-[380px] lg:h-[420px]">
                 <img
