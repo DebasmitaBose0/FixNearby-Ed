@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
   FaGithub,
   FaEnvelope,
@@ -43,10 +42,10 @@ const Footer = () => {
             FixNearby
           </h2>
 
-          <p className="mt-4 text-lg sm:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
-  Book trusted local professionals for repairs, maintenance, and home services 
-  with confidence — verified experts, quick response times, and seamless booking.
-</p>
+          <p className="mt-4 text-sm leading-relaxed text-gray-400 max-w-xs">
+            Book trusted local professionals for repairs, maintenance, and home services 
+            with confidence — verified experts, quick response times, and seamless booking.
+          </p>
 
           <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
             <FaMapMarkerAlt />
@@ -65,10 +64,6 @@ const Footer = () => {
               <FaGithub />
             </a>
           </div>
-          <div className="mt-4 text-sm text-gray-400 space-y-1">
-            <div className="font-semibold text-gray-200">Trust-first marketplace</div>
-            <div>Vetted pros • Secure booking • Clear pricing</div>
-          </div>
         </div>
 
         {/* Navigation */}
@@ -80,13 +75,6 @@ const Footer = () => {
             <li><Link to="/" className={linkClass("/")}>Home</Link></li>
             <li><Link to="/services" className={linkClass("/services")}>Services</Link></li>
             <li><Link to="/bookings" className={linkClass("/bookings")}>Bookings</Link></li>
-            <li><Link to="/about" className={linkClass("/about")}>About</Link></li>
-          <h3 className="text-white font-semibold mb-4">Navigation</h3>
-          <ul className="space-y-2 text-sm">
-            <li><a href="/" className="hover:text-blue-400">Home</a></li>
-            <li><a href="/#how-it-works" className="hover:text-blue-400">How it works</a></li>
-            <li><a href="/services" className="hover:text-blue-400">Services</a></li>
-            <li><a href="/register" className="hover:text-blue-400">Join as a Pro</a></li>
             <li><Link to="/register" className={linkClass("/register")}>Join as a Pro</Link></li>
           </ul>
         </div>
@@ -99,12 +87,11 @@ const Footer = () => {
           <ul className="space-y-2.5 text-sm">
             <li><Link to="/help" className={linkClass("/help")}>Help Center</Link></li>
             <li><Link to="/contact" className={linkClass("/contact")}>Contact</Link></li>
-            <li><Link to="/faq" className="hover:text-blue-400">FAQs</Link></li>
+            <li><Link to="/feedback" className={linkClass("/feedback")}>Feedback</Link></li>
           </ul>
         </div>
 
         {/* Newsletter + Search */}
-        {/* Newsletter */}
         <div className="lg:col-span-2">
           <h3 className="text-white font-semibold mb-4 tracking-wide">
             Stay Updated
@@ -148,68 +135,38 @@ const Footer = () => {
               Subscribe
             </button>
           </form>
-        {/* Legal */}
-        <div>
-          <h3 className="text-white font-semibold mb-4">Legal</h3>
-          <ul className="space-y-2 text-sm">
-            <li><Link to="/privacy" className={linkClass("/privacy")}>Privacy Policy</Link></li>
-            <li><Link to="/terms" className={linkClass("/terms")}>Terms of Service</Link></li>
-          </ul>
-          <div className="mt-5">
-            <h3 className="text-white font-medium mb-3">Contact</h3>
-            <div className="text-sm text-gray-400 space-y-2">
-              <div><span className="text-gray-300 font-semibold">Email:</span> support@fixnearby.com</div>
-              <div><span className="text-gray-300 font-semibold">Phone:</span> +1 (000) 000-0000</div>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-800" />
-
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400">
-        
-        <p className="text-center sm:text-left">
-          © {new Date().getFullYear()} FixNearby. All rights reserved.
-        </p>
-
-        <div className="flex items-center flex-wrap justify-center gap-6 mt-3 sm:mt-0">
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400">
           
-          <Link to="/privacy" className="hover:text-blue-400 transition">
-            Privacy Policy
-          </Link>
+          <p className="text-center sm:text-left">
+            © {new Date().getFullYear()} FixNearby. All rights reserved.
+          </p>
 
-          <Link to="/terms" className="hover:text-blue-400 transition">
-            Terms
-          </Link>
-
-          <a
-            href="https://github.com/your-repo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-blue-400 transition"
-          >
-            <FaGithub />
-            GitHub
-          </a>
-
-          <Link
-            to="/contact"
-            className="flex items-center gap-1 hover:text-blue-400 transition"
-          >
-            <FaEnvelope />
-            Contact
-          </Link>
-        <div className="flex space-x-4 mt-3 md:mt-0">
-          <a href="#" className="hover:text-blue-400">Help</a>
-          <a href="#" className="hover:text-blue-400">Privacy</a>
-          <a href="#" className="hover:text-blue-400">Terms</a>
+          <div className="flex items-center flex-wrap justify-center gap-6 mt-3 sm:mt-0">
+            <Link to="/privacy" className="hover:text-blue-400 transition">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="hover:text-blue-400 transition">
+              Terms of Service
+            </Link>
+            <a
+              href="https://github.com/souma9830/FixNearby"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-blue-400 transition"
+            >
+              <FaGithub />
+              GitHub
+            </a>
+          </div>
         </div>
       </div>
     </footer>
   );
 };
 
-export default Footer;
+export default Footer;
