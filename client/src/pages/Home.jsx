@@ -184,13 +184,44 @@ const Home = () => {
             <div className="absolute left-1/2 top-[220px] sm:top-[260px] lg:top-[290px] -translate-x-1/2 w-full px-5 sm:px-8">
               <div className="mx-auto w-full max-w-[560px] rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-[0_14px_32px_rgba(15,23,42,0.18)] px-7 py-7 sm:px-10 sm:py-9">
                 <div className="text-center">
-                  <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900">
-                    Your Home. <span className="text-[#0056D2]">Better</span>
-                  </h1>
-                  <p className="mt-3 text-slate-600">
-                    Connect with trusted local professionals for all your home service needs. From repairs to renovations, we’ve got you covered.
-                  </p>
-                </div>
+
+  {/* Trust Badge */}
+  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-semibold mb-5">
+    ⭐ Trusted by 10,000+ homeowners
+  </div>
+
+  {/* Main Heading */}
+  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-tight">
+    Reliable Home Services,
+    <span className="block text-[#0056D2]">
+      Right When You Need Them
+    </span>
+  </h1>
+
+  {/* Enhanced Description */}
+  <p className="mt-6 text-lg sm:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
+    Find verified electricians, plumbers, cleaners, and skilled professionals 
+    near you — with fast booking, transparent pricing, and trusted service.
+  </p>
+
+  {/* Quick Trust Points */}
+  <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm font-medium text-slate-700">
+
+    <span className="bg-slate-100 px-4 py-2 rounded-full">
+      ✔ Verified Experts
+    </span>
+
+    <span className="bg-slate-100 px-4 py-2 rounded-full">
+      ⚡ Fast Booking
+    </span>
+
+    <span className="bg-slate-100 px-4 py-2 rounded-full">
+      📍 Nearby Services
+    </span>
+
+  </div>
+
+</div>
 
                 <div className="mt-6 flex items-center justify-center gap-3">
                   <Link
@@ -541,26 +572,58 @@ const Home = () => {
         </div>
       </section>
 
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            How It Works
-          </h2>
-          <p className="text-gray-500 mb-16">
-            Get your job done in 3 simple steps
+          <section className="py-24 bg-white">
+  <div className="max-w-7xl mx-auto px-4">
+
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-extrabold text-slate-900">
+        How It Works
+      </h2>
+      <p className="mt-3 text-slate-600">
+        Get your job done in 3 simple steps
+      </p>
+    </div>
+
+    <div className="grid md:grid-cols-3 gap-10 text-center">
+
+      {[
+        {
+          step: "1",
+          title: "Search",
+          desc: "Find skilled professionals near you"
+        },
+        {
+          step: "2",
+          title: "Book",
+          desc: "Choose time and confirm instantly"
+        },
+        {
+          step: "3",
+          title: "Relax",
+          desc: "Sit back and let experts handle it"
+        }
+      ].map((item) => (
+        <div key={item.step} className="p-8 border rounded-2xl bg-white shadow-sm hover:shadow-lg transition">
+
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#0056D2] text-white flex items-center justify-center font-bold">
+            {item.step}
+          </div>
+
+          <h3 className="text-xl font-semibold text-slate-900">
+            {item.title}
+          </h3>
+
+          <p className="text-slate-600 mt-2">
+            {item.desc}
           </p>
 
-          <div className="max-w-6xl mx-auto mt-10 grid md:grid-cols-3 gap-8">
-    {[
-      { step: "1", title: "Search", desc: "Find skilled workers near you" },
-      { step: "2", title: "Book", desc: "Choose time and confirm instantly" },
-      { step: "3", title: "Relax", desc: "Get your job done stress-free" },
-    ].map((s) => (
-      <div key={s.step} className="p-6 border rounded-xl hover:shadow-lg transition">
-        <div className="text-blue-600 font-bold text-xl">{s.step}</div>
-        <h3 className="font-semibold mt-2">{s.title}</h3>
-        <p className="text-gray-500 mt-1">{s.desc}</p>
-      </div>
-    ))}
+        </div>
+      ))}
+
     </div>
+
+  </div>
+</section>
       {/* ── Near You Section ── */}
       {/* Near You Section */}
       {/* Nearby (location-driven) */}
