@@ -9,18 +9,44 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Indian phone number validation: 10 digits, starts with 6,7,8,9
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validate phone number in real-time
+    if (name === "phone") {
+      if (value && !validatePhoneNumber(value)) {
+        setPhoneError("Enter valid 10-digit mobile number starting with 6,7,8,9");
+      } else {
+        setPhoneError("");
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setPhoneError("");
+
+    // Validate phone number before submission
+    if (!validatePhoneNumber(formData.phone)) {
+      setPhoneError("Enter valid 10-digit mobile number starting with 6,7,8,9");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -32,6 +58,7 @@ const Register = () => {
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
+            phone: formData.phone,
             password: formData.password,
           }),
         }
@@ -44,7 +71,6 @@ const Register = () => {
         return;
       }
 
-      // Automatically log the user in after registration
       login(data);
       alert("Registration successful! Welcome to FixNearby.");
       navigate("/dashboard");
@@ -70,8 +96,8 @@ const Register = () => {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+        <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-3">
             <input
               id="name"
               name="name"
@@ -80,7 +106,7 @@ const Register = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <input
               id="email-address"
@@ -90,8 +116,28 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email address"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
+            <div>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Mobile Number (10 digits)"
+                className={`appearance-none relative block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  phoneError ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {phoneError && (
+                <p className="text-red-500 text-xs mt-1">{phoneError}</p>
+              )}
+              <p className="text-gray-400 text-xs mt-1">
+                Enter 10-digit mobile number starting with 6,7,8, or 9
+              </p>
+            </div>
             <input
               id="password"
               name="password"
@@ -100,7 +146,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Password"
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
