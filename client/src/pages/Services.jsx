@@ -1,3 +1,9 @@
+import { Link, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
+import { useLocation } from '../context/LocationContext';
+import { getDistanceKm, formatDistance } from '../utils/distance';
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -1287,6 +1293,26 @@ const Services = () => {
       ) : error ? (
         <div className="text-center py-20 text-red-600 font-medium">{error}</div>
       ) : filteredWorkers.length === 0 ? (
+        <EmptyState
+          icon="🔍"
+          title={
+            searchQuery || categoryFilter !== 'All'
+              ? 'No results found'
+              : 'No services available'
+          }
+          description={
+            searchQuery || categoryFilter !== 'All'
+              ? 'Try broadening your search or clearing filters to discover more professionals.'
+              : 'Check back later or explore a different service category.'
+          }
+          primaryAction={{
+            label: 'Reset filters',
+            onClick: () => {
+              setSearchQuery('');
+              setCategoryFilter('All');
+            },
+          }}
+        />
         <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
           <div className="text-6xl mb-4">🔦</div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">No workers found</h3>

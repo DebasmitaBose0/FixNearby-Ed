@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Toast from './components/Toast';
 import LocationBanner from './components/LocationBanner';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -57,6 +58,25 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <LocationBanner />
+        <Toast />
+        <main className="flex-grow bg-gray-50">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/worker/:id" element={<WorkerProfile />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/bookings" element={<Bookings />} />
+            {/* TODO: Add more routes here */}
+          </Routes>
+        </main>
+        <Footer />
+      </div>
       <AppContent />
     </Router>
   );

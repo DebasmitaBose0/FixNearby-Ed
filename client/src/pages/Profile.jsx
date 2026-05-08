@@ -1,4 +1,29 @@
+import { useState } from "react";
+import useToast from "../hooks/useToast";
+
 const Profile = () => {
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
+const Profile = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      // TODO: Handle API update logic
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      showToast('Profile updated successfully!', 'success');
+    } catch (error) {
+      console.error('Save failed:', error);
+      showToast('Failed to save changes. Please try again.', 'error');
+    } catch (error) {
+      console.error('Save failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // TODO: (50% built) Load authenticated user's data from global state or API.
   // Example: const { user } = useAuth();
   
@@ -26,8 +51,9 @@ const Profile = () => {
           </div>
 
           <div className="pt-4 border-t border-gray-200">
-            <button type="button" onClick={() => alert('TODO: Handle API update logic')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-              Save Changes
+            <button type="button" onClick={handleSave} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50 disabled:cursor-not-allowed">
+              <span className={`btn-text ${loading ? 'hidden' : ''}`}>Save Changes</span>
+              <span className={`btn-loader ${loading ? '' : 'hidden'}`}>Loading...</span>
             </button>
           </div>
         </form>

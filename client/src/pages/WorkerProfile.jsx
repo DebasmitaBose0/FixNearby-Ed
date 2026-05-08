@@ -1,3 +1,27 @@
+import { useParams, Link } from 'react-router-dom';
+import { useState } from "react";
+import useToast from "../hooks/useToast";
+
+const WorkerProfile = () => {
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
+  const handleBook = async () => {
+    setLoading(true);
+    try {
+      // TODO: Open booking form/modal
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      showToast('Booking request sent successfully!', 'success');
+    } catch (error) {
+      console.error('Booking failed:', error);
+      showToast('Failed to submit booking. Please try again.', 'error');
+    } catch (error) {
+      console.error('Booking failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import BookingConfirmationModal from '../components/BookingConfirmationModal';
@@ -99,11 +123,17 @@ const WorkerProfile = () => {
         </div>
 
         <div className="mt-8 pt-8">
+          {/* TODO: Implement booking modal or redirect to a booking flow */}
+          <button 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleBook}
+            disabled={loading}
           <button
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition"
             onClick={handleBooking}
           >
-            Book This Service
+            <span className={`btn-text ${loading ? 'hidden' : ''}`}>Book This Service</span>
+            <span className={`btn-loader ${loading ? '' : 'hidden'}`}>Loading...</span>
           </button>
         </div>
       </div>
