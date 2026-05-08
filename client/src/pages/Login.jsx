@@ -23,6 +23,7 @@ const Login = () => {
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError]=useState(null);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage]=useState(null);
   
     const validateFields=(name,value)=>{
     const emailRegex= /^[a-zA-Z0-9._%+-]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
@@ -60,6 +62,7 @@ const Login = () => {
 
       setErrors((prev) => ({ ...prev, [name]: errorMsgs }));
     }
+     console.log(`${import.meta.env.VITE_API_URL}`)
   };
 
   const handleBlur = (e) => {
@@ -95,36 +98,30 @@ const Login = () => {
       setErrors(newErrors);
       return;
     }
-
+    setMessage(null);
     setErrors({});
     setApiError(null);
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, {
           email: formData.email,
           password: formData.password,
-        }),
-      });
+        });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setApiError(data.message || "Login failed. Please try again.");
-        return;
-      }
+      const userData = res.data;
 
       // Persist user + token via AuthContext
-      login(data);
+      login(userData);
+      setMessage("Logged in successfully! Welcome to FixNearby.");
       navigate("/dashboard");
-    } catch {
-      setApiError("Network error. Please check your connection and try again.");
+    } catch(error) {
+      setApiError(error.response?.data?.message || "Login Failed, Please check your connection and try again.");
     } finally {
       setLoading(false);
+      setFormData({email:"",password:""});
     }
+    
   };
 
   return (
@@ -166,6 +163,11 @@ const Login = () => {
          {apiError && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
             {apiError}
+          </div>
+        )} 
+        {message && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+            {message}
           </div>
         )} 
 
