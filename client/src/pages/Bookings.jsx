@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import useToast from "../hooks/useToast";
+import EmptyState from "../components/EmptyState";
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,6 +12,13 @@ const Bookings = () => {
   const { showToast } = useToast();
 import { useState } from "react";
 
+const Bookings = () => {
+  const [bookings, setBookings] = useState([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState({}); // For individual button loading
 const StarRating = ({ rating, onRatingChange, size = "md" }) => {
   const [hoverRating, setHoverRating] = useState(0);
 
@@ -114,6 +121,8 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
     } catch (error) {
       console.error('Cancel failed:', error);
       showToast('Failed to cancel booking. Please try again.', 'error');
+    } catch (error) {
+      console.error('Cancel failed:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [id]: false }));
     }
@@ -138,6 +147,8 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
     } catch (error) {
       console.error('Review submit failed:', error);
       showToast('Failed to submit review. Please try again.', 'error');
+    } catch (error) {
+      console.error('Review submit failed:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [`review-${id}`]: false }));
     }
@@ -381,6 +392,29 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
 
       </div>
 
+      {/* Empty State */}
+      {!loading && filteredBookings.length === 0 && (
+        <EmptyState
+          icon="📭"
+          title={
+            search || statusFilter !== "All"
+              ? "No bookings match your filters"
+              : "No bookings yet"
+          }
+          description={
+            search || statusFilter !== "All"
+              ? "Try adjusting your search or resetting filters to see your bookings."
+              : "Start by booking your first service and your bookings will appear here."
+          }
+          primaryAction={{ label: "Browse Services", to: "/services" }}
+          secondaryAction={{
+            label: "Reset filters",
+            onClick: () => {
+              setSearch("");
+              setStatusFilter("All");
+            },
+          }}
+        />
       {/* STATES */}
 
       {loading && (
@@ -534,6 +568,7 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
                     onClick={() => handleCancel(booking.id)}
                     disabled={actionLoading[booking.id]}
                     className="btn-text-danger disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-red-600 hover:underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className={`btn-text ${actionLoading[booking.id] ? 'hidden' : ''}`}>Cancel</span>
                     <span className={`btn-loader ${actionLoading[booking.id] ? '' : 'hidden'}`}>Loading...</span>
@@ -624,6 +659,16 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
                     </button>
             {/* REVIEW BOX */}
 
+                  {/* Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleReviewSubmit(booking.id)}
+                      disabled={actionLoading[`review-${booking.id}`]}
+                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className={`btn-text ${actionLoading[`review-${booking.id}`] ? 'hidden' : ''}`}>Submit</span>
+                      <span className={`btn-loader ${actionLoading[`review-${booking.id}`] ? '' : 'hidden'}`}>Loading...</span>
+                    </button>
             {activeReview === b.id && (
               <div className="mt-6 bg-slate-50 border border-slate-200 rounded-3xl p-5">
 

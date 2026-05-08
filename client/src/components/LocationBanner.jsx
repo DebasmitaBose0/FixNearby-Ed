@@ -23,6 +23,8 @@ const LocationBanner = () => {
     } catch (error) {
       console.error('Retry failed:', error);
       showToast('Failed to detect location. Please try again.', 'error');
+    } catch (error) {
+      console.error('Retry failed:', error);
     } finally {
       setRetryLoading(false);
     }

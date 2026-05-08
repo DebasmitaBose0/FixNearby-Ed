@@ -16,6 +16,8 @@ const WorkerProfile = () => {
     } catch (error) {
       console.error('Booking failed:', error);
       showToast('Failed to submit booking. Please try again.', 'error');
+    } catch (error) {
+      console.error('Booking failed:', error);
     } finally {
       setLoading(false);
     }
@@ -124,6 +126,7 @@ const WorkerProfile = () => {
           {/* TODO: Implement booking modal or redirect to a booking flow */}
           <button 
             className="btn-primary btn-primary-lg btn-full"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleBook}
             disabled={loading}
           <button

@@ -5,6 +5,9 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
+const Profile = () => {
+  const [loading, setLoading] = useState(false);
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -14,6 +17,8 @@ const Profile = () => {
     } catch (error) {
       console.error('Save failed:', error);
       showToast('Failed to save changes. Please try again.', 'error');
+    } catch (error) {
+      console.error('Save failed:', error);
     } finally {
       setLoading(false);
     }
@@ -47,6 +52,7 @@ const Profile = () => {
 
           <div className="pt-4 border-t border-gray-200">
             <button type="button" onClick={handleSave} disabled={loading} className="btn-primary">
+            <button type="button" onClick={handleSave} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50 disabled:cursor-not-allowed">
               <span className={`btn-text ${loading ? 'hidden' : ''}`}>Save Changes</span>
               <span className={`btn-loader ${loading ? '' : 'hidden'}`}>Loading...</span>
             </button>
