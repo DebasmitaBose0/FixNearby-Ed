@@ -20,7 +20,7 @@ const getDistanceKm = (lat1, lon1, lat2, lon2) => {
 };
 
 const formatDistance = (km) =>
-  km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+  km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`;
 
 const Services = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,11 +39,10 @@ const Services = () => {
     searchParams.get("sort") || "distance"
   );
 
-  const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [workers, setWorkers] = useState([]);
   const [coords, setCoords] = useState(null);
 
-  // ---------------- CATEGORY ----------------
   // ---------------- CATEGORIES ----------------
 
   const categories = [
