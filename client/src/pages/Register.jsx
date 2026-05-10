@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import { signupUser } from "../services/authService";
+import useToast from "../hooks/useToast";
 
 const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-
+  const {showToast}=useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -17,7 +18,6 @@ const Register = () => {
   const [interacted, setInteracted] = useState({});
   const [errors, setErrors]=useState({});
   const [apiError,setApiError]=useState(null);
-  const [message, setMessage]=useState(null);
   const [loading, setLoading] = useState(false);
 
   // ---------------- VALIDATION ----------------
@@ -75,6 +75,7 @@ const Register = () => {
         [name]: errorMsg,
       }));
     }
+    if(apiError) setApiError(null);
   };
 
   // ---------------- HANDLE BLUR ----------------
@@ -99,7 +100,6 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
     setErrors({});
     setApiError(null);
 
@@ -129,25 +129,20 @@ const Register = () => {
     setLoading(true);
   
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/register`,
-        {
+      const userData = await signupUser({
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            password: formData.password,
-          });
-    
-      const userData = res.data;
+            password: formData.password,});
+
 
       login(userData);
-      setMessage("Registration successful! Welcome to FixNearby.");
-      
+      showToast("Registration successful! Welcome to FixNearby.");
 
       setFormData({name:"", email:"",phone: "", password:""});
       navigate("/dashboard");
     } catch(error) {
-      setApiError(error?.response?.data?.message || "Registration failed. Please try again.");
+      setApiError(error.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -175,7 +170,7 @@ const Register = () => {
             Create an account
           </h2>
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-base sm:text-sm text-gray-600">
             Join FixNearby and get started
           </p>
         </div>
@@ -186,14 +181,9 @@ const Register = () => {
             {apiError}
           </div>
         )}
-         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
-            {message}
-          </div>
-        )}
 
         {/* Form */}
-         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+         <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
           <div>
           {/* Name */}
             <input
@@ -249,6 +239,7 @@ const Register = () => {
               type="tel"
               value={formData.phone}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Phone Number"
               className={inputStyles("phone")}
             />
@@ -303,7 +294,7 @@ const Register = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-blue-600 hover:underline font-medium"
+            className="text-blue-600 hover:underline font-semibold"
           >
             Sign in
           </Link>
