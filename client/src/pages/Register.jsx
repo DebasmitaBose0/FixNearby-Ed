@@ -143,17 +143,8 @@ const Register = () => {
 
       setFormData({ name: "", email: "", phone: "", password: "" });
       navigate("/dashboard");
-<<<<<<< HEAD
     } catch(error) {
-      if(!error.status) {
-        setApiError("Network error. Please check your connection and try again.");
-      } else {
-        setApiError(error.message || "Registration failed. Please try again.");
-      }
-=======
-    } catch (error) {
       setApiError(error.message || "Registration failed. Please try again.");
->>>>>>> upstream/master
     } finally {
       setLoading(false);
     }
@@ -291,10 +282,7 @@ const Register = () => {
           >
             {loading ? "Creating your account..." : "Create account"}
           </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/master
+          </div>
         </form>
 
         {/* Footer */}
