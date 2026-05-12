@@ -143,7 +143,7 @@ const Register = () => {
 
       setFormData({ name: "", email: "", phone: "", password: "" });
       navigate("/dashboard");
-    } catch (error) {
+    } catch(error) {
       setApiError(error.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
@@ -282,7 +282,6 @@ const Register = () => {
           >
             {loading ? "Creating your account..." : "Create account"}
           </button>
-
         </form>
 
         {/* Footer */}
