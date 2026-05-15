@@ -17,6 +17,7 @@ import WorkerRegister from './pages/WorkerRegister';
 import HelpCenter from './pages/HelpCenter';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import FAQ from "./pages/FAQ";
 import BackToTop from './components/BackToTop';
@@ -47,6 +48,7 @@ function AppContent() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/community" element={<Community />} />
           <Route path="/feedback" element={<Feedback />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="*" element={<NotFound />} />
