@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { useLocation } from "../context/LocationContext";
 import { formatDistance, getDistanceKm } from "../utils/distance";
@@ -229,6 +230,7 @@ const workerIconMap = {
 
 const Home = () => {
   const { coords, loading: geoLoading, error: geoError } = useLocation();
+  const { t } = useTranslation();
 
   const nearbyWorkers = useMemo(() => {
     if (!coords) {
@@ -276,27 +278,23 @@ const Home = () => {
                   Trusted by 10,000+ homeowners
                 </div>
                 <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-                  Reliable Home Services,
-                  <span className="block text-[#0056D2]">
-                    Right When You Need Them
-                  </span>
+                  {t("hero.headline")}
                 </h1>
                 <p className="mt-6 text-lg leading-relaxed text-slate-600 sm:text-xl">
-                  Find verified professionals near you with fast booking,
-                  transparent pricing, and clearer next steps.
+                 {t("hero.subtext")}
                 </p>
                 <div className="mt-8 flex items-center justify-center gap-3">
                   <Link
                     to="/services"
                     className="inline-flex items-center justify-center rounded-lg bg-[#0056D2] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0047AF]"
                   >
-                    Find a Pro
+                    {t("hero.findPro")}
                   </Link>
                   <Link
                     to="/worker-register"
                     className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                   >
-                    Become a Pro
+                    {t("hero.becomePro")}
                   </Link>
                 </div>
               </div>

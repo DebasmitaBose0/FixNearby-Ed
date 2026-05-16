@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import LanguageToggle from "./LanguageToggle";
 import { useAuth } from '../context/AuthContext';
 
 const WrenchIcon = () => (
@@ -72,6 +73,7 @@ const Navbar = () => {
               How it works
             </a>
             <Link to="/services" className={desktopLinkCls('/services')}>Services</Link>
+            <LanguageToggle />
 
             {isAuthenticated ? (
               <>
