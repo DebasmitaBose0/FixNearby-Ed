@@ -115,6 +115,62 @@ const Services = () => {
   const [locationStatus, setLocationStatus] = useState("idle");
 
 
+  const SERVICE_CATEGORIES = [
+  {
+    name: "Electrician",
+    icon: "⚡",
+  },
+  {
+    name: "Plumber",
+    icon: "🚰",
+  },
+  {
+    name: "Carpenter",
+    icon: "🪵",
+  },
+  {
+    name: "Painter",
+    icon: "🎨",
+  },
+  {
+    name: "AC Technician",
+    icon: "❄️",
+  },
+  {
+    name: "Cleaner",
+    icon: "🧹",
+  },
+  {
+    name: "Mechanic",
+    icon: "🔧",
+  },
+  {
+    name: "Gardener",
+    icon: "🌱",
+  },
+  {
+    name: "Appliance Repair",
+    icon: "🔌",
+  },
+  {
+    name: "Pest Control",
+    icon: "🐜",
+  },
+];
+
+  const categories = [
+    "All",
+    "Electrician",
+    "Plumber",
+    "Carpenter",
+    "Painter",
+    "AC Technician",
+    "Cleaner",
+    "Mechanic",
+    "Gardener",
+    "Appliance Repair",
+    "Pest Control",
+  ];
   useEffect(() => {
     if (!navigator.geolocation) {
       setLocationStatus("unsupported");
@@ -193,6 +249,64 @@ const Services = () => {
       };
     });
 
+    {/* POPULAR CATEGORIES */}
+
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+  <div className="flex items-center justify-between mb-8">
+
+    <div>
+      <h2 className="text-3xl font-bold text-slate-900">
+        Popular Categories
+      </h2>
+
+      <p className="text-slate-500 mt-2">
+        Browse professionals by category
+      </p>
+    </div>
+
+  </div>
+
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
+
+    {SERVICE_CATEGORIES.map((category) => (
+      <button
+        key={category.name}
+        onClick={() => setCategoryFilter(category.name)}
+        className={`group rounded-3xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+        ${
+          categoryFilter === category.name
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "bg-white border-slate-200 text-slate-900"
+        }`}
+      >
+
+        <div className="text-5xl mb-4 group-hover:scale-110 transition">
+          {category.icon}
+        </div>
+
+        <h3 className="font-bold text-lg">
+          {category.name}
+        </h3>
+
+      </button>
+    ))}
+
+  </div>
+
+</div>
+
+    // SEARCH
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+
+      result = result.filter(
+        (w) =>
+          w.name.toLowerCase().includes(q) ||
+          w.profession.toLowerCase().includes(q)
+      );
+    }
     result = result.filter((worker) => {
       const search = searchQuery.trim().toLowerCase();
 
