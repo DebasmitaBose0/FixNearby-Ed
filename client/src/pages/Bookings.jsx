@@ -116,31 +116,237 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
   };
 
   // ---------------- REVIEW ----------------
+{/* REVIEW BOX */}
 
-  const handleReviewSubmit = (id) => {
-    if (!rating) {
-      return alert("Please select rating");
-    }
+{activeReview === b.id && (
+  <div className="mt-6 relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === id
-          ? {
-              ...b,
-              review: {
-                rating,
-                comment,
-              },
-            }
-          : b
-      )
-    );
+    {/* TOP GRADIENT */}
+    <div className="h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
 
-    setActiveReview(null);
-    setRating(0);
-    setComment("");
-  };
+    <div className="p-6">
 
+      {/* HEADER */}
+
+      <div className="flex items-start justify-between gap-4 mb-6">
+
+        <div>
+          <h3 className="text-2xl font-bold text-slate-900">
+            Share Your Experience
+          </h3>
+
+          <p className="text-slate-500 mt-1 text-sm">
+            Your feedback helps other customers choose better services.
+          </p>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-2 rounded-2xl text-sm font-medium">
+          ⭐ Review
+        </div>
+
+      </div>
+
+      {/* WORKER PREVIEW */}
+
+      <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
+
+        <img
+          src={b.workerImage}
+          alt={b.worker}
+          className="w-14 h-14 rounded-2xl object-cover"
+        />
+
+        <div>
+          <h4 className="font-bold text-slate-900">
+            {b.worker}
+          </h4>
+
+          <p className="text-sm text-slate-500">
+            {b.service} Service
+          </p>
+        </div>
+
+      </div>
+
+      {/* STAR SECTION */}
+
+      <div className="mb-6">
+
+        <p className="text-sm font-medium text-slate-700 mb-3">
+          Rate your experience
+        </p>
+
+        <div className="flex items-center gap-2 flex-wrap">
+
+          {[1, 2, 3, 4, 5].map((s) => (
+            <button
+              key={s}
+              onClick={() => setRating(s)}
+              className={`group transition-all duration-200 ${
+                rating >= s
+                  ? "scale-110"
+                  : "hover:scale-110"
+              }`}
+            >
+              <span
+                className={`text-4xl transition-all duration-200 ${
+                  rating >= s
+                    ? "text-yellow-400 drop-shadow"
+                    : "text-slate-300 group-hover:text-yellow-300"
+                }`}
+              >
+                ★
+              </span>
+            </button>
+          ))}
+
+          {/* RATING TEXT */}
+
+          <div className="ml-2">
+
+            {rating === 1 && (
+              <span className="text-rose-500 font-semibold">
+                Poor
+              </span>
+            )}
+
+            {rating === 2 && (
+              <span className="text-orange-500 font-semibold">
+                Fair
+              </span>
+            )}
+
+            {rating === 3 && (
+              <span className="text-amber-500 font-semibold">
+                Good
+              </span>
+            )}
+
+            {rating === 4 && (
+              <span className="text-lime-600 font-semibold">
+                Very Good
+              </span>
+            )}
+
+            {rating === 5 && (
+              <span className="text-emerald-600 font-semibold">
+                Excellent
+              </span>
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* REVIEW TEXTAREA */}
+
+      <div className="mb-6">
+
+        <div className="flex items-center justify-between mb-2">
+
+          <label className="text-sm font-medium text-slate-700">
+            Write your feedback
+          </label>
+
+          <span className="text-xs text-slate-400">
+            {comment.length}/300
+          </span>
+
+        </div>
+
+        <textarea
+          value={comment}
+          maxLength={300}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Tell us about service quality, professionalism, punctuality, and overall experience..."
+          className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-700 min-h-[140px] resize-none outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+        />
+
+      </div>
+
+      {/* QUICK TAGS */}
+
+      <div className="mb-6">
+
+        <p className="text-sm font-medium text-slate-700 mb-3">
+          Quick feedback
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+
+          {[
+            "Professional",
+            "On Time",
+            "Friendly",
+            "Affordable",
+            "Highly Recommended",
+            "Quick Service",
+          ].map((tag) => (
+            <button
+              key={tag}
+              onClick={() =>
+                setComment((prev) =>
+                  prev.includes(tag)
+                    ? prev
+                    : `${prev} ${tag}`.trim()
+                )
+              }
+              className="px-3 py-2 rounded-full border border-slate-200 bg-white text-sm text-slate-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition"
+            >
+              + {tag}
+            </button>
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* PREVIEW */}
+
+      {(rating || comment) && (
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
+
+          <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">
+            Preview
+          </p>
+
+          <div className="flex items-center gap-1 text-yellow-400 text-lg mb-2">
+            {"★".repeat(rating)}
+          </div>
+
+          <p className="text-slate-700 text-sm leading-relaxed">
+            {comment || "Your review preview will appear here..."}
+          </p>
+
+        </div>
+      )}
+
+      {/* BUTTONS */}
+
+      <div className="flex flex-col sm:flex-row gap-3">
+
+        <button
+          onClick={() => handleReviewSubmit(b.id)}
+          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition shadow-lg shadow-blue-100"
+        >
+          Submit Review
+        </button>
+
+        <button
+          onClick={() => setActiveReview(null)}
+          className="flex-1 sm:flex-none px-6 py-3 rounded-2xl border border-slate-300 text-slate-600 hover:bg-slate-100 transition"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
+    
   // ---------------- FILTERED ----------------
 
   const filtered = useMemo(() => {
@@ -163,7 +369,7 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
 
   // ---------------- STATUS STYLE ----------------
     return matchSearch && matchStatus;
-  });
+  }, [bookings, search, statusFilter]);
   const sizeMap = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
@@ -203,7 +409,18 @@ const StarRating = ({ rating, onRatingChange, size = "md" }) => {
   // ---------------- UI ----------------
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
+
+    {/* BACKGROUND BLUR EFFECTS */}
+
+    <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl" />
+
+    <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl" />
+
+    {/* MAIN CONTAINER */}
+
+    <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
 
       {/* HEADER */}
 
