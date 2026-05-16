@@ -255,21 +255,6 @@ const Home = () => {
 
   return (
     <div className="bg-white">
-      {/* HERO */}
-      <section className="relative">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-[36px] overflow-hidden shadow-2xl min-h-[500px]">
-            <img
-              src="/hero-section.png"
-              alt="Hero"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center">
-              <div className="text-white max-w-3xl px-6">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
-                  Trusted Home Services Near You
-                </h1>
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -322,7 +307,6 @@ const Home = () => {
 
       {/* STATS SECTION */}
       <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-6">
         <div className="mx-auto max-w-7xl px-4 grid grid-cols-2 gap-6 md:grid-cols-4">
           {[
             { number: "10K+", label: "Happy Customers" },
@@ -331,8 +315,6 @@ const Home = () => {
             { number: "4.9/5", label: "Rating" },
           ].map((item) => (
             <div
-              key={idx}
-              className="bg-white rounded-3xl p-8 text-center shadow-sm border flex flex-col justify-center min-h-[180px]"
               key={item.label}
               className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm transition hover:shadow-xl"
             >
@@ -375,43 +357,6 @@ const Home = () => {
               </Link>
             </div>
 
-            <Link
-              to="/services"
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              View All →
-            </Link>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-            {workers.map((worker) => {
-              const WorkerIcon =
-                workerIconMap[worker.profession] || IconBolt;
-
-              return (
-                <div
-                  key={worker.id}
-                  className="bg-white border rounded-3xl p-6 shadow-sm hover:shadow-xl transition flex flex-col h-full"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <WorkerIcon className="w-8 h-8 text-slate-900" />
-                    </div>
-
-                    <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        worker.available
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-red-100 text-red-600"
-                      }`}
-                    >
-                      {worker.available ? "Available" : "Busy"}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-5 text-xl font-bold text-slate-900">
-                    {worker.name}
-                  </h3>
             {geoLoading && (
               <div className="py-12 text-center font-medium text-slate-500">
                 Requesting location permission...
@@ -424,22 +369,6 @@ const Home = () => {
               </div>
             )}
 
-                  <div className="flex items-center justify-between mt-5 text-sm mb-6">
-                    <span>⭐ {worker.rating}</span>
-                    <span className="font-semibold">
-                      {worker.price}
-                    </span>
-                  </div>
-
-                  <Link
-                    to={`/worker/${worker.id}`}
-                    className="mt-auto block text-center bg-slate-900 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold transition"
-                  >
-                    Book Now
-                  </Link>
-                </div>
-              );
-            })}
             {coords && nearbyWorkers.length > 0 && (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {nearbyWorkers.map((worker) => {
@@ -506,8 +435,6 @@ const Home = () => {
           <h2 className="mb-4 text-5xl font-extrabold text-slate-900">
             How it works
           </h2>
-
-          <div className="grid md:grid-cols-3 gap-8 mt-16 items-stretch">
           <p className="mb-16 text-lg text-slate-600">
             Three simple steps to get it done.
           </p>
@@ -531,13 +458,6 @@ const Home = () => {
                 desc: "Let the expert handle the job.",
                 IconComp: IconCheckCircle,
               },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="bg-white rounded-3xl p-10 border shadow-sm flex flex-col items-center text-center h-full"
-              >
-                <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold mx-auto">
-                  {item.step}
             ].map((step) => (
               <div key={step.step} className="relative">
                 <div className="mx-auto mb-6 flex h-[92px] w-[92px] items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm">
@@ -555,15 +475,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 bg-blue-600 text-white text-center">
-        <div className="max-w-3xl mx-auto px-6 flex flex-col items-center">
-          <h2 className="text-5xl font-extrabold">
-            Need Help Today?
-          </h2>
-
-          <p className="mt-5 text-lg text-blue-100">
-            Hire trusted professionals in minutes.
       {/* CTA SECTION */}
       <section className="bg-[#0056D2] py-20 text-center text-white">
         <div className="mx-auto max-w-3xl px-4">
