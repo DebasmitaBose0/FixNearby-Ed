@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Icon = ({ children, className = "" }) => (
   <svg
@@ -86,6 +87,7 @@ const ALL_WORKERS = [
 
 const Home = () => {
   const [workers, setWorkers] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setWorkers(ALL_WORKERS);
@@ -106,7 +108,7 @@ const Home = () => {
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center">
               <div className="text-white max-w-3xl px-6">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
-                  Trusted Home Services Near You
+                  {t("heroTitle")}
                 </h1>
 
                 <p className="mt-6 text-lg text-slate-200">

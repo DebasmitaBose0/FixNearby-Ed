@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
+import LanguageToggle from "./LanguageToggle";
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const [language, setLanguage] = useState("en");
 
   const handleLogout = () => {
     logout();
@@ -54,6 +55,8 @@ const Navbar = () => {
                 >
                   Join as a Pro
                 </Link>
+                 <LanguageToggle />
+
               </>
             )}
           </div>
