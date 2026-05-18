@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import LanguageToggle from "./LanguageToggle";
 import { useAuth } from '../context/AuthContext';
-<<<<<<< HEAD
 import LanguageToggle from "./LanguageToggle";
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [language, setLanguage] = useState("en");
-=======
 
 const WrenchIcon = () => (
   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5"
@@ -22,7 +21,7 @@ const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
->>>>>>> ab1d2ba041828f1e5cddf003dd7b07118504397a
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -80,6 +79,7 @@ const Navbar = () => {
               How it works
             </a>
             <Link to="/services" className={desktopLinkCls('/services')}>Services</Link>
+            <LanguageToggle />
 
             {isAuthenticated ? (
               <>
@@ -143,13 +143,13 @@ const Navbar = () => {
                   className="text-sm font-semibold text-white bg-[#0056D2] hover:bg-[#0047AF] px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md hover:shadow-blue-300/40 transition-all duration-200">
                   Get Started
                 </Link>
-<<<<<<< HEAD
                  <LanguageToggle />
 
               </>
-=======
               </div>
->>>>>>> ab1d2ba041828f1e5cddf003dd7b07118504397a
+
+              </div>
+
             )}
           </div>
 

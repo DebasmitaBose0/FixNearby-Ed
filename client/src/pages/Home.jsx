@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-=======
 import { useMemo } from "react";
 import { useLocation } from "../context/LocationContext";
 import { formatDistance, getDistanceKm } from "../utils/distance";
->>>>>>> ab1d2ba041828f1e5cddf003dd7b07118504397a
+
+import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
+import { useLocation } from "../context/LocationContext";
+import { formatDistance, getDistanceKm } from "../utils/distance";
+
 
 const Icon = ({ children, className = "" }) => (
   <svg
@@ -219,11 +222,9 @@ const ALL_WORKERS = [
   },
 ];
 
-<<<<<<< HEAD
 const Home = () => {
   const [workers, setWorkers] = useState([]);
   const { t } = useTranslation();
-=======
 const workerIconMap = {
   Electrician: IconBolt,
   Plumber: IconPipe,
@@ -236,10 +237,17 @@ const workerIconMap = {
   "Appliance Repair": IconBolt,
   "Pest Control": IconBug,
 };
->>>>>>> ab1d2ba041828f1e5cddf003dd7b07118504397a
+
 
 const Home = () => {
   const { coords, loading: geoLoading, error: geoError } = useLocation();
+
+
+
+const Home = () => {
+  const { coords, loading: geoLoading, error: geoError } = useLocation();
+  const { t } = useTranslation();
+
 
   const nearbyWorkers = useMemo(() => {
     if (!coords) {
@@ -281,12 +289,10 @@ const Home = () => {
               </div>
             </div>
 
-<<<<<<< HEAD
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-center">
               <div className="text-white max-w-3xl px-6">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
                   {t("heroTitle")}
-=======
             <div className="absolute left-1/2 top-[180px] w-full -translate-x-1/2 px-5 sm:top-[220px] sm:px-8 lg:top-[250px]">
               <div className="mx-auto w-full max-w-[560px] lg:max-w-[720px] rounded-2xl border border-slate-200 bg-white/95 px-7 py-7 text-center shadow-[0_14px_32px_rgba(15,23,42,0.18)] backdrop-blur sm:px-10 sm:py-9">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
@@ -297,11 +303,35 @@ const Home = () => {
                   <span className="block text-[#0056D2]">
                     Right When You Need Them
                   </span>
->>>>>>> ab1d2ba041828f1e5cddf003dd7b07118504397a
                 </h1>
                 <p className="mt-6 text-lg leading-relaxed text-slate-600 sm:text-xl">
                   Find verified professionals near you with fast booking,
                   transparent pricing, and clearer next steps.
+      {/* HERO SECTION */}
+      <section className="relative overflow-hidden bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="relative pb-[260px] sm:pb-[220px] lg:pb-[180px]">
+            <div className="relative overflow-hidden rounded-[36px] shadow-[0_18px_40px_rgba(15,23,42,0.18)]">
+              <div className="relative h-[320px] sm:h-[380px] lg:h-[420px]">
+                <img
+                  src="/hero-section.png"
+                  alt="Home service professional"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+              </div>
+            </div>
+
+            <div className="absolute left-1/2 top-[180px] w-full -translate-x-1/2 px-5 sm:top-[220px] sm:px-8 lg:top-[250px]">
+              <div className="mx-auto w-full max-w-[560px] lg:max-w-[720px] rounded-2xl border border-slate-200 bg-white/95 px-7 py-7 text-center shadow-[0_14px_32px_rgba(15,23,42,0.18)] backdrop-blur sm:px-10 sm:py-9">
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                  Trusted by 10,000+ homeowners
+                </div>
+                <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                  {t("hero.headline")}
+                </h1>
+                <p className="mt-6 text-lg leading-relaxed text-slate-600 sm:text-xl">
+                 {t("hero.subtext")}
                 </p>
                 <div className="mt-8 flex items-center justify-center gap-3">
                   <Link
@@ -309,12 +339,14 @@ const Home = () => {
                     className="inline-flex items-center justify-center rounded-lg bg-[#0056D2] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0047AF]"
                   >
                     Find a Pro
+                    {t("hero.findPro")}
                   </Link>
                   <Link
                     to="/worker-register"
                     className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                   >
                     Become a Pro
+                    {t("hero.becomePro")}
                   </Link>
                 </div>
               </div>
