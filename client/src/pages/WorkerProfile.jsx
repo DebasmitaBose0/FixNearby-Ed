@@ -9,9 +9,14 @@ import {
   Phone,
   MessageCircle,
   CalendarCheck,
+  LayoutGrid,
+  Calculator,
+  MessageSquare,
+  Image,
 } from "lucide-react";
 
 import BookingConfirmationModal from "../components/BookingConfirmationModal";
+import SmartEstimator from "../components/SmartEstimator";
 
 /* ✅ Move data outside component */
 const WORKERS = {
@@ -146,6 +151,13 @@ const REVIEWS = [
   },
 ];
 
+const TABS = [
+  { id: "overview",  label: "Overview",     icon: LayoutGrid   },
+  { id: "estimator", label: "Get Estimate", icon: Calculator   },
+  { id: "reviews",   label: "Reviews",      icon: MessageSquare },
+  { id: "portfolio", label: "Portfolio",    icon: Image        },
+];
+
 const getBookings = () => {
   try {
     return JSON.parse(localStorage.getItem("bookings")) || [];
@@ -162,7 +174,8 @@ const WorkerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab]       = useState("overview");
+  const [showModal, setShowModal]       = useState(false);
   const [bookingDetails, setBookingDetails] = useState({});
 
   /* ✅ Safe worker lookup */
@@ -171,6 +184,7 @@ const WorkerProfile = () => {
     return WORKERS[workerId] || null;
   }, [id]);
 
+  /* ── Quick book (no estimate) ── */
   const handleBooking = () => {
     if (!worker) return;
 
@@ -185,8 +199,7 @@ const WorkerProfile = () => {
       createdAt: new Date().toISOString(),
     };
 
-    const updated = [newBooking, ...getBookings()];
-    saveBookings(updated);
+    saveBookings([newBooking, ...getBookings()]);
 
     setBookingDetails({
       service: worker.profession,
@@ -194,6 +207,43 @@ const WorkerProfile = () => {
       date: new Date().toLocaleDateString(),
       time: "10:00 AM",
       price: worker.price,
+    });
+
+    setShowModal(true);
+  };
+
+  /* ── Estimate-based booking ── */
+  const handleEstimateBooking = (estimate) => {
+    if (!worker) return;
+
+    const newBooking = {
+      id: "BK-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+      worker: worker.name,
+      service: worker.profession,
+      date: new Date().toLocaleDateString(),
+      time: "10:00 AM",
+      price: `$${estimate.totalCost.toFixed(2)}`,
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+      estimateSpecs: {
+        summary: estimate.summary,
+        materials: estimate.materials,
+        laborHours: estimate.laborHours,
+        laborCost: estimate.laborCost,
+        materialCost: estimate.materialCost,
+        totalCost: estimate.totalCost,
+      },
+    };
+
+    saveBookings([newBooking, ...getBookings()]);
+
+    setBookingDetails({
+      service: worker.profession,
+      worker: worker.name,
+      date: new Date().toLocaleDateString(),
+      time: "10:00 AM",
+      price: `$${estimate.totalCost.toFixed(2)}`,
+      estimateSpecs: newBooking.estimateSpecs,
     });
 
     setShowModal(true);
@@ -235,7 +285,7 @@ const WorkerProfile = () => {
       />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* LEFT PROFILE CARD */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-6">
@@ -292,7 +342,16 @@ const WorkerProfile = () => {
               onClick={handleBooking}
               className="w-full mt-6 bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-3 rounded-2xl shadow-md"
             >
-              Book This Service
+              Quick Book
+            </button>
+
+            {/* Estimate CTA shortcut */}
+            <button
+              onClick={() => setActiveTab("estimator")}
+              className="w-full mt-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-semibold py-3 rounded-2xl transition flex items-center justify-center gap-2"
+            >
+              <Calculator size={16} />
+              Get Smart Estimate
             </button>
 
             {/* Contact */}
@@ -311,87 +370,122 @@ const WorkerProfile = () => {
         </div>
 
         {/* RIGHT CONTENT */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
 
-          {/* About */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold mb-4">
-              About Worker
-            </h2>
-
-            <p className="text-gray-600 leading-8">
-              {worker.bio}
-            </p>
-          </div>
-
-          {/* Services */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-2xl font-bold mb-6">
-              Services Offered
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                "Installation",
-                "Maintenance",
-                "Repair",
-                "Emergency Service",
-              ].map((service, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-2xl p-4 hover:border-blue-500 transition"
+          {/* ── TAB BAR ── */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5 flex gap-1">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  id={`tab-${tab.id}`}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                  }`}
                 >
-                  <h3 className="font-semibold text-gray-800">
-                    {service}
-                  </h3>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    Professional {worker.profession.toLowerCase()} service.
-                  </p>
-                </div>
-              ))}
-            </div>
+                  <Icon size={15} />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Reviews */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">
-                Customer Reviews
-              </h2>
+          {/* ── OVERVIEW TAB ── */}
+          {activeTab === "overview" && (
+            <div className="space-y-8">
+              {/* About */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                <h2 className="text-2xl font-bold mb-4">About Worker</h2>
+                <p className="text-gray-600 leading-8">{worker.bio}</p>
+              </div>
 
-              <div className="flex items-center gap-1 text-yellow-500 font-semibold">
-                <Star size={18} className="fill-yellow-400" />
-                {worker.rating}
+              {/* Services */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                <h2 className="text-2xl font-bold mb-6">Services Offered</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {["Installation", "Maintenance", "Repair", "Emergency Service"].map((service, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-2xl p-4 hover:border-blue-500 transition"
+                    >
+                      <h3 className="font-semibold text-gray-800">{service}</h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Professional {worker.profession.toLowerCase()} service.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Availability */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white">
+                <h2 className="text-2xl font-bold">Need urgent service?</h2>
+                <p className="mt-2 text-blue-100">
+                  This worker is available for emergency bookings and same-day service.
+                </p>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={handleBooking}
+                    className="bg-white text-blue-700 hover:bg-gray-100 font-semibold px-6 py-3 rounded-2xl transition"
+                  >
+                    Quick Book
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("estimator")}
+                    className="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-3 rounded-2xl transition flex items-center gap-2"
+                  >
+                    <Calculator size={16} />
+                    Estimate First
+                  </button>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="space-y-5">
-              {REVIEWS.map((review, i) => (
-                <div
-                  key={i}
-                  className="border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">
-                      {review.name}
-                    </h3>
+          {/* ── ESTIMATOR TAB ── */}
+          {activeTab === "estimator" && (
+            <SmartEstimator
+              profession={worker.profession}
+              priceString={worker.price}
+              onBookWithEstimate={handleEstimateBooking}
+            />
+          )}
 
-                    <span className="text-yellow-500 text-sm font-medium">
-                      ★ {review.rating}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-600 mt-2 leading-7">
-                    {review.text}
-                  </p>
+          {/* ── REVIEWS TAB ── */}
+          {activeTab === "reviews" && (
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Customer Reviews</h2>
+                <div className="flex items-center gap-1 text-yellow-500 font-semibold">
+                  <Star size={18} className="fill-yellow-400" />
+                  {worker.rating}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-            {/* PORTFOLIO / PREVIOUS WORKS SECTION */}
-          {worker.portfolio && worker.portfolio.length > 0 && (
+              <div className="space-y-5">
+                {REVIEWS.map((review, i) => (
+                  <div
+                    key={i}
+                    className="border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{review.name}</h3>
+                      <span className="text-yellow-500 text-sm font-medium">★ {review.rating}</span>
+                    </div>
+                    <p className="text-gray-600 mt-2 leading-7">{review.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── PORTFOLIO TAB ── */}
+          {activeTab === "portfolio" && worker.portfolio && worker.portfolio.length > 0 && (
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
               <h2 className="text-2xl font-bold mb-2">Previous Works</h2>
               <p className="text-gray-500 mb-6">
@@ -403,7 +497,6 @@ const WorkerProfile = () => {
                     key={item.id}
                     className="rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition group"
                   >
-                    {/* Image */}
                     <div className="relative h-44 overflow-hidden bg-gray-100">
                       <img
                         src={item.image}
@@ -411,28 +504,24 @@ const WorkerProfile = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                     </div>
- 
-                    {/* Details */}
+
                     <div className="p-5">
                       <p className="font-semibold text-gray-900 text-sm leading-snug mb-2">
                         {item.description}
                       </p>
- 
-                      {/* Date */}
+
                       <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
                         <CalendarCheck size={13} />
                         <span>{item.completionDate}</span>
                       </div>
- 
-                      {/* Rating */}
+
                       <div className="flex items-center gap-1 mb-2">
                         <Star size={13} className="fill-yellow-400 text-yellow-400" />
                         <span className="text-sm font-bold text-gray-800">
                           {item.customerRating}
                         </span>
                       </div>
- 
-                      {/* Review */}
+
                       <p className="text-xs text-gray-500 italic leading-relaxed">
                         "{item.review}"
                       </p>
@@ -443,24 +532,6 @@ const WorkerProfile = () => {
             </div>
           )}
 
-
-          {/* Availability */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white">
-            <h2 className="text-2xl font-bold">
-              Need urgent service?
-            </h2>
-
-            <p className="mt-2 text-blue-100">
-              This worker is available for emergency bookings and same-day service.
-            </p>
-
-            <button
-              onClick={handleBooking}
-              className="mt-6 bg-white text-blue-700 hover:bg-gray-100 font-semibold px-6 py-3 rounded-2xl transition"
-            >
-              Book Now
-            </button>
-          </div>
         </div>
       </div>
     </div>
