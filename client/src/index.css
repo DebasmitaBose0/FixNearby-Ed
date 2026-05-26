@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens / theme variables (UI refresh part 1) */
+:root {
+  --color-primary: #0f62fe; /* vivid blue */
+  --color-primary-600: #0056D2;
+  --color-accent: #06b6d4; /* cyan */
+  --color-emerald-600: #059669;
+  --surface-1: #ffffff;
+  --surface-2: #f8fafc; /* subtle off-white */
+  --muted-1: #6b7280;
+  --card-shadow: 0 10px 30px rgba(2,6,23,0.06);
+}
+
+/* Section background utility to reduce white-space and add subtle layering */
+.section-bg {
+  background: linear-gradient(180deg, var(--surface-2) 0%, rgba(255,255,255,0) 100%);
+}
+
 /* Custom styles for UI improvements */
 @layer components {
   .card-hover {

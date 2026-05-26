@@ -76,7 +76,7 @@ const calcRecommendationScore = (worker, distanceKm) => {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 const SkeletonCard = () => (
-  <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
+  <div className="card-hover animate-pulse rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
     <div className="flex items-center gap-3">
       <div className="h-14 w-14 rounded-2xl bg-slate-200" />
       <div className="flex-1 space-y-2">
@@ -112,7 +112,7 @@ const RecommendedWorkerCard = ({ worker, rank }) => {
   const WorkerIcon = workerIconMap[worker.profession] || IconBolt;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div className="card-hover group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ boxShadow: 'var(--card-shadow)' }}>
       {/* Rank ribbon */}
       {rank <= 3 && (
         <div className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-xs font-extrabold text-white shadow-sm">
@@ -276,7 +276,7 @@ const Home = () => {
 
               {/* Main heading */}
               <h1 className="mt-6 text-5xl font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-                {t("heroTitle")}
+                {t("hero.headline")}
               </h1>
 
               {/* Subtitle */}
