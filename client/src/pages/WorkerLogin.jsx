@@ -314,6 +314,7 @@ const WorkerLogin = () => {
 
               <button
                 type="button"
+                onClick={() => navigate("/worker/forgot-password")}
                 className="
                   text-sm
                   text-blue-600
