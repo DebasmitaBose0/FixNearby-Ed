@@ -19,6 +19,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  resetPasswordToken: {
+    type: String,
+  },
+
+  resetPasswordExpire: {
+    type: Date,
+  },
   // TODO: Add roles (e.g., 'customer', 'worker')
   // role: { type: String, enum: ['customer', 'worker'], default: 'customer' }
 }, {

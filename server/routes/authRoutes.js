@@ -9,6 +9,11 @@ import {
   registerWorker,
   loginWorker,
   getWorkerProfile,
+
+  forgotUserPassword,
+  resetUserPassword,
+  forgotWorkerPassword,
+  resetWorkerPassword
 } from "../controllers/authController.js";
 
 import {
@@ -58,6 +63,26 @@ router.get(
   "/worker/profile",
   protectWorker,
   getWorkerProfile
+);
+
+router.post(
+  "/forgot-password",
+  forgotUserPassword
+);
+
+router.put(
+  "/reset-password/:token",
+  resetUserPassword
+);
+
+router.post(
+  "/worker/forgot-password",
+  forgotWorkerPassword
+);
+
+router.put(
+  "/worker/reset-password/:token",
+  resetWorkerPassword
 );
 
 export default router;

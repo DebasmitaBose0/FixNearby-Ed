@@ -31,6 +31,12 @@ const SavedWorkers     = lazy(() => import('./pages/SavedWorkers'));
 const Recommendations  = lazy(() => import('./pages/Recommendations')); // ✨ NEW
 const NotFound         = lazy(() => import('./pages/NotFound'));
 
+const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
+const ResetPasswordUser = lazy(()=>import('./pages/ResetPasswordUser'));
+const ForgotPasswordWorker = lazy(()=>import('./pages/ForgotPasswordWorker'));
+const ResetPasswordWorker = lazy(()=>import('./pages/ResetPasswordWorker'));
+
+
 // ─── Route Definitions ────────────────────────────────────────────────────────
 // Grouped for clarity and easy future additions
 const ROUTES = [
@@ -39,6 +45,13 @@ const ROUTES = [
   { path: '/login',             element: <Login /> },
   { path: '/register',          element: <Register /> },
   { path: '/dashboard',         element: <Dashboard /> },
+
+  // auth - forgot and reset password routes
+  { path: '/forgot-password', element: <ForgotPasswordUser/>},
+  { path: '/reset-password/:token', element : <ResetPasswordUser/> },
+  { path: '/worker/forgot-password', element: <ForgotPasswordWorker/>},
+  { path: '/worker/reset-password/:token', element : <ResetPasswordWorker/> },
+
 
   // Workers & Services
   { path: '/services',          element: <Services /> },

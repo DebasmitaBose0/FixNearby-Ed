@@ -1,7 +1,8 @@
 import Worker from "../models/Worker.js";
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-
+import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign(
@@ -11,6 +12,25 @@ const generateToken = (id) => {
   );
 };
 
+// Follows same rules as in already existing login controller
+const isValidEmail = (email) => {
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return emailRegex.test(email);
+};
+
+// Follows same rules as already existing login controller
+const isValidPassword = (password) => {
+  if (!password || password.length < 6) {
+    return false;
+  }
+
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+
+  return passwordRegex.test(password);
+};
 
 export const registerUser = async (req, res) => {
   try {
@@ -260,4 +280,285 @@ export const getWorkerProfile = async (req, res) => {
     success: true,
     worker: req.worker,
   });
+};
+
+
+export const forgotUserPassword = async (req, res) => {
+  try {
+    const brevoConfigured =
+      process.env.BREVO_API_KEY &&
+      process.env.BREVO_SENDER_EMAIL &&
+      process.env.BREVO_SENDER_NAME;
+
+    if (!brevoConfigured) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Password reset email service is not configured.",
+      });
+    }
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address",
+      });
+    }
+
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+    });
+
+    if (user) {
+      const resetToken = crypto
+        .randomBytes(32)
+        .toString("hex");
+
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpire =
+        Date.now() + 15 * 60 * 1000; //15 minutes
+
+      await user.save();
+
+      const resetUrl =
+        `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+      await sendEmail({
+        toEmail: user.email,
+        subject: "Reset Your Password",
+        htmlContent: `
+          <h2>Password Reset Request</h2>
+          <p>Click below to reset your password.</p>
+          <a href="${resetUrl}">
+            Reset Password
+          </a>
+          <p>This link expires in 15 minutes.</p>
+        `,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "If an account exists with that email, a reset link has been sent.",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+export const resetUserPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        message: "Password is required",
+      });
+    }
+
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain uppercase, lowercase and a number and be at least 6 characters long",
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {
+        $gt: Date.now(),
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message:
+          "Invalid or expired reset token",
+      });
+    }
+
+    user.password = password;
+
+    user.resetPasswordToken = null;
+    user.resetPasswordExpire = null;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Password reset successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+
+export const forgotWorkerPassword = async (req, res) => {
+  try {
+
+    const brevoConfigured =
+      process.env.BREVO_API_KEY &&
+      process.env.BREVO_SENDER_EMAIL &&
+      process.env.BREVO_SENDER_NAME;
+
+    if (!brevoConfigured) {
+      return res.status(503).json({
+        success: false,
+        message:
+          "Password reset email service is not configured.",
+      });
+    }
+
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address",
+      });
+    }
+
+    const worker = await Worker.findOne({
+      email: email.toLowerCase(),
+    });
+
+    if (worker) {
+      const resetToken = crypto
+        .randomBytes(32)
+        .toString("hex");
+
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+
+      worker.resetPasswordToken =
+        hashedToken;
+
+      worker.resetPasswordExpire =
+        Date.now() + 15 * 60 * 1000;
+
+      await worker.save();
+
+      const resetUrl =
+        `${process.env.CLIENT_URL}/worker/reset-password/${resetToken}`;
+
+      await sendEmail({
+        toEmail: worker.email,
+        subject: "Reset Your Password",
+        htmlContent: `
+          <h2>Password Reset Request</h2>
+          <p>Click below to reset your password.</p>
+          <a href="${resetUrl}">
+            Reset Password
+          </a>
+          <p>This link expires in 15 minutes.</p>
+        `,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "If an account exists with that email, a reset link has been sent.",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
+
+
+export const resetWorkerPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        message: "Password is required",
+      });
+    }
+
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain uppercase, lowercase and a number and be at least 6 characters long",
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    const worker = await Worker.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: {
+        $gt: Date.now(),
+      },
+    });
+
+    if (!worker) {
+      return res.status(400).json({
+        message:
+          "Invalid or expired reset token",
+      });
+    }
+
+    worker.password = password;
+
+    worker.resetPasswordToken = undefined;
+    worker.resetPasswordExpire = undefined;
+
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Password reset successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
 };
