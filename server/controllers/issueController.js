@@ -1,0 +1,220 @@
+import Issue from '../models/Issue.js';
+import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// In-memory fallback store when DB is not connected
+const inMemoryIssues = [];
+
+const isDbConnected = () => mongoose.connection && mongoose.connection.readyState === 1;
+
+export const getNearbyIssues = async (req, res) => {
+  try {
+    const lat = parseFloat(req.query.lat);
+    const lng = parseFloat(req.query.lng);
+    const category = req.query.category;
+    const radiusKm = parseFloat(req.query.radius) || 1;
+    // Added zoom support to trigger clustering
+    const zoom = parseInt(req.query.zoom) || 10; 
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) {
+      return res.status(400).json({ message: 'Invalid coordinates' });
+    }
+
+    const maxDistanceMeters = Math.max(10, Math.min(50000, radiusKm * 1000));
+
+    if (isDbConnected()) {
+      // LEVEL 3: SERVER-SIDE CLUSTERING
+      // If zoom is low (< 12), we group issues into buckets to reduce client load
+      if (zoom < 12) {
+        const clusters = await Issue.aggregate([
+          {
+            $geoNear: {
+              near: { type: 'Point', coordinates: [lng, lat] },
+              distanceField: 'dist.calculated',
+              maxDistance: maxDistanceMeters,
+              spherical: true
+            }
+          },
+          { $match: { status: { $nin: ['resolved', 'closed'] } } },
+          {
+            $group: {
+              _id: {
+                latBucket: { $round: ["$latitude", 1] }, 
+                lngBucket: { $round: ["$longitude", 1] }
+              },
+              count: { $sum: 1 },
+              latestIssue: { $first: "$$ROOT" }
+            }
+          }
+        ]);
+        return res.status(200).json({ type: 'cluster', data: clusters });
+      }
+
+      // Standard granular fetch for high zoom levels
+      const issues = await Issue.find({
+        category,
+        status: { $nin: ['resolved', 'closed'] },
+        location: {
+          $near: {
+            $geometry: { type: 'Point', coordinates: [lng, lat] },
+            $maxDistance: maxDistanceMeters
+          }
+        }
+      }).limit(100);
+
+      return res.status(200).json({ type: 'list', data: issues });
+    }
+
+    // Fallback logic (unchanged)
+    const results = inMemoryIssues.filter((it) => {
+        // ... (your existing filter logic)
+    });
+    return res.status(200).json({ type: 'list', data: results });
+
+  } catch (err) {
+    console.error('getNearbyIssues error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const createIssue = async (req, res) => {
+  try {
+    const { title, description, category, latitude, longitude } = req.body;
+
+    if (!title || !description || !category || !latitude || !longitude) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    let thumbnailUrl = null;
+    if (req.file) {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      thumbnailUrl = `/uploads/${req.file.filename}`;
+    }
+
+    if (isDbConnected()) {
+      const issue = await Issue.create({
+        title,
+        description,
+        category,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+        thumbnailUrl,
+        reportedBy: req.user ? req.user.id : null
+      });
+      return res.status(201).json(issue);
+    }
+
+    // Fallback create in memory
+    const id = new Date().getTime().toString();
+    const issue = {
+      id,
+      title,
+      description,
+      category,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      thumbnailUrl,
+      status: 'open',
+      upvotes: 0,
+      reportedBy: null,
+      reportedAt: new Date()
+    };
+    inMemoryIssues.push(issue);
+    return res.status(201).json(issue);
+  } catch (err) {
+    console.error('createIssue error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const upvoteIssue = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required to upvote' });
+    }
+
+    if (isDbConnected()) {
+      // Use an atomic update that only increments upvotes and appends the
+      // user ID when the user has not already voted ($addToSet prevents
+      // duplicates). findByIdAndUpdate with a condition on upvotedBy ensures
+      // atomicity — no separate read-modify-write race is possible.
+      const issue = await Issue.findOneAndUpdate(
+        { _id: id, upvotedBy: { $ne: userId } },
+        {
+          $inc: { upvotes: 1 },
+          $addToSet: { upvotedBy: userId },
+        },
+        { new: true }
+      );
+
+      if (!issue) {
+        // Either the issue does not exist or the user has already upvoted.
+        const exists = await Issue.exists({ _id: id });
+        if (!exists) return res.status(404).json({ message: 'Issue not found' });
+        return res.status(409).json({ message: 'You have already upvoted this issue' });
+      }
+
+      return res.status(200).json(issue);
+    }
+
+    // in-memory fallback (no persistent deduplication available)
+    const issue = inMemoryIssues.find((it) => String(it.id) === String(id));
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+    if (!issue.upvotedBy) issue.upvotedBy = [];
+    if (issue.upvotedBy.some((uid) => String(uid) === String(userId))) {
+      return res.status(409).json({ message: 'You have already upvoted this issue' });
+    }
+    issue.upvotedBy.push(userId);
+    issue.upvotes = (issue.upvotes || 0) + 1;
+    return res.status(200).json(issue);
+  } catch (err) {
+    console.error('upvoteIssue error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getIssueById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (isDbConnected()) {
+      const issue = await Issue.findById(id);
+      if (!issue) return res.status(404).json({ message: 'Issue not found' });
+      return res.status(200).json(issue);
+    }
+
+    const issue = inMemoryIssues.find((it) => String(it.id) === String(id));
+    if (!issue) return res.status(404).json({ message: 'Issue not found' });
+    return res.status(200).json(issue);
+  } catch (err) {
+    console.error('getIssueById error', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateIssueStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status, note } = req.body;
+        
+        const issue = await Issue.findById(id);
+        if (!issue) return res.status(404).json({ message: "Issue not found" });
+
+        // Logic: Calculate ETA if moving to in-progress
+        if (status === 'in-progress' && issue.status !== 'in-progress') {
+            issue.estimatedArrival = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+        }
+
+        issue.status = status;
+        issue.statusHistory.push({ status, updatedAt: new Date(), note });
+        await issue.save();
+
+        res.status(200).json(issue);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

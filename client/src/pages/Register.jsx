@@ -102,6 +102,64 @@ const HelpCenter = () => {
 
   const toggleFAQ = (id) => {
     setActiveFAQ(activeFAQ === id ? null : id);
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { signupUser } from "../services/authService";
+import useToast from "../hooks/useToast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+
+const Register = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { showToast } = useToast();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
+  const [interacted, setInteracted] = useState({});
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // ---------------- VALIDATION ----------------
+
+  const validateFields = (name, value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    switch (name) {
+      case "name":
+        if (!value.trim()) return "Username is required";
+        break;
+
+      case "email":
+        if (!value || !emailRegex.test(value)) {
+          return "Invalid email address";
+        }
+        break;
+
+      case "password":
+        if (value.length < 6) {
+          return "Password must be at least 6 characters";
+        }
+        break;
+
+      case "phone":
+        if (value && !/^[0-9]{10}$/.test(value.trim())) {
+          return "Enter a valid phone number";
+        }
+        break;
+
+      default:
+        return "";
+    }
+
+    return "";
   };
 
   const toggleSupport = (idx) => {

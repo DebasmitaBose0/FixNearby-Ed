@@ -34,6 +34,10 @@ const Login = () => {
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     switch (name) {
+  
+    const validateFields=(name,value)=>{
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    switch(name){
       case "email":
         if (!value.trim()) return "Email is required";
         if (!emailRegex.test(value))
