@@ -8,7 +8,6 @@ import useSearch from "../hooks/useSearch";
 import { fetchWorkers } from "../services/workerService";
 import { getSearchSuggestions } from "../services/searchService";
 
-const mockWorkers = [/* unchanged - keep your full list here */];
 const mockWorkers = [
   {
     id: 1,
@@ -175,8 +174,8 @@ const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
 
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 };
@@ -292,16 +291,20 @@ const Services = () => {
   // SYNC STATE TO URL PARAMS
   useEffect(() => {
     const params = {};
+
     if (searchQuery) params.search = searchQuery;
     if (categoryFilter !== "All") params.category = categoryFilter;
     if (sortBy !== "distance") params.sort = sortBy;
-
-    setSearchParams(params);
-  }, [searchQuery, categoryFilter, sortBy, setSearchParams]);
     if (urgentFilter) params.urgent = "true";
-    setSearchParams(params);
-  }, [categoryFilter, searchQuery, setSearchParams, sortBy, urgentFilter]);
 
+    setSearchParams(params);
+  }, [
+    searchQuery,
+    categoryFilter,
+    sortBy,
+    urgentFilter,
+    setSearchParams,
+  ]);
   /* FILTER + SORT */
   // Fetch autocomplete suggestions
   useEffect(() => {
@@ -318,79 +321,40 @@ const Services = () => {
         setSuggestions([]);
       }
     };
-    
+
     fetchSuggestionsData();
   }, [searchQuery]);
 
   // FILTER + SORT
   const filteredWorkers = useMemo(() => {
-    let result = workers.map((w) => {
-      if (!coords) return { ...w, distanceKm: null };
+    let result = workers.map((worker) => ({
+      ...worker,
+      distanceKm: null,
+    }));
 
-      const lat = coords.latitude + w.mockOffset.lat;
-      const lon = coords.longitude + w.mockOffset.lon;
-
-    let result = workers.map((worker) => {
-      if (!coords) return { ...worker, distanceKm: null };
-      const workerLat = worker.mockOffset.lat;
-      const workerLon = worker.mockOffset.lon;
-      return {
-        ...w,
-        distanceKm: getDistanceKm(coords.latitude, coords.longitude, lat, lon),
-      };
-    });
-
-    result = result.filter((w) => {
-      const s = searchQuery.toLowerCase();
-      const matchSearch =
-        !s ||
-        w.name.toLowerCase().includes(s) ||
-        w.profession.toLowerCase().includes(s);
-
-      const matchCategory =
-        categoryFilter === "All" || w.profession === categoryFilter;
-
-      return matchSearch && matchCategory;
     result = result.filter((worker) => {
       const search = searchQuery.trim().toLowerCase();
+
       const matchesSearch =
         !search ||
         worker.name.toLowerCase().includes(search) ||
         worker.profession.toLowerCase().includes(search);
+
       const matchesCategory =
-        categoryFilter === "All" || worker.profession === categoryFilter;
-      
-      let matchesUrgent = true;
-      if (urgentFilter) {
-        const avail = (worker.availability || "").toLowerCase();
-        matchesUrgent =
-          avail.includes("available today") ||
-          avail.includes("emergency slots open") ||
-          avail.includes("available this evening") ||
-          avail.includes("next slot this afternoon") ||
-          avail === "available";
-      }
+        categoryFilter === "All" ||
+        worker.profession === categoryFilter;
 
-      // Advanced filters
-      const matchesPrice = worker.price >= advancedFilters.minPrice && worker.price <= advancedFilters.maxPrice;
-      const matchesRating = advancedFilters.minRating === 0 || worker.rating >= advancedFilters.minRating;
-      const matchesDistance = !advancedFilters.maxDistance || !worker.distanceKm || worker.distanceKm <= advancedFilters.maxDistance;
-      
-      let matchesAvailability = true;
-      if (advancedFilters.availability !== 'all') {
-        const avail = (worker.availability || "").toLowerCase();
-        matchesAvailability = avail.includes('available');
-      }
-
-      return matchesSearch && matchesCategory && matchesUrgent && matchesPrice && matchesRating && matchesDistance && matchesAvailability;
+      return matchesSearch && matchesCategory;
     });
 
-    if (sortBy === "rating") result.sort((a, b) => b.rating - a.rating);
-    else if (sortBy === "price") result.sort((a, b) => a.price - b.price);
-    else result.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
+    if (sortBy === "rating") {
+      result.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "price") {
+      result.sort((a, b) => a.price - b.price);
+    }
 
     return result;
-  }, [categoryFilter, coords, searchQuery, sortBy, urgentFilter, workers, advancedFilters]);
+  }, [workers, searchQuery, categoryFilter, sortBy]);
 
   const handleRecentlyViewed = (worker) => {
     let stored = JSON.parse(localStorage.getItem("recentWorkers")) || [];
@@ -442,7 +406,7 @@ const Services = () => {
     });
   };
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     advancedFilters.minPrice > 0 ||
     advancedFilters.maxPrice < 100 ||
     advancedFilters.minRating > 0 ||
@@ -516,11 +480,10 @@ const Services = () => {
           <button
             type="button"
             onClick={() => setUrgentFilter((prev) => !prev)}
-            className={`rounded-xl border px-5 py-3 font-bold shadow-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-              urgentFilter
-                ? "border-red-600 bg-red-600 text-white shadow-md hover:bg-red-700"
-                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400"
-            }`}
+            className={`rounded-xl border px-5 py-3 font-bold shadow-sm transition-all duration-300 flex items-center justify-center gap-2 ${urgentFilter
+              ? "border-red-600 bg-red-600 text-white shadow-md hover:bg-red-700"
+              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+              }`}
           >
             <span className={urgentFilter ? "animate-pulse" : ""}>🚨</span>
             <span>Urgent Only</span>
@@ -540,203 +503,183 @@ const Services = () => {
           </button>
         </div>
 
-      {/* CATEGORY CHIPS (FULL FIX) */}
-      <div className="mb-10">
-        <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-2 scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 active:scale-95
-                ${
-                  categoryFilter === cat
+        {/* CATEGORY CHIPS (FULL FIX) */}
+        <div className="mb-10">
+          <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-2 scrollbar-hide">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 active:scale-95
+                ${categoryFilter === cat
                     ? "bg-blue-600 text-white shadow-md"
                     : "bg-white border text-gray-600 hover:border-blue-400 hover:text-blue-600"
-                }`}
-            >
-              {cat !== "All" && iconMap[cat] && (
-                <span className="mr-2">{iconMap[cat]}</span>
-              )}
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* LOADING */}
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredWorkers.map((w) => (
-            <div
-              key={w.id}
-              className="rounded-2xl border bg-white p-6 shadow-sm"
-            >
-              <div className="text-3xl mb-2">
-                {iconMap[w.profession] || "👷"}
-              </div>
-
-              <h3 className="text-xl font-bold">{w.name}</h3>
-              <p className="text-blue-600">{w.profession}</p>
-
-              <div className="mt-2 text-sm text-gray-600">
-                ⭐ {w.rating} • ${w.price}/hr
-      {/* URGENT ACTIVE BANNER */}
-      {urgentFilter && (
-        <div className="mx-auto max-w-3xl mb-10 rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm animate-pulse">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-left">
-              <span className="text-3xl">🚨</span>
-              <div>
-                <h3 className="font-bold text-red-800">SOS Emergency Mode Active</h3>
-                <p className="text-sm text-red-600">
-                  Filtering for service providers with immediate availability today or emergency slots open.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setUrgentFilter(false)}
-              className="w-full sm:w-auto rounded-xl bg-red-100 px-4 py-2 text-xs font-bold text-red-700 hover:bg-red-200 transition-all duration-200"
-            >
-              Show All
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* RECENTLY VIEWED */}
-      {recentWorkers.length > 0 && (
-        <div className="mb-14">
-          <div className="mb-6 flex items-center gap-2">
-            <span className="text-2xl">⭐</span>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Recently Viewed Professionals
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentWorkers.map((worker) => (
-              <div
-                key={worker.id}
-                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
+                  }`}
               >
-                <div className="mb-4 text-4xl">
-                  {iconMap[worker.profession] || "👷"}
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  {worker.name}
-                </h3>
-                <p className="mb-3 font-medium text-blue-600">
-                  {worker.profession}
-                </p>
-                <div className="flex items-center justify-between text-sm text-gray-600">
-                  <span>⭐ {worker.rating}</span>
-                  <span>${worker.price}/hr</span>
-                </div>
-              </div>
+                {cat !== "All" && iconMap[cat] && (
+                  <span className="mr-2">{iconMap[cat]}</span>
+                )}
+                {cat}
+              </button>
             ))}
           </div>
         </div>
-      )}
 
-      {/* MAIN CONTENT WITH SIDEBAR */}
-      <div className="flex gap-8">
-        {/* FILTER SIDEBAR */}
-        <FilterSidebar
-          filters={{
-            category: categoryFilter,
-            ...advancedFilters,
-            sortBy: sortBy,
-          }}
-          onFilterChange={handleFilterChange}
-          onReset={handleResetFilters}
-          categories={categories}
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          className="hidden lg:block"
-        />
-
-        {/* MAIN CONTENT */}
-        <div className="flex-1">
-          {/* WORKER CARDS */}
-          {loading ? (
-            <LoadingSpinner />
-          ) : filteredWorkers.length === 0 ? (
-            <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 text-center">
-              <h3 className="text-2xl font-bold text-gray-900">No services found</h3>
-              <p className="mx-auto mt-2 max-w-md text-gray-500">
-                Try a broader search or reset the selected category.
-              </p>
+        {/* URGENT ACTIVE BANNER */}
+        {urgentFilter && (
+          <div className="mx-auto max-w-3xl mb-10 rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm animate-pulse">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-left">
+                <span className="text-3xl">🚨</span>
+                <div>
+                  <h3 className="font-bold text-red-800">SOS Emergency Mode Active</h3>
+                  <p className="text-sm text-red-600">
+                    Filtering for service providers with immediate availability today or emergency slots open.
+                  </p>
+                </div>
+              </div>
               <button
-                type="button"
-                onClick={handleResetFilters}
-                className="mt-6 rounded-xl bg-blue-600 px-8 py-3 font-bold text-white transition hover:bg-blue-700"
+                onClick={() => setUrgentFilter(false)}
+                className="w-full sm:w-auto rounded-xl bg-red-100 px-4 py-2 text-xs font-bold text-red-700 hover:bg-red-200 transition-all duration-200"
               >
-                Reset Filters
+                Show All
               </button>
             </div>
-          ) : (
-            <>
-              <p className="mb-6 text-sm font-medium text-gray-500">
-                Showing {filteredWorkers.length} services
-              </p>
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                {filteredWorkers.map((worker) => (
-                  <div
-                    key={worker.id}
-                    className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-blue-100 hover:shadow-2xl"
-                  >
-                    <div className="flex-1 p-8">
-                      <div className="mb-6 flex items-start justify-between">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl text-blue-600">
-                          {iconMap[worker.profession] || "👷"}
+          </div>
+        )}
+
+        {/* RECENTLY VIEWED */}
+        {recentWorkers.length > 0 && (
+          <div className="mb-14">
+            <div className="mb-6 flex items-center gap-2">
+              <span className="text-2xl">⭐</span>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Recently Viewed Professionals
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recentWorkers.map((worker) => (
+                <div
+                  key={worker.id}
+                  className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
+                >
+                  <div className="mb-4 text-4xl">
+                    {iconMap[worker.profession] || "👷"}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {worker.name}
+                  </h3>
+                  <p className="mb-3 font-medium text-blue-600">
+                    {worker.profession}
+                  </p>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>⭐ {worker.rating}</span>
+                    <span>${worker.price}/hr</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* MAIN CONTENT WITH SIDEBAR */}
+        <div className="flex gap-8">
+          {/* FILTER SIDEBAR */}
+          <FilterSidebar
+            filters={{
+              category: categoryFilter,
+              ...advancedFilters,
+              sortBy: sortBy,
+            }}
+            onFilterChange={handleFilterChange}
+            onReset={handleResetFilters}
+            categories={categories}
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            className="hidden lg:block"
+          />
+
+          {/* MAIN CONTENT */}
+          <div className="flex-1">
+            {/* WORKER CARDS */}
+            {loading ? (
+              <LoadingSpinner />
+            ) : filteredWorkers.length === 0 ? (
+              <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 text-center">
+                <h3 className="text-2xl font-bold text-gray-900">No services found</h3>
+                <p className="mx-auto mt-2 max-w-md text-gray-500">
+                  Try a broader search or reset the selected category.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="mt-6 rounded-xl bg-blue-600 px-8 py-3 font-bold text-white transition hover:bg-blue-700"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="mb-6 text-sm font-medium text-gray-500">
+                  Showing {filteredWorkers.length} services
+                </p>
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                  {filteredWorkers.map((worker) => (
+                    <div
+                      key={worker.id}
+                      className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-blue-100 hover:shadow-2xl"
+                    >
+                      <div className="flex-1 p-8">
+                        <div className="mb-6 flex items-start justify-between">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl text-blue-600">
+                            {iconMap[worker.profession] || "👷"}
+                          </div>
+                          {worker.verified && (
+                            <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700">
+                              Verified
+                            </span>
+                          )}
                         </div>
-                        {worker.verified && (
-                          <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700">
-                            Verified
+
+                        <h3 className="mb-1 text-2xl font-bold text-gray-900">
+                          {worker.name}
+                        </h3>
+                        <p className="mb-4 font-bold text-blue-600">
+                          {worker.profession}
+                        </p>
+
+                        <div className="mb-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
+                          <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
+                            {worker.availability}
                           </span>
-                        )}
-                      </div>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                            {worker.responseTime}
+                          </span>
+                        </div>
 
-                      <h3 className="mb-1 text-2xl font-bold text-gray-900">
-                        {worker.name}
-                      </h3>
-                      <p className="mb-4 font-bold text-blue-600">
-                        {worker.profession}
-                      </p>
-
-                      <div className="mb-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
-                        <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
-                          {worker.availability}
-                        </span>
-                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-                          {worker.responseTime}
-                        </span>
-                      </div>
-
-                      <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
-                        <span className="font-bold text-gray-900">
-                          Rating {worker.rating}
-                        </span>
-                        <span className="font-bold text-gray-900">
-                          ${worker.price}/hr
-                        </span>
-                        {worker.distanceKm !== null && (
+                        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
                           <span className="font-bold text-gray-900">
-                            {formatDistance(worker.distanceKm)}
+                            Rating {worker.rating}
                           </span>
-                        )}
+                          <span className="font-bold text-gray-900">
+                            ${worker.price}/hr
+                          </span>
+                          {worker.distanceKm !== null && (
+                            <span className="font-bold text-gray-900">
+                              {formatDistance(worker.distanceKm)}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-sm leading-6 text-slate-600">
+                          {worker.outcomeText}
+                        </p>
                       </div>
 
-                      <p className="text-sm leading-6 text-slate-600">
-                        {worker.outcomeText}
-                      </p>
-                    </div>
-
-                    <div className="p-8 pt-0 space-y-3">
+                      <div className="p-8 pt-0 space-y-3">
                         <a
                           title="Get Directions"
-                        href={`https://www.google.com/maps?q=${worker.mockOffset.lat},${worker.mockOffset.lon}`}
+                          href={`https://www.google.com/maps?q=${worker.mockOffset.lat},${worker.mockOffset.lon}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block w-full rounded-xl border border-blue-600 bg-white py-4 text-center font-bold text-blue-600 transition hover:bg-blue-50"
@@ -752,33 +695,15 @@ const Services = () => {
                           View Profile and Book
                         </Link>
                       </div>
-                  </div>
-                ))}
-              </div>
-
-              {w.distanceKm !== null && (
-                <div className="text-sm text-gray-500">
-                  {formatDistance(w.distanceKm)}
+                    </div>
+                  ))}
                 </div>
-              )}
-
-              <Link
-                to={`/worker/${w.id}`}
-                onClick={() => handleRecentlyViewed(w)}
-                className="mt-4 block rounded-lg bg-black py-2 text-center text-white"
-              >
-                View Profile
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
-
 export default Services;
