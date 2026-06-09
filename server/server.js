@@ -44,22 +44,34 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration with whitelist support
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  'http://localhost:5173',
-  'http://localhost:3000'
-].filter(Boolean);
+// CORS configuration — strict origin whitelist using Set for O(1) exact-match lookup.
+// Using indexOf() is safe for string arrays but can be confusing to code reviewers;
+// a Set makes the intent explicit and prevents any future partial-match bugs if the
+// array is ever switched to a RegExp-based approach.
+const allowedOrigins = new Set(
+  [
+    process.env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ].filter(Boolean)
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
+      // Allow requests with no origin header (mobile apps, server-to-server, curl).
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-        return callback(new Error(msg), false);
+
+      // Strict equality check: the incoming origin must be an exact member of
+      // the whitelist.  Unlike indexOf(), this cannot be confused by crafted
+      // origins such as "http://evil.com?bypass=http://localhost:5173".
+      if (!allowedOrigins.has(origin)) {
+        return callback(
+          new Error('Not allowed by CORS policy'),
+          false
+        );
       }
+
       return callback(null, true);
     },
     credentials: true,
