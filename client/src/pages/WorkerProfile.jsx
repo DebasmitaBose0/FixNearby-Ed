@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
+import { sanitizePlainText } from "../utils/sanitize";
 import {
   Star,
   MapPin,
@@ -578,7 +579,7 @@ const WorkerProfile = () => {
               {/* About */}
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                 <h2 className="text-2xl font-bold mb-4">About Worker</h2>
-                <p className="text-gray-600 leading-8">{worker.bio}</p>
+                <p className="text-gray-600 leading-8">{sanitizePlainText(worker.bio)}</p>
               </div>
 
               {/* Services */}
