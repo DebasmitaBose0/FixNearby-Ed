@@ -11,6 +11,7 @@ import issueRoutes from './routes/issueRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
+import csrfProtection from './middleware/csrfMiddleware.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ dotenv.config();
 validateEnv();
 
 const app = express();
+
 
 // Security Middleware: Strict CSP headers and cross-origin resource protection
 app.use(
@@ -67,6 +69,7 @@ app.use(
 );
 
 app.use(express.json({ limit: '10mb' }));
+app.use(csrfProtection);
 
 // Serve uploaded images
 import path from 'path';
