@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SlidersHorizontal } from "lucide-react";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -7,6 +7,7 @@ import FilterSidebar from "../components/FilterSidebar";
 import useSearch from "../hooks/useSearch";
 import { fetchWorkers } from "../services/workerService";
 import { getSearchSuggestions } from "../services/searchService";
+import React from "react";
 
 const mockWorkers = [
   {
@@ -166,22 +167,93 @@ const iconMap = {
   "Pest Control": "🐜",
 };
 
-const getDistanceKm = (lat1, lon1, lat2, lon2) => {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-};
-
 const formatDistance = (d) =>
   d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(1)} km`;
+
+/**
+ * WorkerCard — pure presentational component.
+ *
+ * Wrapped in React.memo so React skips re-rendering a card when the parent
+ * re-renders for reasons unrelated to this particular worker (e.g. the search
+ * query or sort order changes but the filtered list itself didn't change, or
+ * unrelated state like `isFilterOpen` toggles).  The only props that matter
+ * are the `worker` object and the stable `onView` callback; both are compared
+ * shallowly by React.memo, so the worker must not be mutated in-place to
+ * benefit from memoization (which the existing `useMemo` pipeline already
+ * guarantees — it creates new objects only when filters change).
+ */
+const WorkerCard = React.memo(function WorkerCard({ worker, onView }) {
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-blue-100 hover:shadow-2xl">
+      <div className="flex-1 p-8">
+        <div className="mb-6 flex items-start justify-between">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl text-blue-600">
+            {iconMap[worker.profession] || "👷"}
+          </div>
+          {worker.verified && (
+            <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700">
+              Verified
+            </span>
+          )}
+        </div>
+
+        <h3 className="mb-1 text-2xl font-bold text-gray-900">
+          {worker.name}
+        </h3>
+        <p className="mb-4 font-bold text-blue-600">
+          {worker.profession}
+        </p>
+
+        <div className="mb-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
+            {worker.availability}
+          </span>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+            {worker.responseTime}
+          </span>
+        </div>
+
+        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+          <span className="font-bold text-gray-900">
+            Rating {worker.rating}
+          </span>
+          <span className="font-bold text-gray-900">
+            ${worker.price}/hr
+          </span>
+          {worker.distanceKm !== null && (
+            <span className="font-bold text-gray-900">
+              {formatDistance(worker.distanceKm)}
+            </span>
+          )}
+        </div>
+
+        <p className="text-sm leading-6 text-slate-600">
+          {worker.outcomeText}
+        </p>
+      </div>
+
+      <div className="p-8 pt-0 space-y-3">
+        <a
+          title="Get Directions"
+          href={`https://www.google.com/maps?q=${worker.mockOffset.lat},${worker.mockOffset.lon}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full rounded-xl border border-blue-600 bg-white py-4 text-center font-bold text-blue-600 transition hover:bg-blue-50"
+        >
+          📍 Open in Google Maps
+        </a>
+
+        <Link
+          to={`/worker/${worker.id}`}
+          onClick={() => onView(worker)}
+          className="block w-full rounded-xl bg-slate-900 py-4 text-center font-bold text-white transition hover:bg-blue-600"
+        >
+          View Profile and Book
+        </Link>
+      </div>
+    </div>
+  );
+});
 
 const Services = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -305,6 +377,7 @@ const Services = () => {
     urgentFilter,
     setSearchParams,
   ]);
+
   /* FILTER + SORT */
   // Fetch autocomplete suggestions
   useEffect(() => {
@@ -356,43 +429,58 @@ const Services = () => {
     return result;
   }, [workers, searchQuery, categoryFilter, sortBy]);
 
-  const handleRecentlyViewed = (worker) => {
-    let stored = JSON.parse(localStorage.getItem("recentWorkers")) || [];
-    stored = stored.filter((i) => i.id !== worker.id);
-    stored.unshift(worker);
-    stored = stored.slice(0, 5);
-    localStorage.setItem("recentWorkers", JSON.stringify(stored));
-    setRecentWorkers(stored);
-  };
+  /**
+   * useCallback ensures that WorkerCard children receive a referentially-stable
+   * `onView` prop across renders where the handler logic itself hasn't changed.
+   * Without useCallback, every render of <Services> would produce a new function
+   * instance, defeating React.memo on WorkerCard entirely.
+   */
+  const handleRecentlyViewed = useCallback((worker) => {
+    setRecentWorkers((prev) => {
+      const filtered = prev.filter((i) => i.id !== worker.id);
+      const updated = [worker, ...filtered].slice(0, 5);
+      localStorage.setItem("recentWorkers", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
-  const handleSearch = (query) => {
-    addToHistory(query, { category: categoryFilter, ...advancedFilters });
-  };
+  const handleSearch = useCallback(
+    (query) => {
+      addToHistory(query, { category: categoryFilter, ...advancedFilters });
+    },
+    [addToHistory, categoryFilter, advancedFilters]
+  );
 
-  const handleSaveFavorite = (name) => {
-    const success = saveFavoriteSearch(name, searchQuery, { category: categoryFilter, ...advancedFilters });
-    if (success) {
-      alert('Search saved to favorites!');
-    }
-  };
+  const handleSaveFavorite = useCallback(
+    (name) => {
+      const success = saveFavoriteSearch(name, searchQuery, {
+        category: categoryFilter,
+        ...advancedFilters,
+      });
+      if (success) {
+        alert('Search saved to favorites!');
+      }
+    },
+    [saveFavoriteSearch, searchQuery, categoryFilter, advancedFilters]
+  );
 
-  const handleShareSearch = () => {
+  const handleShareSearch = useCallback(() => {
     const url = getShareableUrl();
     navigator.clipboard.writeText(url).then(() => {
       alert('Search URL copied to clipboard!');
     }).catch(err => {
       console.error('Failed to copy URL:', err);
     });
-  };
+  }, [getShareableUrl]);
 
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = useCallback((key, value) => {
     setAdvancedFilters(prev => ({
       ...prev,
       [key]: value,
     }));
-  };
+  }, []);
 
-  const handleResetFilters = () => {
+  const handleResetFilters = useCallback(() => {
     setSearchQuery("");
     setCategoryFilter("All");
     setSortBy("distance");
@@ -404,7 +492,7 @@ const Services = () => {
       maxDistance: 50,
       availability: 'all',
     });
-  };
+  }, []);
 
   const hasActiveFilters =
     advancedFilters.minPrice > 0 ||
@@ -625,77 +713,11 @@ const Services = () => {
                 </p>
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                   {filteredWorkers.map((worker) => (
-                    <div
+                    <WorkerCard
                       key={worker.id}
-                      className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-blue-100 hover:shadow-2xl"
-                    >
-                      <div className="flex-1 p-8">
-                        <div className="mb-6 flex items-start justify-between">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-3xl text-blue-600">
-                            {iconMap[worker.profession] || "👷"}
-                          </div>
-                          {worker.verified && (
-                            <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700">
-                              Verified
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="mb-1 text-2xl font-bold text-gray-900">
-                          {worker.name}
-                        </h3>
-                        <p className="mb-4 font-bold text-blue-600">
-                          {worker.profession}
-                        </p>
-
-                        <div className="mb-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
-                          <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
-                            {worker.availability}
-                          </span>
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-                            {worker.responseTime}
-                          </span>
-                        </div>
-
-                        <div className="mb-6 flex flex-wrap items-center gap-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
-                          <span className="font-bold text-gray-900">
-                            Rating {worker.rating}
-                          </span>
-                          <span className="font-bold text-gray-900">
-                            ${worker.price}/hr
-                          </span>
-                          {worker.distanceKm !== null && (
-                            <span className="font-bold text-gray-900">
-                              {formatDistance(worker.distanceKm)}
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="text-sm leading-6 text-slate-600">
-                          {worker.outcomeText}
-                        </p>
-                      </div>
-
-                      <div className="p-8 pt-0 space-y-3">
-                        <a
-                          title="Get Directions"
-                          href={`https://www.google.com/maps?q=${worker.mockOffset.lat},${worker.mockOffset.lon}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block w-full rounded-xl border border-blue-600 bg-white py-4 text-center font-bold text-blue-600 transition hover:bg-blue-50"
-                        >
-                          📍 Open in Google Maps
-                        </a>
-
-                        <Link
-                          to={`/worker/${worker.id}`}
-                          onClick={() => handleRecentlyViewed(worker)}
-                          className="block w-full rounded-xl bg-slate-900 py-4 text-center font-bold text-white transition hover:bg-blue-600"
-                        >
-                          View Profile and Book
-                        </Link>
-                      </div>
-                    </div>
+                      worker={worker}
+                      onView={handleRecentlyViewed}
+                    />
                   ))}
                 </div>
               </>
