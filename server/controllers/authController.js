@@ -184,6 +184,7 @@ export const registerWorker = async (req, res) => {
       bio,
     } = req.body;
 
+    // 1. Check all required fields
     if (
       !name ||
       !email ||
@@ -199,7 +200,26 @@ export const registerWorker = async (req, res) => {
       });
     }
 
-    const workerExists = await Worker.findOne({ email });
+    // 2. Email format validation
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        message: "Please enter a valid email address",
+      });
+    }
+
+    // 3. Password strength validation (parity with user registration)
+    if (!isValidPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 6 characters and contain uppercase, lowercase and a number",
+      });
+    }
+
+    // 4. Normalize email BEFORE duplicate check to match schema's lowercase transform
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // 5. Check existing worker using normalized email
+    const workerExists = await Worker.findOne({ email: normalizedEmail });
 
     if (workerExists) {
       return res.status(400).json({
@@ -207,15 +227,16 @@ export const registerWorker = async (req, res) => {
       });
     }
 
+    // 6. Create worker with normalized and trimmed inputs
     const worker = await Worker.create({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password,
-      category,
-      experience,
-      location,
-      contact,
-      bio,
+      category: category.trim(),
+      experience: experience.trim(),
+      location: location.trim(),
+      contact: contact.trim(),
+      bio: bio.trim(),
       profilePicture: req.file?.path || "",
     });
 
@@ -230,6 +251,12 @@ export const registerWorker = async (req, res) => {
     });
 
   } catch (error) {
+    // Handle MongoDB duplicate-key error gracefully
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Worker already exists with this email",
+      });
+    }
 
     res.status(500).json({
       message: "Server error",
@@ -242,7 +269,16 @@ export const loginWorker = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const worker = await Worker.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Please provide email and password",
+      });
+    }
+
+    // Normalize email to match schema's lowercase transform
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const worker = await Worker.findOne({ email: normalizedEmail });
 
     if (
       worker &&
