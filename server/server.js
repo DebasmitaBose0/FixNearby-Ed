@@ -12,14 +12,15 @@ import searchRoutes from './routes/searchRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
+import { compressionMiddleware } from './middleware/compression.js';
 
 dotenv.config();
 
-// Validate critical configuration environment variables
 validateEnv();
 
 const app = express();
 
+app.use(compressionMiddleware);
 
 // Security Middleware: Strict CSP headers and cross-origin resource protection
 app.use(
@@ -116,5 +117,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
