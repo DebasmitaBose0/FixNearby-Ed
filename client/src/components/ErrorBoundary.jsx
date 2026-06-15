@@ -11,7 +11,9 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[React Error Caught]:', error, errorInfo);
+    // Sanitize log outputs to prevent log injection attempts
+    const sanitizedMsg = String(error?.message || error).replace(/[^\w\s\-]/gi, '');
+    console.error('[React Error Caught]:', sanitizedMsg, errorInfo);
   }
 
   render() {
