@@ -129,9 +129,10 @@ const Bookings = () => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [activeReview, setActiveReview] = useState(null);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+ const [activeReview, setActiveReview] = useState(null);
+const [rating, setRating] = useState(0);
+const [comment, setComment] = useState("");
+const [sortBy, setSortBy] = useState("latest");
 
   useEffect(() => {
     try {
