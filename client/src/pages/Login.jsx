@@ -29,12 +29,29 @@ const Login = () => {
 
   // ---------------- VALIDATION ----------------
 
-  const validateFields = (name, value) => {
-    const emailRegex =
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const validateFields = (name, value) => {
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    switch (name) {
-  
+  switch (name) {
+    case "email":
+      if (!value.trim()) return "Email is required";
+      if (!emailRegex.test(value))
+        return "Please enter a valid email";
+      break;
+
+    case "password":
+      if (!value.trim()) return "Password is required";
+      if (value.length < 6)
+        return "Password must be at least 6 characters";
+      break;
+
+    default:
+      return "";
+  }
+
+  return "";
+};
     const validateFields=(name,value)=>{
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     switch(name){
