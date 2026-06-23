@@ -97,7 +97,6 @@ app.use('/api/bookings', bookingRoutes);
 
 // Initialize Weekly Karma Scheduler
 initKarmaScheduler();
-
 // Start Background Notification Worker
 startWorker();
 
