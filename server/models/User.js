@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema({
     enum: ['online', 'offline', 'busy'],
     default: 'offline'
   },
+  notificationPreferences: {
+    email: { type: Boolean, default: true },
+    sms: { type: Boolean, default: true },
+    push: { type: Boolean, default: true }
+  },
   // TODO: Add roles (e.g., 'customer', 'worker')
   // role: { type: String, enum: ['customer', 'worker'], default: 'customer' }
 }, {

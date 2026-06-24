@@ -16,6 +16,10 @@ import errorHandler from './middleware/errorHandler.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
 import { compressionMiddleware } from './middleware/compression.js';
 import { initSocket } from './socket.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import { initKarmaScheduler } from './utils/karmaScheduler.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import { startWorker } from './workers/notificationWorker.js';
 
 dotenv.config();
 
@@ -92,6 +96,13 @@ app.use('/api/workers', workerRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/bookings', bookingRoutes);
+
+// Initialize Weekly Karma Scheduler
+initKarmaScheduler();
+// Start Background Notification Worker
+startWorker();
 
 // Protected test route
 app.get('/api/protected', authMiddleware, (req, res) => {
