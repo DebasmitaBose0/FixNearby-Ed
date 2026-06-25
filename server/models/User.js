@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpire: {
     type: Date,
   },
+  status: {
+    type: String,
+    enum: ['online', 'offline', 'busy'],
+    default: 'offline'
+  },
   notificationPreferences: {
     email: { type: Boolean, default: true },
     sms: { type: Boolean, default: true },
