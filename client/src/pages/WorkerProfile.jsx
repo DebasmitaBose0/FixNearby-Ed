@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
+import { estimateArrivalTime } from "../utils/etaCalculator";
+import { useLocation } from "../context/LocationContext";
 import { sanitizePlainText } from "../utils/sanitize";
 import {
   Star,
@@ -249,6 +251,7 @@ const saveBookings = (bookings) => {
 const WorkerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { coords: userCoords } = useLocation();
 
   const [activeTab, setActiveTab]          = useState("overview");
   const [showModal, setShowModal]           = useState(false);
@@ -343,6 +346,7 @@ const WorkerProfile = () => {
       date: new Date().toLocaleDateString(),
       time: "10:00 AM",
       price: worker.price,
+      eta: estimateArrivalTime(userCoords, worker.location),
     });
 
     setShowModal(true);
@@ -380,6 +384,7 @@ const WorkerProfile = () => {
       time: "10:00 AM",
       price: `$${estimate.totalCost.toFixed(2)}`,
       estimateSpecs: newBooking.estimateSpecs,
+      eta: estimateArrivalTime(userCoords, worker.location),
     });
 
     setShowModal(true);
@@ -535,13 +540,13 @@ const WorkerProfile = () => {
 
             {/* Contact */}
             <div className="flex gap-3 mt-4">
-              <button className="flex-1 border border-gray-200 hover:bg-gray-100 py-3 rounded-2xl flex items-center justify-center gap-2 transition">
-                <Phone size={18} />
+              <button className="flex-1 border border-gray-200 hover:bg-gray-100 py-2.5 sm:py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition text-sm font-semibold text-gray-700">
+                <Phone size={16} />
                 Call
               </button>
 
-              <button className="flex-1 border border-gray-200 hover:bg-gray-100 py-3 rounded-2xl flex items-center justify-center gap-2 transition">
-                <MessageCircle size={18} />
+              <button className="flex-1 border border-gray-200 hover:bg-gray-100 py-2.5 sm:py-3 px-3 rounded-2xl flex items-center justify-center gap-2 transition text-sm font-semibold text-gray-700">
+                <MessageCircle size={16} />
                 Chat
               </button>
             </div>
@@ -579,7 +584,7 @@ const WorkerProfile = () => {
               {/* About */}
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
                 <h2 className="text-2xl font-bold mb-4">About Worker</h2>
-                <p className="text-gray-600 leading-8">{sanitizePlainText(worker.bio)}</p>
+                <p className="text-gray-600 leading-8 break-words whitespace-pre-line">{sanitizePlainText(worker.bio)}</p>
               </div>
 
               {/* Services */}

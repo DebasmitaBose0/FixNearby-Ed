@@ -58,3 +58,10 @@ export const sanitizeInput = (req, res, next) => {
   req.params = deepSanitize(req.params);
   next();
 };
+
+export const sanitizeRequests = (req, res, next) => {
+  req.body   = deepSanitize(req.body);
+  req.query  = deepSanitize(req.query);
+  req.params = deepSanitize(req.params);
+  next();
+};
