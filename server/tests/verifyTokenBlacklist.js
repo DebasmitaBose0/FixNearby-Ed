@@ -8,6 +8,7 @@ import Worker from '../models/Worker.js';
 import Blacklist from '../models/Blacklist.js';
 import authRoutes from '../routes/authRoutes.js';
 import errorHandler from '../middleware/errorHandler.js';
+import { redisConnection } from '../utils/queue.js';
 
 dotenv.config();
 
@@ -59,7 +60,8 @@ async function runTests() {
     console.log('\nTest 1: Requesting protected profile with valid token (should succeed)...');
     const profileRes = await fetch(`http://localhost:${PORT}/api/auth/profile`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Connection': 'close'
       }
     });
     const profileBody = await profileRes.json();
@@ -74,7 +76,8 @@ async function runTests() {
     const logoutRes = await fetch(`http://localhost:${PORT}/api/auth/logout`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Connection': 'close'
       }
     });
     const logoutBody = await logoutRes.json();
@@ -94,7 +97,8 @@ async function runTests() {
     console.log('\nTest 3: Requesting protected profile again with now-blacklisted token (should fail)...');
     const profileAfterLogoutRes = await fetch(`http://localhost:${PORT}/api/auth/profile`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Connection': 'close'
       }
     });
     const profileAfterLogoutBody = await profileAfterLogoutRes.json();
@@ -119,12 +123,17 @@ async function runTests() {
 
     // Close mongoose connection and http server
     await mongoose.connection.close();
-    server.close(() => {
-      console.log('Test server closed.');
-      setTimeout(() => {
-        process.exit(0);
-      }, 100);
-    });
+    await new Promise((resolve) => server.close(resolve));
+    
+    // Close Redis connection to prevent background reconnect loop
+    if (redisConnection) {
+      redisConnection.disconnect();
+    }
+
+    console.log('Test server closed.');
+    setTimeout(() => {
+      process.exit(0);
+    }, 100);
   }
 }
 
