@@ -7,6 +7,7 @@ import Issue from '../models/Issue.js';
 import workerRoutes from '../routes/workerRoutes.js';
 import issueRoutes from '../routes/issueRoutes.js';
 import errorHandler from '../middleware/errorHandler.js';
+import { redisConnection } from '../utils/queue.js';
 
 dotenv.config();
 
@@ -70,7 +71,9 @@ async function runTests() {
   try {
     // 1. Verify Worker Query Projections
     console.log('\nTest 1: Fetching workers and verifying projection...');
-    const workersRes = await fetch(`http://localhost:${PORT}/api/workers`);
+    const workersRes = await fetch(`http://localhost:${PORT}/api/workers`, {
+      headers: { 'Connection': 'close' }
+    });
     const workersBody = await workersRes.json();
     
     if (workersRes.status !== 200 || !workersBody.success) {
@@ -103,7 +106,9 @@ async function runTests() {
 
     // 2. Verify Issue Query Projections
     console.log('\nTest 2: Fetching nearby issues and verifying projection...');
-    const issuesRes = await fetch(`http://localhost:${PORT}/api/issues/nearby?latitude=37.7749&longitude=-122.4194&category=Other&maxDistance=5000&zoom=15`);
+    const issuesRes = await fetch(`http://localhost:${PORT}/api/issues/nearby?latitude=37.7749&longitude=-122.4194&category=Other&maxDistance=5000&zoom=15`, {
+      headers: { 'Connection': 'close' }
+    });
     const issuesBody = await issuesRes.json();
 
     if (issuesRes.status !== 200) {
@@ -158,12 +163,17 @@ async function runTests() {
 
     // Close mongoose connection and http server
     await mongoose.connection.close();
-    server.close(() => {
-      console.log('Test server closed.');
-      setTimeout(() => {
-        process.exit(0);
-      }, 100);
-    });
+    await new Promise((resolve) => server.close(resolve));
+    
+    // Close Redis connection to prevent background reconnect loop
+    if (redisConnection) {
+      redisConnection.disconnect();
+    }
+    
+    console.log('Test server closed.');
+    setTimeout(() => {
+      process.exit(0);
+    }, 100);
   }
 }
 

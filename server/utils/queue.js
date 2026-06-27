@@ -20,6 +20,8 @@ try {
   console.warn(`[Redis Initialization Warning] Failed to initialize IORedis connection: ${err.message}`);
 }
 
+export const redisConnection = connection;
+
 export const notificationQueue = connection ? new Queue('notification-queue', {
   connection,
   defaultJobOptions: {
