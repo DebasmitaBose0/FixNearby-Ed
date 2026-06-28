@@ -9,6 +9,7 @@ import {
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { checkBookingOverlap } from '../middleware/bookingValidation.js';
+import { validateCreateBooking, validateBookingStatusFilter, validateCancelBooking } from '../validators/bookingValidator.js';
 import {
   loadBooking,
   requireBookingParticipant,
@@ -21,8 +22,8 @@ const router = express.Router();
 router.use(protect);
 
 router.route('/')
-  .post(checkBookingOverlap, createBooking)
-  .get(getBookings);
+  .post(validateCreateBooking, checkBookingOverlap, createBooking)
+  .get(validateBookingStatusFilter, getBookings);
 
 router.route('/:id')
   .get(loadBooking, requireBookingParticipant, getBookingById);
@@ -34,6 +35,6 @@ router.route('/:id/complete')
   .patch(loadBooking, authorizeStatusTransition, completeBooking);
 
 router.route('/:id/cancel')
-  .patch(loadBooking, authorizeStatusTransition, cancelBooking);
+  .patch(loadBooking, authorizeStatusTransition, validateCancelBooking, cancelBooking);
 
 export default router;

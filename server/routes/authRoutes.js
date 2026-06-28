@@ -30,14 +30,19 @@ import {
   workerRegisterLimiter,
   passwordResetLimiter
 } from '../middleware/authRateLimiter.js';
-import { validateRegistration, validateLogin } from '../middleware/validationMiddleware.js';
+import {
+  validateRegistrationInput,
+  validateLoginInput,
+  validatePasswordResetInput,
+  validateNewPasswordInput
+} from '../validators/authValidator.js';
 
 const router = express.Router();
 
 {/* USER AUTH ROUTES */}
 
-router.post('/register', userRegisterLimiter, validateRegistration, registerUser);
-router.post('/login', userLoginLimiter, validateLogin, loginUser);
+router.post('/register', userRegisterLimiter, validateRegistrationInput, registerUser);
+router.post('/login', userLoginLimiter, validateLoginInput, loginUser);
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
 router.post('/logout', protect, logoutUser);
@@ -49,7 +54,7 @@ router.post(
   '/worker/register',
   workerRegisterLimiter,
   upload.single('profilePicture'),
-  validateRegistration,
+  validateRegistrationInput,
   registerWorker
 );
 
@@ -57,7 +62,7 @@ router.post(
 router.post(
   '/worker/login',
   workerLoginLimiter,
-  validateLogin,
+  validateLoginInput,
   loginWorker
 );
 
@@ -71,22 +76,26 @@ router.get(
 router.post(
   '/forgot-password',
   passwordResetLimiter,
+  validatePasswordResetInput,
   forgotUserPassword
 );
 
 router.put(
   '/reset-password/:token',
+  validateNewPasswordInput,
   resetUserPassword
 );
 
 router.post(
   '/worker/forgot-password',
   passwordResetLimiter,
+  validatePasswordResetInput,
   forgotWorkerPassword
 );
 
 router.put(
   '/worker/reset-password/:token',
+  validateNewPasswordInput,
   resetWorkerPassword
 );
 

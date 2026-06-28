@@ -10,6 +10,7 @@ import {
   updateIssueStatus
 } from '../controllers/issueController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { validateCreateIssue, validateIssueStatusUpdate, validateNearbyIssuesQuery } from '../validators/issueValidator.js';
 
 const router = express.Router();
 
@@ -57,10 +58,10 @@ const upload = multer({
 });
 
 // GET /nearby
-router.get('/nearby', getNearbyIssues);
+router.get('/nearby', validateNearbyIssuesQuery, getNearbyIssues);
 
 // POST / (create issue) - supports optional image
-router.post('/', upload.single('image'), createIssue);
+router.post('/', upload.single('image'), validateCreateIssue, createIssue);
 
 // POST /:id/upvote — requires authentication so each user can vote at most once
 router.post('/:id/upvote', protect, upvoteIssue);
@@ -68,6 +69,6 @@ router.post('/:id/upvote', protect, upvoteIssue);
 // GET /:id
 router.get('/:id', getIssueById);
 
-router.patch('/:id/status', updateIssueStatus);
+router.patch('/:id/status', validateIssueStatusUpdate, updateIssueStatus);
 
 export default router;
