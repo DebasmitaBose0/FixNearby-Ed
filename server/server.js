@@ -21,6 +21,7 @@ import { startBookingExpiryScheduler } from './workers/bookingExpiryWorker.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import { initKarmaScheduler } from './utils/karmaScheduler.js';
 import { startWorker } from './workers/notificationWorker.js';
+import { startBookingReminderScheduler } from './workers/bookingReminderWorker.js';
 
 dotenv.config();
 
@@ -112,6 +113,8 @@ startBookingExpiryScheduler();
 initKarmaScheduler();
 // Start Background Notification Worker
 startWorker();
+// Start Booking Reminder Scheduler
+startBookingReminderScheduler();
 
 // Protected test route
 app.get('/api/protected', authMiddleware, (req, res) => {

@@ -100,9 +100,10 @@ export const authorizeStatusTransition = (req, res, next) => {
   // Resolve 'to' state dynamically based on the endpoint path
   let to = req.body.status;
   if (!to) {
-    if (req.baseUrl + req.path.endsWith('/accept')) to = 'Accepted';
-    else if (req.baseUrl + req.path.endsWith('/complete')) to = 'Completed';
-    else if (req.baseUrl + req.path.endsWith('/cancel')) to = 'Cancelled';
+    const fullPath = req.baseUrl + req.path;
+    if (fullPath.endsWith('/accept')) to = 'Accepted';
+    else if (fullPath.endsWith('/complete')) to = 'Completed';
+    else if (fullPath.endsWith('/cancel')) to = 'Cancelled';
   }
 
   if (!to) {
@@ -117,6 +118,8 @@ export const authorizeStatusTransition = (req, res, next) => {
     User: {
       Pending:     ['Cancelled'],
       Accepted:    ['Cancelled'],
+      'Reminder Sent': ['Cancelled'],
+      'Technician En Route': ['Cancelled'],
       'In-Progress': [],
       Completed:   [],
       Cancelled:   [],
@@ -124,7 +127,9 @@ export const authorizeStatusTransition = (req, res, next) => {
     },
     Worker: {
       Pending:     ['Accepted', 'Cancelled'],
-      Accepted:    ['In-Progress', 'Cancelled'],
+      Accepted:    ['Reminder Sent', 'Technician En Route', 'In-Progress', 'Cancelled'],
+      'Reminder Sent': ['Technician En Route', 'In-Progress', 'Cancelled'],
+      'Technician En Route': ['In-Progress', 'Cancelled'],
       'In-Progress': ['Completed'],
       Completed:   [],
       Cancelled:   [],

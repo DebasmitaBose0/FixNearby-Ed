@@ -75,13 +75,13 @@ const processJob = async (job) => {
 
     case 'booking_confirmation': {
       const { bookingId } = data;
-      const booking = await Booking.findById(bookingId).populate('user').populate('worker');
+      const booking = await Booking.findById(bookingId).populate('userId').populate('workerId');
       if (!booking) {
         throw new Error(`Booking not found: ${bookingId}`);
       }
 
-      const user = booking.user;
-      const worker = booking.worker;
+      const user = booking.userId;
+      const worker = booking.workerId;
 
       // 1. Notify User
       if (user) {
@@ -129,13 +129,13 @@ const processJob = async (job) => {
 
     case 'booking_status_update': {
       const { bookingId, oldStatus, newStatus } = data;
-      const booking = await Booking.findById(bookingId).populate('user').populate('worker');
+      const booking = await Booking.findById(bookingId).populate('userId').populate('workerId');
       if (!booking) {
         throw new Error(`Booking not found: ${bookingId}`);
       }
 
-      const user = booking.user;
-      const worker = booking.worker;
+      const user = booking.userId;
+      const worker = booking.workerId;
 
       if (user) {
         const prefs = user.notificationPreferences || { email: true, sms: true, push: true };
@@ -154,6 +154,92 @@ const processJob = async (job) => {
         }
         if (prefs.push) {
           console.log(`[Push Notification Mock] Sent status update push to User: ${user.name}`);
+        }
+      }
+      break;
+    }
+
+    case 'booking_reminder': {
+      const { bookingId } = data;
+      const booking = await Booking.findById(bookingId).populate('userId').populate('workerId');
+      if (!booking) {
+        throw new Error(`Booking not found: ${bookingId}`);
+      }
+
+      const user = booking.userId;
+      const worker = booking.workerId;
+
+      if (user) {
+        const userPrefs = user.notificationPreferences || { email: true, sms: true, push: true };
+        if (userPrefs.email && user.email) {
+          await sendEmail({
+            toEmail: user.email,
+            subject: 'Upcoming Booking Reminder - FixNearby',
+            htmlContent: `<h2>Booking Reminder</h2><p>This is a reminder that your booking for service <strong>${booking.service}</strong> with worker <strong>${worker.name}</strong> is scheduled for <strong>${new Date(booking.scheduledTime).toLocaleString()}</strong>.</p>`
+          });
+        }
+        if (userPrefs.sms && (user.contact || user.phone)) {
+          await sendSMS({
+            toPhone: user.contact || user.phone,
+            message: `FixNearby Booking Reminder! Service: ${booking.service} with ${worker.name} is scheduled for ${new Date(booking.scheduledTime).toLocaleString()}.`
+          });
+        }
+        if (userPrefs.push) {
+          console.log(`[Push Notification Mock] Sent booking reminder push to User: ${user.name}`);
+        }
+      }
+      break;
+    }
+
+    case 'booking_rescheduled': {
+      const { bookingId } = data;
+      const booking = await Booking.findById(bookingId).populate('userId').populate('workerId');
+      if (!booking) {
+        throw new Error(`Booking not found: ${bookingId}`);
+      }
+
+      const user = booking.userId;
+      const worker = booking.workerId;
+
+      // 1. Notify User (Reschedule Confirmation)
+      if (user) {
+        const userPrefs = user.notificationPreferences || { email: true, sms: true, push: true };
+        if (userPrefs.email && user.email) {
+          await sendEmail({
+            toEmail: user.email,
+            subject: 'Booking Rescheduled - FixNearby',
+            htmlContent: `<h2>Booking Rescheduled</h2><p>Your booking for service <strong>${booking.service}</strong> has been rescheduled to <strong>${new Date(booking.scheduledTime).toLocaleString()}</strong>.</p>`
+          });
+        }
+        if (userPrefs.sms && (user.contact || user.phone)) {
+          await sendSMS({
+            toPhone: user.contact || user.phone,
+            message: `FixNearby: Booking rescheduled successfully. Service: ${booking.service} is now scheduled for ${new Date(booking.scheduledTime).toLocaleString()}.`
+          });
+        }
+        if (userPrefs.push) {
+          console.log(`[Push Notification Mock] Sent booking rescheduled push to User: ${user.name}`);
+        }
+      }
+
+      // 2. Notify Worker
+      if (worker) {
+        const workerPrefs = worker.notificationPreferences || { email: true, sms: true, push: true };
+        if (workerPrefs.email && worker.email) {
+          await sendEmail({
+            toEmail: worker.email,
+            subject: 'Booking Rescheduled - FixNearby',
+            htmlContent: `<h2>Booking Rescheduled</h2><p>Your booking for service <strong>${booking.service}</strong> with customer <strong>${user.name}</strong> has been rescheduled to <strong>${new Date(booking.scheduledTime).toLocaleString()}</strong>.</p>`
+          });
+        }
+        if (workerPrefs.sms && (worker.contact || worker.phone)) {
+          await sendSMS({
+            toPhone: worker.contact || worker.phone,
+            message: `FixNearby: Booking rescheduled. Service: ${booking.service} with ${user.name} is now scheduled for ${new Date(booking.scheduledTime).toLocaleString()}.`
+          });
+        }
+        if (workerPrefs.push) {
+          console.log(`[Push Notification Mock] Sent booking rescheduled push to Worker: ${worker.name}`);
         }
       }
       break;
