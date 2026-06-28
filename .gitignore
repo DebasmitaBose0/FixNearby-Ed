@@ -91,3 +91,8 @@ Thumbs.db
 
 # Ignore uploaded images/ files
 uploads/
+
+# Docker
+docker-compose.override.yml
+.docker/
+*.docker.env

@@ -73,20 +73,46 @@ graph TD
 
 ### Running with Docker Compose
 
-If you have Docker and Docker Compose installed, you can spin up the MongoDB database and both development servers with a single command from the root directory:
+If you have Docker and Docker Compose installed, you can spin up the entire backend stack (MongoDB, Redis, Express API, and React client) with a single command from the root directory:
 
 ```bash
 docker-compose up --build
 ```
 
 This starts:
-- MongoDB on port `27017`
-- Express API server on port `5000`
-- React frontend client on port `5173`
+- **MongoDB** 7.0 on port `27017` with automatic health checks
+- **Redis** 7-Alpine on port `6379` (required for BullMQ job queues and caching)
+- **Express API** server on port `5000` with live-reload via mounted volumes
+- **React/Vite** client on port `5173` with HMR
 
-To tear down the environment:
+#### Docker Development Workflow
+
+The development Docker Compose configuration uses:
+- **Bind mounts**: Source code changes on the host are reflected inside containers immediately (no rebuild needed).
+- **Dependency health checks**: Services wait for MongoDB and Redis to be ready before starting.
+- **Multi-stage builds**: The `server/Dockerfile` uses separate stages for development and production.
+
+Environment variables for Docker are sourced from your `.env` file or use safe defaults. Create a `.env` file in the root directory:
+
+```env
+JWT_SECRET=your-secure-jwt-secret-key
+BREVO_API_KEY=your-brevo-api-key
+BREVO_SENDER_NAME=FixNearby
+BREVO_SENDER_EMAIL=noreply@fixnearby.com
+```
+
+To tear down the environment and remove volumes:
 ```bash
-docker-compose down
+docker-compose down -v
+```
+
+#### Production Build
+
+For production deployment, target the production stage:
+
+```bash
+docker build -t fixnearby-server:latest --target production ./server
+docker build -t fixnearby-client:latest --target production ./client
 ```
 
 ---

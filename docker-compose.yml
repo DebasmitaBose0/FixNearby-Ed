@@ -4,26 +4,63 @@ services:
   server:
     build:
       context: ./server
+      target: development
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
-      - MONGO_URI=mongodb://mongodb:27017/fixnearby
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/fixnearby
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CLIENT_URL=http://localhost:5173
+    volumes:
+      - ./server:/app
+      - /app/node_modules
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_started
+      redis:
+        condition: service_started
 
   client:
     build:
       context: ./client
+      target: build
     ports:
       - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+    volumes:
+      - ./client/src:/app/src
+    depends_on:
+      - server
 
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mongo-data:
+  redis-data:
