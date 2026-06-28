@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 import { queueNotification } from "../utils/queue.js";
+import { passwordResetEmail, welcomeEmail, bookingConfirmationEmail } from "../utils/emailTemplates.js";
 // Generate JWT
 const generateToken = (id) => {
   return jwt.sign(
@@ -230,17 +231,11 @@ export const forgotUserPassword = async (req, res) => {
       const resetUrl =
         `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
+      const emailContent = passwordResetEmail(user.name, resetUrl);
       await sendEmail({
         toEmail: user.email,
-        subject: "Reset Your Password",
-        htmlContent: `
-          <h2>Password Reset Request</h2>
-          <p>Click below to reset your password.</p>
-          <a href="${resetUrl}">
-            Reset Password
-          </a>
-          <p>This link expires in 15 minutes.</p>
-        `,
+        subject: emailContent.subject,
+        htmlContent: emailContent.html,
       });
     }
 
@@ -372,17 +367,11 @@ export const forgotWorkerPassword = async (req, res) => {
       const resetUrl =
         `${process.env.CLIENT_URL}/worker/reset-password/${resetToken}`;
 
+      const emailContent = passwordResetEmail(worker.name, resetUrl);
       await sendEmail({
         toEmail: worker.email,
-        subject: "Reset Your Password",
-        htmlContent: `
-          <h2>Password Reset Request</h2>
-          <p>Click below to reset your password.</p>
-          <a href="${resetUrl}">
-            Reset Password
-          </a>
-          <p>This link expires in 15 minutes.</p>
-        `,
+        subject: emailContent.subject,
+        htmlContent: emailContent.html,
       });
     }
 

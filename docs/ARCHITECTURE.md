@@ -61,6 +61,18 @@ The reliability of service workers is determined dynamically using the Weekly Ka
   - Automatically runs as a weekly cron job via `node-cron`.
   - Can be manually triggered by administrators/operators through a secure POST request to `/api/workers/recalculate-karma`.
 
+### 3. Email Template System
+The email system uses a centralized template engine to generate consistent, responsive HTML emails.
+
+- **Template Location**: `server/utils/emailTemplates.js`
+- **Available Templates**:
+  - `passwordResetEmail(name, resetUrl)` — Password reset with 15-minute expiry link
+  - `welcomeEmail(name)` — Welcome email for new user registrations
+  - `bookingConfirmationEmail(userName, workerName, service, scheduledTime, price)` — Booking confirmation with service details
+- **Security**: All user-supplied content is HTML-escaped before insertion to prevent XSS
+- **Delivery**: Templates are rendered server-side and passed to Brevo's transactional email API
+- **Graceful Degradation**: If Brevo is not configured, emails are silently skipped with a warning log
+
 ### 2. Notification Worker & Dead-Letter Queue
 To prevent blocking main thread processes, all outgoing notifications (Welcome emails, Booking confirmations, Status updates) are offloaded to a background queue.
 - **Tech Stack**: BullMQ backed by a Redis connection.

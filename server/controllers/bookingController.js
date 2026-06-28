@@ -3,6 +3,10 @@ import { queueNotification } from '../utils/queue.js';
 import mongoose from 'mongoose';
 import { getPrincipal } from '../middleware/bookingMiddleware.js';
 import { getIo } from '../socket.js';
+import sendEmail from '../utils/sendEmail.js';
+import { bookingConfirmationEmail } from '../utils/emailTemplates.js';
+import User from '../models/User.js';
+import Worker from '../models/Worker.js';
 
 // @desc    Create a new booking with concurrency control, transactions, and standalone DB fallback
 // @route   POST /api/bookings
@@ -146,6 +150,27 @@ export const createBooking = async (req, res, next) => {
         await queueNotification('booking_confirmation', { bookingId: booking._id });
       } catch (notifyErr) {
         console.error('Failed to queue notification:', notifyErr.message);
+      }
+
+      // Send booking confirmation email
+      try {
+        const [user, worker] = await Promise.all([
+          User.findById(booking.userId),
+          Worker.findById(booking.workerId)
+        ]);
+        if (user && worker) {
+          const emailContent = bookingConfirmationEmail(
+            user.name, worker.name, booking.service,
+            booking.scheduledTime, booking.price
+          );
+          await sendEmail({
+            toEmail: user.email,
+            subject: emailContent.subject,
+            htmlContent: emailContent.html
+          });
+        }
+      } catch (emailErr) {
+        console.error('Failed to send confirmation email:', emailErr.message);
       }
 
       // Emit availability update socket event
