@@ -16,6 +16,8 @@ import {
   requireBookingParticipant,
   authorizeStatusTransition
 } from '../middleware/bookingMiddleware.js';
+import upload from '../middleware/uploadMiddleware.js';
+import { createBookingReview } from '../controllers/reviewController.js';
 
 const router = express.Router();
 
@@ -44,5 +46,8 @@ router.route('/:id/reschedule')
 
 router.route('/:id/status')
   .patch(loadBooking, authorizeStatusTransition, updateBookingStatusController);
+
+router.route('/:id/review')
+  .post(upload.array('images', 5), createBookingReview);
 
 export default router;

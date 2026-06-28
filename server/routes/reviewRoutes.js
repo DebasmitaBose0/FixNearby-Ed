@@ -4,7 +4,8 @@ import {
   getReviews,
   getReviewById,
   updateReview,
-  deleteReview
+  deleteReview,
+  reportReview
 } from '../controllers/reviewController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -12,6 +13,8 @@ const router = express.Router();
 
 router.get('/', getReviews);
 router.post('/', protect, createReview);
+
+router.post('/:id/report', protect, reportReview);
 
 router.get('/:id', getReviewById);
 router.put('/:id', protect, updateReview);

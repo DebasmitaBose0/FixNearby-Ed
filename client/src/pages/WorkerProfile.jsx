@@ -271,6 +271,75 @@ const WorkerProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [showWizardModal, setShowWizardModal] = useState(false);
+  const [reviews, setReviews] = useState([]);
+
+  // Fetch reviews for this worker
+  useEffect(() => {
+    if (id) {
+      const fetchReviews = async () => {
+        try {
+          const res = await api.get(`/reviews?workerId=${id}`);
+          if (res.data.success && res.data.reviews && res.data.reviews.length > 0) {
+            const formatted = res.data.reviews.map(r => ({
+              id: r._id,
+              name: r.user?.name || "Anonymous",
+              rating: r.rating,
+              text: r.reviewText,
+              images: r.images || [],
+              isVerified: r.isVerified || false,
+              reported: r.reported || false
+            }));
+            setReviews(formatted);
+          } else {
+            // Fallback to mock reviews
+            const formattedMock = REVIEWS.map((r, idx) => ({
+              id: `mock-${idx}`,
+              name: r.name,
+              rating: r.rating,
+              text: r.text,
+              images: [],
+              isVerified: true,
+              reported: false
+            }));
+            setReviews(formattedMock);
+          }
+        } catch (err) {
+          console.error("Failed to fetch reviews:", err);
+          const formattedMock = REVIEWS.map((r, idx) => ({
+            id: `mock-${idx}`,
+            name: r.name,
+            rating: r.rating,
+            text: r.text,
+            images: [],
+            isVerified: true,
+            reported: false
+          }));
+          setReviews(formattedMock);
+        }
+      };
+      fetchReviews();
+    }
+  }, [id]);
+
+  const handleReportReview = async (reviewId) => {
+    if (String(reviewId).startsWith('mock-')) {
+      alert("Mock reviews cannot be reported.");
+      return;
+    }
+    const reason = prompt("Please enter the reason for reporting this review:");
+    if (!reason) return;
+
+    try {
+      const res = await api.post(`/reviews/${reviewId}/report`, { reason });
+      if (res.data.success) {
+        alert("Review has been reported for moderation.");
+        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, reported: true } : r));
+      }
+    } catch (err) {
+      console.error("Failed to report review:", err);
+      alert(err.response?.data?.message || "Failed to report review.");
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -864,16 +933,52 @@ const WorkerProfile = () => {
               </div>
 
               <div className="space-y-5">
-                {REVIEWS.map((review, i) => (
+                {reviews.map((review) => (
                   <div
-                    key={i}
+                    key={review.id}
                     className="border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">{review.name}</h3>
-                      <span className="text-yellow-500 text-sm font-medium">★ {review.rating}</span>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{review.name}</h3>
+                        {review.isVerified && (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                            ✓ Verified
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-yellow-500 text-sm font-medium">★ {review.rating}</span>
+                        {!review.reported ? (
+                          <button
+                            type="button"
+                            onClick={() => handleReportReview(review.id)}
+                            className="text-[11px] font-semibold text-slate-400 hover:text-red-500 transition ml-2 border border-slate-100 rounded-lg px-2 py-0.5 hover:bg-red-50 hover:border-red-100"
+                          >
+                            Report
+                          </button>
+                        ) : (
+                          <span className="text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 rounded-full px-2 py-0.5 ml-2 animate-pulse">
+                            🚨 Flagged
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-gray-600 mt-2 leading-7">{review.text}</p>
+                    
+                    {/* Optional Images Grid */}
+                    {review.images && review.images.length > 0 && (
+                      <div className="flex gap-2 flex-wrap mt-3">
+                        {review.images.map((img, imgIdx) => (
+                          <img
+                            key={imgIdx}
+                            src={img}
+                            alt="Review detail"
+                            className="w-20 h-20 rounded-xl object-cover border border-slate-200"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
