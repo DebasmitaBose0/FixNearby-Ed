@@ -13,6 +13,7 @@ import searchRoutes from './routes/searchRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
+import { errorReportingMiddleware } from './middleware/errorReporting.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
 import { compressionMiddleware } from './middleware/compression.js';
 import { initSocket } from './socket.js';
@@ -21,6 +22,7 @@ import { startBookingExpiryScheduler } from './workers/bookingExpiryWorker.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import { initKarmaScheduler } from './utils/karmaScheduler.js';
 import { startWorker } from './workers/notificationWorker.js';
+import logger from './utils/logger.js';
 
 dotenv.config();
 
@@ -129,7 +131,7 @@ app.get('/api/health', (req, res) => {
 // Client-side UI error reporting endpoint
 app.post('/api/logs/error', (req, res) => {
   const { message, stack, componentStack, url } = req.body;
-  console.error(`[CLIENT CRASH] at ${url}: ${message}\nStack: ${stack}\nComponent Stack: ${componentStack}`);
+  logger.error({ err: { message, stack, componentStack }, url }, 'Client-side error reported');
   res.status(200).json({ success: true, message: 'Client error logged successfully' });
 });
 
@@ -138,6 +140,9 @@ app.post('/api/logs/error', (req, res) => {
 app.use((req, res, next) => {
   res.status(404).json({ error: "Route not found" });
 });
+
+// Error reporting middleware (logs and optionally forwards errors)
+app.use(errorReportingMiddleware);
 
 // Global error handler
 app.use(errorHandler);
