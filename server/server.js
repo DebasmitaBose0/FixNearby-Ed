@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import connectDB from './config/db.js';
 import { validateEnv } from './config/envValidate.js';
+import { getRedisClient } from './middleware/redisClient.js';
 import authRoutes from './routes/authRoutes.js';
 import workerRoutes from './routes/workerRoutes.js';
 import issueRoutes from './routes/issueRoutes.js';
@@ -148,6 +149,11 @@ const PORT = process.env.PORT || 5000;
 const server = createServer(app);
 initSocket(server);
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  try {
+    await getRedisClient();
+  } catch {
+    console.log('Redis not available, using in-memory cache');
+  }
 });
