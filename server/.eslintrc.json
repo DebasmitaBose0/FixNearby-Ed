@@ -1,0 +1,29 @@
+{
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "prefer-const": "error",
+    "no-var": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-throw-literal": "error",
+    "no-duplicate-imports": "error",
+    "no-template-curly-in-string": "warn",
+    "require-atomic-updates": "off",
+    "no-process-exit": "warn",
+    "handle-callback-err": ["error", "err"],
+    "no-path-concat": "error"
+  },
+  "ignorePatterns": ["node_modules", "dist", "tests"]
+}

@@ -64,6 +64,11 @@ jobs:
           cd server
           npm ci
 
+      - name: Lint Server
+        run: |
+          cd server
+          npm run lint --if-present
+
       - name: Verify Server Syntax & Run Tests
         env:
           MONGODB_URI: mongodb://localhost:27017/FixNearby_Test
