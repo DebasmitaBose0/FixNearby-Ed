@@ -7,6 +7,12 @@ const REQUIRED_ENV_VARS = [
   'PORT'
 ];
 
+const SECURITY_ENV_VARS = [
+  'BREVO_API_KEY',
+  'REDIS_HOST',
+  'REDIS_PORT'
+];
+
 /**
  * Validates that all required environment variables are set.
  * Throws a fatal error and terminates the process if any are missing.
@@ -31,5 +37,13 @@ export const validateEnv = () => {
     process.exit(1);
   } else {
     console.log('✔ Environment variables validation passed.');
+  }
+
+  const missingSecurity = SECURITY_ENV_VARS.filter(v => !process.env[v]);
+  if (missingSecurity.length > 0) {
+    console.warn('⚠  Optional security/service variables not set:');
+    for (const name of missingSecurity) {
+      console.warn(`   - ${name}`);
+    }
   }
 };

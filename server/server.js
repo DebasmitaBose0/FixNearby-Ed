@@ -14,6 +14,8 @@ import chatRoutes from './routes/chatRoutes.js';
 import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
+import { securityHeaders, csrfHeaderCheck } from './middleware/securityHeaders.js';
+import { sanitizeInput } from './middleware/securitySanitize.js';
 import { compressionMiddleware } from './middleware/compression.js';
 import { initSocket } from './socket.js';
 import bookingRoutes from './routes/bookingRoutes.js';
@@ -84,7 +86,10 @@ app.use(
 );
 
 app.use(express.json({ limit: '10mb' }));
+app.use(securityHeaders);
 app.use(csrfProtection);
+app.use(csrfHeaderCheck);
+app.use(sanitizeInput);
 
 // Serve uploaded images
 import path from 'path';
