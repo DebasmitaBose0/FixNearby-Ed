@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getBookings,
   updateBookingStatus,
+  rescheduleBooking as rescheduleBookingService,
 } from "../services/bookingService";
 
 /**
@@ -58,6 +59,24 @@ export const useBookings = (initialParams = {}) => {
     }
   }, [bookings]);
 
+  /**
+   * Reschedule a booking via the API and update the local booking state.
+   */
+  const rescheduleBooking = useCallback(async (id, newTime) => {
+    try {
+      await rescheduleBookingService(id, newTime);
+      setBookings((current) =>
+        current.map((b) =>
+          b._id === id ? { ...b, scheduledTime: newTime, scheduledDate: newTime } : b
+        )
+      );
+      return { success: true };
+    } catch (err) {
+      setError(err.message || "Failed to reschedule booking");
+      return { success: false, message: err.message };
+    }
+  }, []);
+
   return {
     bookings,
     loading,
@@ -66,6 +85,7 @@ export const useBookings = (initialParams = {}) => {
     setParams,
     refresh: fetchBookings,
     cancelBooking,
+    rescheduleBooking,
   };
 };
 

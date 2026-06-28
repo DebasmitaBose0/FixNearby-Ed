@@ -374,3 +374,173 @@ export const getBookingById = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Reschedule a booking
+// @route   PATCH /api/bookings/:id/reschedule
+// @access  Private (User/Customer only)
+export const rescheduleBooking = async (req, res, next) => {
+  try {
+    const booking = req.booking;
+    const principal = getPrincipal(req);
+
+    // Only the customer who created the booking can reschedule it
+    if (principal.model !== 'User' || String(booking.userId) !== principal.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized: only the customer can reschedule this booking'
+      });
+    }
+
+    // Only Pending bookings can be rescheduled
+    if (booking.status !== 'Pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only pending bookings can be rescheduled'
+      });
+    }
+
+    const { scheduledTime } = req.body;
+    if (!scheduledTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide scheduledTime'
+      });
+    }
+
+    const start = new Date(scheduledTime);
+    if (isNaN(start.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid scheduledTime'
+      });
+    }
+
+    // Must be in the future
+    if (start.getTime() <= Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Scheduled time must be in the future'
+      });
+    }
+
+    const durationHours = booking.durationHours;
+    const end = new Date(start.getTime() + durationHours * 3600000);
+
+    // Overlap query for the worker, excluding current booking
+    const query = {
+      workerId: booking.workerId,
+      _id: { $ne: booking._id },
+      status: { $in: ['Accepted', 'In-Progress'] },
+      $expr: {
+        $and: [
+          { $lt: ['$scheduledTime', end] },
+          {
+            $lt: [
+              start,
+              {
+                $add: [
+                  '$scheduledTime',
+                  { $multiply: ['$durationHours', 3600000] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    const overlap = await Booking.findOne(query);
+    if (overlap) {
+      return res.status(409).json({
+        success: false,
+        message: 'Worker has an overlapping accepted or in-progress booking during this new time slot.'
+      });
+    }
+
+    // Update scheduledTime, reset reminderSent and log in statusHistory
+    const oldTime = booking.scheduledTime;
+    booking.scheduledTime = start;
+    booking.reminderSent = false;
+    booking.statusHistory.push({
+      status: 'Pending',
+      changedBy: principal.ref._id,
+      changedByModel: 'User',
+      note: `Booking rescheduled from ${new Date(oldTime).toLocaleString()} to ${start.toLocaleString()}`
+    });
+
+    await booking.save();
+
+    // Queue notification
+    try {
+      await queueNotification('booking_rescheduled', { bookingId: booking._id });
+    } catch (notifyErr) {
+      console.error('Failed to queue rescheduling notification:', notifyErr.message);
+    }
+
+    // Socket update
+    try {
+      const io = getIo();
+      if (io) {
+        io.emit('availability-update', { workerId: booking.workerId });
+      }
+    } catch (ioErr) {
+      console.error('Failed to emit availability update:', ioErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Booking rescheduled successfully',
+      booking
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update status generically
+// @route   PATCH /api/bookings/:id/status
+// @access  Private (Participant only)
+export const updateBookingStatusController = async (req, res, next) => {
+  try {
+    const booking = req.booking;
+    const principal = getPrincipal(req);
+    const oldStatus = booking.status;
+    const to = req.body.status;
+
+    booking.status = to;
+    booking.statusHistory.push({
+      status: to,
+      changedBy: principal.ref._id,
+      changedByModel: principal.model,
+      note: req.body.note || `Booking status updated to ${to}`
+    });
+    await booking.save();
+
+    try {
+      await queueNotification('booking_status_update', {
+        bookingId: booking._id,
+        oldStatus,
+        newStatus: to
+      });
+    } catch (notifyErr) {
+      console.error('Failed to queue status update notification:', notifyErr.message);
+    }
+
+    try {
+      const io = getIo();
+      if (io) {
+        io.emit('availability-update', { workerId: booking.workerId });
+      }
+    } catch (ioErr) {
+      console.error('Failed to emit availability update:', ioErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Booking status updated to ${to} successfully`,
+      booking
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -5,18 +5,25 @@ import StarRating from "../components/StarRating";
 import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle } from "lucide-react";
 import { useBookings } from "../hooks/useBookings";
 
-const statusOptions = ["All", "Pending", "Confirmed", "Completed", "Cancelled"];
+const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
 const statusStyle = (status) => {
   switch (status) {
     case "Completed":
       return "bg-emerald-100 text-emerald-800";
     case "Confirmed":
+    case "Accepted":
       return "bg-blue-100 text-blue-800";
     case "Pending":
       return "bg-amber-100 text-amber-800";
     case "Cancelled":
       return "bg-rose-100 text-rose-800";
+    case "Reminder Sent":
+    case "Reminder sent":
+      return "bg-purple-100 text-purple-800";
+    case "Technician En Route":
+    case "Technician en route":
+      return "bg-indigo-100 text-indigo-800";
     default:
       return "bg-slate-100 text-slate-700";
   }
@@ -54,16 +61,34 @@ const normalizeBooking = (booking) => {
     }
   }
 
+  let status = booking.status;
+  if (status === "Accepted") {
+    status = "Confirmed";
+  }
+
+  // Format date and time
+  const t = booking.scheduledTime || booking.scheduledDate || booking.date;
+  let formattedDate = "";
+  if (t) {
+    const d = new Date(t);
+    if (!isNaN(d.getTime())) {
+      formattedDate = d.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+    } else {
+      formattedDate = String(t);
+    }
+  } else {
+    formattedDate = new Date(booking.createdAt || Date.now()).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
   return {
     ...booking,
     id: booking._id || booking.id,
     worker: workerName,
     service: serviceName,
     price,
-    date: booking.scheduledDate
-      ? new Date(booking.scheduledDate).toLocaleDateString()
-      : booking.date || new Date(booking.createdAt || Date.now()).toLocaleDateString(),
+    date: formattedDate,
     estimateSpecs,
+    status,
   };
 };
 
@@ -154,6 +179,7 @@ const Bookings = () => {
     loading,
     error,
     cancelBooking,
+    rescheduleBooking,
     refresh,
   } = useBookings();
 
@@ -170,6 +196,11 @@ const Bookings = () => {
   const [comment, setComment] = useState("");
   const [cancelingId, setCancelingId] = useState(null);
   const [cancelError, setCancelError] = useState("");
+
+  const [reschedulingId, setReschedulingId] = useState(null);
+  const [newTime, setNewTime] = useState("");
+  const [rescheduleError, setRescheduleError] = useState("");
+  const [submittingReschedule, setSubmittingReschedule] = useState(null);
 
   const filteredBookings = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -193,6 +224,30 @@ const Bookings = () => {
       setCancelError(
         "Could not cancel this booking. It may already be completed."
       );
+    }
+  };
+
+  const handleRescheduleSubmit = async (id) => {
+    if (!newTime) {
+      setRescheduleError("Please select a valid date and time.");
+      return;
+    }
+    const selectedDate = new Date(newTime);
+    if (selectedDate.getTime() <= Date.now()) {
+      setRescheduleError("Rescheduled time must be in the future.");
+      return;
+    }
+
+    setRescheduleError("");
+    setSubmittingReschedule(id);
+    const result = await rescheduleBooking(id, selectedDate.toISOString());
+    setSubmittingReschedule(null);
+    if (result.success) {
+      setReschedulingId(null);
+      setNewTime("");
+      refresh();
+    } else {
+      setRescheduleError(result.message || "Failed to reschedule booking. Please try another time.");
     }
   };
 
@@ -347,8 +402,8 @@ const Bookings = () => {
                 <span>{booking.date}</span>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-4 text-sm">
-                {(booking.status === "Pending" || booking.status === "Confirmed") && (
+              <div className="mt-4 flex flex-wrap gap-4 text-sm items-center">
+                {(booking.status === "Pending" || booking.status === "Confirmed" || booking.status === "Reminder Sent" || booking.status === "Technician En Route") && (
                   <button
                     type="button"
                     onClick={() => handleCancel(booking.id)}
@@ -356,6 +411,19 @@ const Bookings = () => {
                     className="font-medium text-rose-600 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {cancelingId === booking.id ? "Cancelling…" : "Cancel"}
+                  </button>
+                )}
+                {booking.status === "Pending" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReschedulingId(booking.id);
+                      setNewTime("");
+                      setRescheduleError("");
+                    }}
+                    className="font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Reschedule
                   </button>
                 )}
                 {booking.status === "Completed" && !booking.review && (
@@ -373,6 +441,47 @@ const Bookings = () => {
                   </span>
                 )}
               </div>
+
+              {/* RESCHEDULE BOX */}
+              {reschedulingId === booking.id && (
+                <div className="mt-4 p-5 rounded-2xl border border-blue-100 bg-blue-50/50 space-y-3 max-w-md transition-all duration-300">
+                  <h4 className="text-sm font-bold text-slate-800">Reschedule Booking</h4>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="datetime-local"
+                      value={newTime}
+                      onChange={(e) => setNewTime(e.target.value)}
+                      className="rounded-xl border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white text-slate-700"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRescheduleSubmit(booking.id)}
+                        disabled={submittingReschedule === booking.id}
+                        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
+                      >
+                        {submittingReschedule === booking.id ? "Updating…" : "Confirm"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReschedulingId(null);
+                          setNewTime("");
+                          setRescheduleError("");
+                        }}
+                        className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                  {rescheduleError && (
+                    <p className="text-xs font-semibold text-rose-600">
+                      {rescheduleError}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* ESTIMATE BREAKDOWN */}
               {booking.estimateSpecs && (

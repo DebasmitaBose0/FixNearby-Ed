@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const STATUS_ENUM = ['Pending', 'Accepted', 'In-Progress', 'Completed', 'Cancelled', 'Expired'];
+const STATUS_ENUM = ['Pending', 'Accepted', 'Reminder Sent', 'Technician En Route', 'In-Progress', 'Completed', 'Cancelled', 'Expired'];
 
 const bookingSchema = new mongoose.Schema({
   userId: {
@@ -39,6 +39,10 @@ const bookingSchema = new mongoose.Schema({
   price: {
     type: Number,
     required: true
+  },
+  reminderSent: {
+    type: Boolean,
+    default: false
   },
   statusHistory: [{
     status: {

@@ -5,7 +5,9 @@ import {
   completeBooking,
   cancelBooking,
   getBookings,
-  getBookingById
+  getBookingById,
+  rescheduleBooking,
+  updateBookingStatusController
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { checkBookingOverlap } from '../middleware/bookingValidation.js';
@@ -34,6 +36,13 @@ router.route('/:id/complete')
   .patch(loadBooking, authorizeStatusTransition, completeBooking);
 
 router.route('/:id/cancel')
-  .patch(loadBooking, authorizeStatusTransition, cancelBooking);
+  .patch(loadBooking, authorizeStatusTransition, cancelBooking)
+  .post(loadBooking, authorizeStatusTransition, cancelBooking);
+
+router.route('/:id/reschedule')
+  .patch(loadBooking, rescheduleBooking);
+
+router.route('/:id/status')
+  .patch(loadBooking, authorizeStatusTransition, updateBookingStatusController);
 
 export default router;

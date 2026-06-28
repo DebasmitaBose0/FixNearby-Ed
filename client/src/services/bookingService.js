@@ -77,6 +77,20 @@ export const updateBookingStatus = async (id, status) => {
 export const cancelBooking = (id) => updateBookingStatus(id, "Cancelled");
 
 /**
+ * Reschedule a pending booking.
+ * @param {string} id
+ * @param {string} scheduledTime ISO string
+ */
+export const rescheduleBooking = async (id, scheduledTime) => {
+  try {
+    const response = await api.patch(`/bookings/${id}/reschedule`, { scheduledTime });
+    return response.data;
+  } catch (error) {
+    throw normalizeError(error, "Failed to reschedule booking");
+  }
+};
+
+/**
  * Map an axios error to the normalized service-layer error contract.
  * @param {import('axios').AxiosError} error
  * @param {string} fallbackMessage
@@ -98,4 +112,5 @@ export default {
   getBookingById,
   updateBookingStatus,
   cancelBooking,
+  rescheduleBooking,
 };
