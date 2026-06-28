@@ -21,6 +21,8 @@ import { startBookingExpiryScheduler } from './workers/bookingExpiryWorker.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import { initKarmaScheduler } from './utils/karmaScheduler.js';
 import { startWorker } from './workers/notificationWorker.js';
+import healthRoutes from './routes/healthRoutes.js';
+import { requestMonitor } from './middleware/monitoringMiddleware.js';
 
 dotenv.config();
 
@@ -85,6 +87,7 @@ app.use(
 
 app.use(express.json({ limit: '10mb' }));
 app.use(csrfProtection);
+app.use(requestMonitor);
 
 // Serve uploaded images
 import path from 'path';
@@ -105,6 +108,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api', healthRoutes);
 
 // Start Booking Expiry Check Scheduler
 startBookingExpiryScheduler();
@@ -121,10 +125,7 @@ app.get('/api/protected', authMiddleware, (req, res) => {
   });
 });
 
-// Basic health check route
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'success', message: 'FixNearby API is running' });
-});
+
 
 // Client-side UI error reporting endpoint
 app.post('/api/logs/error', (req, res) => {

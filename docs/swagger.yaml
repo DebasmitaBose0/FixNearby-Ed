@@ -4,6 +4,44 @@ info:
   description: API endpoints specification for local service discovery, booking, and workers.
   version: 1.0.0
 paths:
+  /api/health:
+    get:
+      summary: Health Check
+      description: Returns detailed system health status including database connectivity, uptime, and memory usage
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  status:
+                    type: string
+                  database:
+                    type: object
+                  system:
+                    type: object
+        '503':
+          description: Service is unhealthy (e.g. database disconnected)
+  /api/health/readiness:
+    get:
+      summary: Readiness Probe
+      description: Lightweight readiness check for container orchestration
+      responses:
+        '200':
+          description: Service is ready to accept traffic
+        '503':
+          description: Service is not ready
+  /api/health/info:
+    get:
+      summary: Server Info
+      description: Returns basic server metadata
+      responses:
+        '200':
+          description: Server info retrieved
   /api/auth/login:
     post:
       summary: User Login
@@ -21,6 +59,27 @@ paths:
       responses:
         '200':
           description: Successful Authentication
+  /api/auth/register:
+    post:
+      summary: User Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
   /api/workers/profile:
     get:
       summary: Get Worker Profile
@@ -29,6 +88,31 @@ paths:
       responses:
         '200':
           description: Successful profile retrieval
+  /api/workers/nearby:
+    get:
+      summary: Find Nearby Workers
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: maxDistance
+          in: query
+          schema:
+            type: number
+      responses:
+        '200':
+          description: List of nearby workers
   /api/issues/nearby:
     get:
       summary: Get Nearby Issues
@@ -46,6 +130,41 @@ paths:
       responses:
         '200':
           description: List of nearby issues returned successfully
+  /api/bookings:
+    post:
+      summary: Create Booking
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workerId:
+                  type: string
+                service:
+                  type: string
+                scheduledTime:
+                  type: string
+                  format: date-time
+                durationHours:
+                  type: number
+                address:
+                  type: string
+                price:
+                  type: number
+      responses:
+        '201':
+          description: Booking created
+    get:
+      summary: Get User/Worker Bookings
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of bookings
 components:
   securitySchemes:
     BearerAuth:
