@@ -164,6 +164,10 @@ workerSchema.methods.matchPassword =
 
 workerSchema.index({ location: "2dsphere" });
 workerSchema.index({ category: 1, availabilityStatus: 1 });
+workerSchema.index({ email: 1 }, { unique: true });
+workerSchema.index({ averageRating: -1 });
+workerSchema.index({ karmaScore: -1 });
+workerSchema.index({ availabilityStatus: 1, lastActive: -1 });
 
 const Worker = mongoose.model(
   "Worker",

@@ -33,6 +33,10 @@ const reviewSchema = new mongoose.Schema({
   timestamps: true
 });
 
+reviewSchema.index({ worker: 1, createdAt: -1 });
+reviewSchema.index({ user: 1, createdAt: -1 });
+reviewSchema.index({ bookingReference: 1 }, { unique: true });
+
 // Calculate Average Rating static method
 reviewSchema.statics.calculateAverageRating = async function(workerId) {
   const stats = await this.aggregate([
