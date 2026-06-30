@@ -1,7 +1,12 @@
 import axios from "axios";
 
+const normalizeApiBaseURL = (value) => {
+  const baseURL = (value || "http://localhost:5000/api").replace(/\/+$/, "");
+  return baseURL.endsWith("/api") ? baseURL : `${baseURL}/api`;
+};
+
 const api = axios.create({
-   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
+   baseURL: normalizeApiBaseURL(import.meta.env.VITE_API_URL),
     headers:{
         "Content-Type":"application/json"
     },
@@ -11,6 +16,10 @@ const api = axios.create({
 // Request interceptor to automatically add the Authorization header
 api.interceptors.request.use(
   (config) => {
+    if (typeof config.url === "string") {
+      config.url = config.url.replace(/^\/api(?=\/)/, "");
+    }
+
     try {
       const raw = localStorage.getItem("fixnearby_user");
       if (raw) {
