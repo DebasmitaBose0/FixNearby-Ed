@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
+
 import api from "../services/apiClient";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import {
@@ -259,6 +260,8 @@ const parsePriceToNumber = (price) => {
 const WorkerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const { isAuthenticated } = useAuth();
   const { showToast } = useToast();
 
@@ -456,7 +459,24 @@ const WorkerProfile = () => {
     [worker]
   );
 
+  // Auto-trigger quick booking when navigated here from Saved Workers.
+  // Usage: /worker/:id?quickBook=1
+  const [autoQuickBookStarted, setAutoQuickBookStarted] = useState(false);
+  useEffect(() => {
+    const shouldQuickBook = searchParams.get("quickBook") === "1";
+    if (!shouldQuickBook) return;
+    if (!worker) return;
+    if (autoQuickBookStarted) return;
+
+    // Once we have the worker and estimator readiness, kick off booking.
+    setAutoQuickBookStarted(true);
+    // handleBooking may redirect to /login when unauthenticated.
+    handleBooking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, worker, autoQuickBookStarted, hasEstimator]);
+
   /* ── Quick book — show estimate prompt if config exists, else book directly ── */
+
   const handleBooking = () => {
     if (!worker) return;
     // Booking is a server-side action tied to the authenticated user; bounce
