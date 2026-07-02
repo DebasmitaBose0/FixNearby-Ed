@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerWorker, loginWorker, getWorkers, getWorkerById, getWorkerProfile, getNearbyWorkers, recalculateKarmaScoresController, getWorkerAvailability, getWorkerReviews } from '../controllers/workerController.js';
+import { registerWorker, loginWorker, getWorkers, getWorkerById, getWorkerProfile, getNearbyWorkers, recalculateKarmaScoresController, getWorkerAvailability, getWorkerReviews, getWorkerDashboardStats } from '../controllers/workerController.js';
 import { protectWorker } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 
@@ -9,6 +9,7 @@ router.post('/register', upload.single('profilePicture'), registerWorker);
 router.post('/login', loginWorker);
 router.get('/profile', protectWorker, getWorkerProfile);
 router.get('/nearby', getNearbyWorkers);
+router.get('/dashboard/stats', protectWorker, getWorkerDashboardStats);
 router.post('/recalculate-karma', protectWorker, recalculateKarmaScoresController);
 router.get('/', getWorkers);
 router.get('/:id', getWorkerById);

@@ -606,3 +606,26 @@ export const getWorkerReviews = async (req, res) => {
     });
   }
 };
+
+export const getWorkerDashboardStats = async (req, res) => {
+  try {
+    const workerId = req.worker._id;
+    const totalJobs = await Booking.countDocuments({ workerId });
+    const activeJobs = await Booking.countDocuments({ workerId, status: { $in: ['Pending', 'Confirmed', 'Accepted', 'In-Progress'] } });
+    const completedJobs = await Booking.countDocuments({ workerId, status: 'Completed' });
+    
+    res.status(200).json({
+      success: true,
+      totalJobs,
+      activeJobs,
+      completedJobs,
+      rating: req.worker.averageRating || 5.0
+    });
+  } catch (error) {
+    console.error("Error fetching worker dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
