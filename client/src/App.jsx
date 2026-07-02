@@ -32,6 +32,7 @@ const Feedback         = lazy(() => import('./pages/Feedback'));
 const FAQ              = lazy(() => import('./pages/FAQ'));
 const SavedWorkers     = lazy(() => import('./pages/SavedWorkers'));
 const Recommendations  = lazy(() => import('./pages/Recommendations')); // ✨ NEW
+const CivicIssues      = lazy(() => import('./pages/CivicIssues'));
 const NotFound         = lazy(() => import('./pages/NotFound'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
@@ -78,6 +79,7 @@ const ROUTES = [
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },
   { path: '/recommendations',   element: <Recommendations /> }, // ✨ NEW
+  { path: '/civic-issues',      element: <CivicIssues /> },
 
   // User (protected)
   { path: '/profile',           element: <RequireAuth><Profile /></RequireAuth> },
