@@ -4,6 +4,8 @@ import User from './models/User.js';
 import Worker from './models/Worker.js';
 import Message from './models/Message.js';
 import allowedOrigins from './config/corsOrigins.js';
+import { verifySocketAuth } from './utils/verifySocketAuth.js';
+import { messageRetryService } from './services/messageRetryService.js';
 
 // Map to track active user socket mappings
 // Map format: userId -> Set of socket.ids
@@ -24,39 +26,7 @@ export const initSocket = (server) => {
   ioInstance = io;
 
   // Socket middleware for authentication
-  io.use(async (socket, next) => {
-    try {
-      // Find token in auth handshakes or authorization headers
-      let token = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
-      if (token && token.startsWith('Bearer ')) {
-        token = token.split(' ')[1];
-      }
-
-      if (!token) {
-        return next(new Error('Authentication error: Token not provided'));
-      }
-
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      let user = await User.findById(decoded.id).select('-password');
-      let userType = 'User';
-
-      if (!user) {
-        user = await Worker.findById(decoded.id).select('-password');
-        userType = 'Worker';
-      }
-
-      if (!user) {
-        return next(new Error('Authentication error: User/Worker not found'));
-      }
-
-      socket.user = user;
-      socket.userType = userType;
-      next();
-    } catch (err) {
-      return next(new Error('Authentication error: Invalid token'));
-    }
-  });
+  io.use(verifySocketAuth);
 
   io.on('connection', async (socket) => {
     const userId = socket.user._id.toString();
@@ -85,48 +55,81 @@ export const initSocket = (server) => {
     }
 
     // Message transmission
-    socket.on('sendMessage', async (data, callback) => {
-      try {
-        const { receiverId, receiverModel, text } = data;
-        if (!receiverId || !receiverModel || !text) {
-          if (callback) callback({ success: false, error: 'Invalid message payload' });
-          return;
-        }
-
-        if (!['User', 'Worker'].includes(receiverModel)) {
-          if (callback) callback({ success: false, error: 'Invalid receiver model' });
-          return;
-        }
-
-        // Persist message
-        const message = await Message.create({
-          senderId: userId,
-          senderModel: userType,
-          receiverId,
-          receiverModel,
-          text
-        });
-
-        const msgData = {
-          _id: message._id,
-          senderId: message.senderId,
-          senderModel: message.senderModel,
-          receiverId: message.receiverId,
-          receiverModel: message.receiverModel,
-          text: message.text,
-          createdAt: message.createdAt,
-          updatedAt: message.updatedAt
-        };
-
-        // Emit to target user's room and sender's room
-        io.to(receiverId).emit('receiveMessage', msgData);
-        io.to(userId).emit('receiveMessage', msgData);
-
-        if (callback) callback({ success: true, message: msgData });
-      } catch (err) {
-        if (callback) callback({ success: false, error: err.message });
+    // Presence update from client
+  socket.on('presence_update', async (data, callback) => {
+    try {
+      const allowed = ['available', 'busy', 'offline'];
+      const { status } = data;
+      if (!allowed.includes(status)) {
+        if (callback) callback({ success: false, error: 'Invalid status' });
+        return;
       }
-    });
+      // Update DB based on user type
+      if (userType === 'Worker') {
+        await Worker.findByIdAndUpdate(userId, { availabilityStatus: status, lastActive: new Date() });
+      } else {
+        await User.findByIdAndUpdate(userId, { status });
+      }
+      io.emit('user-presence', { userId, status, userType });
+      if (callback) callback({ success: true });
+    } catch (err) {
+      if (callback) callback({ success: false, error: err.message });
+    }
+  });
+
+  // Message transmission with ordering & ack
+  socket.on('sendMessage', async (data, callback) => {
+    try {
+      const { receiverId, receiverModel, text, timestamp } = data;
+      if (!receiverId || !receiverModel || !text) {
+        if (callback) callback({ success: false, error: 'Invalid message payload' });
+        return;
+      }
+      if (!['User', 'Worker'].includes(receiverModel)) {
+        if (callback) callback({ success: false, error: 'Invalid receiver model' });
+        return;
+      }
+      // Simple ordering check – reject if timestamp older than last stored (optional)
+      if (timestamp) {
+        const lastMsg = await Message.findOne({
+          $or: [
+            { senderId: userId, receiverId },
+            { senderId: receiverId, receiverId: userId }
+          ]
+        }).sort({ createdAt: -1 });
+        if (lastMsg && new Date(timestamp) < lastMsg.createdAt) {
+          if (callback) callback({ success: false, error: 'Out‑of‑order message' });
+          return;
+        }
+      }
+      // Persist message
+      const message = await Message.create({
+        senderId: userId,
+        senderModel: userType,
+        receiverId,
+        receiverModel,
+        text,
+        createdAt: timestamp ? new Date(timestamp) : undefined
+      });
+      const msgData = {
+        _id: message._id,
+        senderId: message.senderId,
+        senderModel: message.senderModel,
+        receiverId: message.receiverId,
+        receiverModel: message.receiverModel,
+        text: message.text,
+        createdAt: message.createdAt,
+        updatedAt: message.updatedAt
+      };
+      io.to(receiverId).emit('receiveMessage', msgData);
+      io.to(userId).emit('receiveMessage', msgData);
+      // Ack to sender
+      socket.emit('message_ack', { messageId: message._id });
+      if (callback) callback({ success: true, message: msgData });
+    } catch (err) {
+      if (callback) callback({ success: false, error: err.message });
+    }
+  });
 
     // Typing indicators
     socket.on('typing', (data) => {
