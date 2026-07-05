@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signupUser } from "../services/authService";
 import useToast from "../hooks/useToast";
+import { parseApiError } from "../utils/apiErrorHandler";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
@@ -152,7 +153,7 @@ const Register = () => {
       setFormData({ name: "", email: "", phone: "", password: "" });
       navigate("/dashboard");
     } catch(error) {
-      setApiError(error.message || "Registration failed. Please try again.");
+      setApiError(parseApiError(error).message);
     } finally {
       setLoading(false);
     }
