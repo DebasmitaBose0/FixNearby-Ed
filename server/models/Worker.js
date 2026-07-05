@@ -85,10 +85,7 @@ const workerSchema = new mongoose.Schema(
     resetPasswordExpire: {
       type: Date,
     },
-    averageRating: {
-      type: Number,
-      default: 0,
-    },
+
     reviewCount: {
       type: Number,
       default: 0,
