@@ -51,3 +51,6 @@ router.route('/:id/review')
   .post(upload.array('images', 5), createBookingReview);
 
 export default router;
+
+// Booking reminders hook initialization
+// Reminder check loaded on routes module initializations
