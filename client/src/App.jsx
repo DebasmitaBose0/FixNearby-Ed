@@ -14,8 +14,9 @@ import Toast from "./components/Toast";
 import LocationBanner from "./components/LocationBanner";
 import BackToTop from "./components/BackToTop";
 import SOSButton from "./components/SOSButton";
-import useOfflineSync from "./hooks/useOfflineSync";
+import useNetworkSync from "./hooks/useNetworkSync";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AriaAnnouncer from "./components/AriaAnnouncer";
 
 // ─── Lazy-loaded Pages (loaded only when the route is visited) ────────────────
 const Home             = lazy(() => import('./pages/Home'));
@@ -132,7 +133,7 @@ const PageLoader = () => (
 // ─── App Content ──────────────────────────────────────────────────────────────
 function AppContent() {
   const location = useLocation();
-  useOfflineSync();
+  useNetworkSync();
 
   // Hide LocationBanner on Home — it has its own live-location section
   const showLocationBanner = location.pathname !== "/";
@@ -145,6 +146,7 @@ function AppContent() {
       >
         Skip to main content
       </a>
+      <AriaAnnouncer />
       <Navbar />
       {showLocationBanner && <LocationBanner />}
       <Toast />
