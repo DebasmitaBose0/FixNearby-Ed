@@ -16,7 +16,7 @@ import {
 
 import { workerSignup } from "../services/workerService";
 import useToast from "../hooks/useToast";
-import { validateEmail, validatePassword, getPasswordStrength } from "../utils/validation";
+import { validateEmail, validatePassword, getPasswordStrength } from "../utils/clientValidation";
 
 const WorkerRegister = () => {
   const navigate = useNavigate();
