@@ -28,6 +28,7 @@ import BookingConfirmationModal from "../components/BookingConfirmationModal";
 import SmartEstimator from "../components/SmartEstimator";
 import EstimateWizard from "../components/EstimateWizard";
 import { createBooking } from "../services/bookingService";
+import WorkerBookingCalendar from "../components/WorkerBookingCalendar";
 import { useAuth } from "../context/AuthContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
@@ -935,7 +936,12 @@ const WorkerProfile = () => {
                       Estimate First
                     </button>
                   )}
-                </div>
+              </div>
+
+              {/* Availability Calendar */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mt-6">
+                <h2 className="text-2xl font-bold mb-4">Availability Calendar</h2>
+                <WorkerBookingCalendar onDateSelect={(date) => console.log("Selected Date: ", date)} />
               </div>
             </div>
           )}
