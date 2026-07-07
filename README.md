@@ -85,7 +85,7 @@ We rely on the open-source community to bring this platform to life! If you are 
 
 ## 🛠️ Getting Started
 
-Want to run the project locally? Follow these steps.
+Want to run the project locally? Please refer to our comprehensive [**Developer Guide**](./docs/DEVELOPER_GUIDE.md) for full setup instructions, or follow these quick steps:
 
 ### 📌 Prerequisites
 
