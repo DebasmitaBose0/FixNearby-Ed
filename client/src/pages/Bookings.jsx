@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-import LoadingSpinner from "../components/LoadingSpinner";
+import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
 import StarRating from "../components/StarRating";
 import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X } from "lucide-react";
 import { useBookings } from "../hooks/useBookings";
