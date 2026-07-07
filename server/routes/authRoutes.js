@@ -1,3 +1,4 @@
+// Password strength policies active
 import express from 'express';
 import {
   registerUser,
