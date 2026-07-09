@@ -1,3 +1,4 @@
+import healthRoutes from './routes/healthRoutes.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -15,6 +16,7 @@ import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
 import { compressionMiddleware } from './middleware/compression.js';
+import allowedOrigins from './config/corsOrigins.js';
 import { initSocket } from './socket.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { startBookingExpiryScheduler } from './workers/bookingExpiryWorker.js';
@@ -24,6 +26,8 @@ import { startWorker } from './workers/notificationWorker.js';
 import { startBookingReminderScheduler } from './workers/bookingReminderWorker.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
+import availabilityRoutes from './routes/availabilityRoutes.js';
+import auditLogRoutes from './routes/auditLogRoutes.js';
 
 dotenv.config();
 
@@ -58,17 +62,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration with whitelist support
-const parsedEnvOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, ''))
-  : [];
-
-const allowedOrigins = [
-  ...parsedEnvOrigins,
-  'http://localhost:5173',
-  'http://localhost:3000'
-].filter(Boolean);
-
+// CORS configuration with whitelist support (origins defined in config/corsOrigins.js)
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -102,6 +96,7 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', healthRoutes);
 app.use('/api/workers', workerRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/search', searchRoutes);
@@ -110,6 +105,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/estimates', estimateRoutes);
+app.use('/api/availability', availabilityRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // Start Booking Expiry Check Scheduler
 startBookingExpiryScheduler();

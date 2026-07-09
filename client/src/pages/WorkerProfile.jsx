@@ -1,5 +1,6 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
+
 import api from "../services/apiClient";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import {
@@ -22,13 +23,18 @@ import {
   Heart,
 } from "lucide-react";
 
+import SkeletonLoader from "../components/SkeletonLoader";
 import BookingConfirmationModal from "../components/BookingConfirmationModal";
 import SmartEstimator from "../components/SmartEstimator";
 import EstimateWizard from "../components/EstimateWizard";
 import { createBooking } from "../services/bookingService";
+import WorkerBookingCalendar from "../components/WorkerBookingCalendar";
 import { useAuth } from "../context/AuthContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
+import useToast from "../hooks/useToast";
+import ReviewBadge from "../components/ReviewBadge";
+import ReviewList from "../components/ReviewList";
 
 /* ✅ Move data outside component */
 const WORKERS = {
@@ -258,7 +264,10 @@ const parsePriceToNumber = (price) => {
 const WorkerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab]          = useState("overview");
   const [showModal, setShowModal]           = useState(false);
@@ -279,8 +288,9 @@ const WorkerProfile = () => {
       const fetchReviews = async () => {
         try {
           const res = await api.get(`/reviews?workerId=${id}`);
-          if (res.data.success && res.data.reviews && res.data.reviews.length > 0) {
-            const formatted = res.data.reviews.map(r => ({
+          const reviewList = res.data.reviews || res.data.data || [];
+          if (res.data.success && reviewList.length > 0) {
+            const formatted = reviewList.map(r => ({
               id: r._id,
               name: r.user?.name || "Anonymous",
               rating: r.rating,
@@ -360,7 +370,7 @@ const WorkerProfile = () => {
 
   const handleToggleFavorite = async () => {
     if (!isAuthenticated) {
-      alert("Please log in to save professionals to your favorites.");
+      showToast("Please log in to save professionals to your favorites.", "error");
       return;
     }
 
@@ -372,7 +382,7 @@ const WorkerProfile = () => {
     } catch (err) {
       console.error("Failed to toggle favorite:", err);
       setIsSaved(previousSaved);
-      alert("Failed to update favorite. Please try again.");
+      showToast("Failed to update favorite. Please try again.", "error");
     }
   };
 
@@ -453,7 +463,23 @@ const WorkerProfile = () => {
     [worker]
   );
 
+  // Auto-trigger quick booking when navigated here from Saved Workers.
+  // Usage: /worker/:id?quickBook=1
+  const [autoQuickBookStarted, setAutoQuickBookStarted] = useState(false);
+  useEffect(() => {
+    const shouldQuickBook = searchParams.get("quickBook") === "1";
+    if (!shouldQuickBook) return;
+    if (!worker) return;
+    if (autoQuickBookStarted) return;
+
+    // Once we have the worker and estimator readiness, kick off booking.
+    setAutoQuickBookStarted(true);
+    // handleBooking may redirect to /login when unauthenticated.
+    handleBooking();
+  }, [searchParams, worker, autoQuickBookStarted, hasEstimator]);
+
   /* ── Quick book — show estimate prompt if config exists, else book directly ── */
+
   const handleBooking = () => {
     if (!worker) return;
     // Booking is a server-side action tied to the authenticated user; bounce
@@ -480,6 +506,7 @@ const WorkerProfile = () => {
       const price = parsePriceToNumber(worker.price);
       const slotToBook = selectedSlot || (availableSlots.length > 0 ? availableSlots[0] : null);
       const scheduledTime = slotToBook ? slotToBook.start : new Date().toISOString();
+      console.log(`[QuickBook] Selected slot starting time: ${scheduledTime}`);
 
       const response = await createBooking({
         workerId: worker.id,
@@ -599,9 +626,8 @@ const WorkerProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-500 mt-4">Loading profile...</p>
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        <SkeletonLoader type="profile" />
       </div>
     );
   }
@@ -663,9 +689,12 @@ const WorkerProfile = () => {
                 </button>
               </div>
               <p className="text-blue-600 font-medium">{worker.profession}</p>
-              <div className="flex items-center gap-1 mt-3 bg-yellow-50 px-3 py-1 rounded-full">
-                <Star size={16} className="fill-yellow-400 text-yellow-400" />
-                <span className="font-semibold">{worker.rating}</span>
+              <div className="flex items-center gap-2 mt-3">
+                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
+                  <Star size={16} className="fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold">{worker.rating}</span>
+                </div>
+                <ReviewBadge rating={worker.rating} count={worker.completedJobs} />
               </div>
             </div>
 
@@ -907,7 +936,12 @@ const WorkerProfile = () => {
                       Estimate First
                     </button>
                   )}
-                </div>
+              </div>
+
+              {/* Availability Calendar */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mt-6">
+                <h2 className="text-2xl font-bold mb-4">Availability Calendar</h2>
+                <WorkerBookingCalendar onDateSelect={(date) => console.log("Selected Date: ", date)} />
               </div>
             </div>
           )}
@@ -923,65 +957,17 @@ const WorkerProfile = () => {
 
           {/* ── REVIEWS TAB ── */}
           {activeTab === "reviews" && (
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Customer Reviews</h2>
-                <div className="flex items-center gap-1 text-yellow-500 font-semibold">
-                  <Star size={18} className="fill-yellow-400" />
-                  {worker.rating}
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                {reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{review.name}</h3>
-                        {review.isVerified && (
-                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                            ✓ Verified
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-yellow-500 text-sm font-medium">★ {review.rating}</span>
-                        {!review.reported ? (
-                          <button
-                            type="button"
-                            onClick={() => handleReportReview(review.id)}
-                            className="text-[11px] font-semibold text-slate-400 hover:text-red-500 transition ml-2 border border-slate-100 rounded-lg px-2 py-0.5 hover:bg-red-50 hover:border-red-100"
-                          >
-                            Report
-                          </button>
-                        ) : (
-                          <span className="text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 rounded-full px-2 py-0.5 ml-2 animate-pulse">
-                            🚨 Flagged
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-gray-600 mt-2 leading-7">{review.text}</p>
-                    
-                    {/* Optional Images Grid */}
-                    {review.images && review.images.length > 0 && (
-                      <div className="flex gap-2 flex-wrap mt-3">
-                        {review.images.map((img, imgIdx) => (
-                          <img
-                            key={imgIdx}
-                            src={img}
-                            alt="Review detail"
-                            className="w-20 h-20 rounded-xl object-cover border border-slate-200"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+            <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+              <h2 className="mb-6 text-2xl font-bold dark:text-white">Customer Reviews</h2>
+              <ReviewList reviews={reviews.map(r => ({
+                _id: r.id,
+                rating: r.rating,
+                reviewText: r.text,
+                createdAt: r.createdAt,
+                isVerified: r.isVerified,
+                images: r.images,
+                user: { name: r.name }
+              }))} />
             </div>
           )}
 

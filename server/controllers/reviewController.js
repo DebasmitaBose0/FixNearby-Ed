@@ -40,7 +40,7 @@ export const createReview = async (req, res) => {
       });
     }
 
-    if (booking.user.toString() !== req.user._id.toString()) {
+    if (booking.userId.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized: You can only review your own bookings'
@@ -62,7 +62,7 @@ export const createReview = async (req, res) => {
       reviewText,
       bookingReference,
       user: req.user._id,
-      worker: booking.worker
+      worker: booking.workerId
     });
 
     res.status(201).json({
