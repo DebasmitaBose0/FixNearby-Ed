@@ -1,4 +1,5 @@
 import Worker from '../models/Worker.js';
+import logger from '../utils/logger.js';
 
 /**
  * Advanced search controller with filtering, sorting, and text search
@@ -288,6 +289,66 @@ export const getPopularSearches = async (req, res) => {
 };
 
 /**
+ * Search workers nearby with geospatial filtering
+ * @route GET /api/search/nearby
+ */
+export const searchWorkersNearby = async (req, res) => {
+  try {
+    const { lat, lon, maxDistance = 10, limit = 50 } = req.query;
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      return res.status(400).json({ success: false, message: 'Valid lat and lon required' });
+    }
+
+    const workers = await Worker.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [lonNum, latNum] },
+          distanceField: 'distanceKm',
+          spherical: true,
+          distanceMultiplier: 0.001,
+          maxDistance: parseFloat(maxDistance) * 1000,
+        },
+      },
+      { $limit: parseInt(limit) },
+      {
+        $project: {
+          name: 1, category: 1, availabilityStatus: 1, bio: 1,
+          profilePicture: 1, averageRating: 1, karmaScore: 1,
+          experience: 1, location: 1, distanceKm: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({ success: true, count: workers.length, data: workers });
+  } catch (error) {
+    logger.error({ err: error }, 'Nearby search failed');
+    res.status(500).json({ success: false, message: 'Error searching nearby workers' });
+  }
+};
+
+/**
+ * Get worker counts grouped by category
+ * @route GET /api/search/categories
+ */
+export const getCategoryCounts = async (req, res) => {
+  try {
+    const categories = await Worker.aggregate([
+      { $group: { _id: '$category', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $project: { name: '$_id', count: 1, _id: 0 } },
+    ]);
+
+    res.status(200).json({ success: true, categories });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch category counts');
+    res.status(500).json({ success: false, message: 'Error fetching categories' });
+  }
+};
+
+/**
  * Calculate distance between two coordinates using Haversine formula
  * @param {number} lat1 - Latitude of point 1
  * @param {number} lon1 - Longitude of point 1
@@ -296,7 +357,7 @@ export const getPopularSearches = async (req, res) => {
  * @returns {number} Distance in kilometers
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
   

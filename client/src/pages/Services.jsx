@@ -30,135 +30,12 @@ import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
 import MapView from "../components/MapView";
 
-const mockWorkers = [
-  {
-    id: 1,
-    name: "John Doe",
-    profession: "Electrician",
-    rating: 4.8,
-    price: 40,
-    availability: "Available today",
-    responseTime: "Replies in 20 min",
-    outcomeText:
-      "Open the full profile to compare pricing, reviews, and booking slots.",
-    mockOffset: { lat: 17.3850, lon: 78.4867 },
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    profession: "Plumber",
-    rating: 4.9,
-    price: 50,
-    availability: "Next slot this afternoon",
-    responseTime: "Replies in 15 min",
-    outcomeText:
-      "See availability first, then confirm a plumbing booking in one flow.",
-    mockOffset: { lat: 17.4435, lon: 78.3772 },
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    profession: "Carpenter",
-    rating: 4.5,
-    price: 35,
-    availability: "Available tomorrow morning",
-    responseTime: "Replies in 35 min",
-    outcomeText:
-      "Review past work and request a carpentry visit from the profile page.",
-    mockOffset: { lat: 17.4399, lon: 78.4983 },
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Ravi Kumar",
-    profession: "Painter",
-    rating: 4.6,
-    price: 30,
-    availability: "Next slot tomorrow",
-    responseTime: "Replies in 25 min",
-    outcomeText: "Check service details and move straight into booking when ready.",
-    mockOffset: { lat: 17.4483, lon: 78.3915 },
-    verified: true,
-  },
-  {
-    id: 5,
-    name: "Amit Sharma",
-    profession: "AC Technician",
-    rating: 4.7,
-    price: 45,
-    availability: "Emergency slots open",
-    responseTime: "Replies in 10 min",
-    outcomeText: "View service scope, urgency fit, and book an AC repair visit quickly.",
-    mockOffset: { lat: 17.4126, lon: 78.4052 },
-    verified: true,
-  },
-  {
-    id: 6,
-    name: "Suresh Patel",
-    profession: "Cleaner",
-    rating: 4.3,
-    price: 25,
-    availability: "Weekend availability",
-    responseTime: "Replies in 30 min",
-    outcomeText:
-      "Open the profile to compare rates and schedule a cleaning appointment.",
-    mockOffset: { lat: 17.3616, lon: 78.4747 },
-    verified: true,
-  },
-  {
-    id: 7,
-    name: "David Lee",
-    profession: "Mechanic",
-    rating: 4.8,
-    price: 55,
-    availability: "Available this evening",
-    responseTime: "Replies in 20 min",
-    outcomeText:
-      "See diagnostic pricing and book a mechanic visit with clearer expectations.",
-    mockOffset: { lat: 17.4948, lon: 78.3996 },
-    verified: true,
-  },
-  {
-    id: 8,
-    name: "Priya Singh",
-    profession: "Gardener",
-    rating: 4.4,
-    price: 20,
-    availability: "Morning slots open",
-    responseTime: "Replies in 40 min",
-    outcomeText:
-      "Review service options and book a gardener for regular or one-time visits.",
-    mockOffset: { lat: 17.4239, lon: 78.4738 },
-    verified: true,
-  },
-  {
-    id: 9,
-    name: "Imran Khan",
-    profession: "Appliance Repair",
-    rating: 4.6,
-    price: 35,
-    availability: "Next slot tomorrow",
-    responseTime: "Replies in 25 min",
-    outcomeText:
-      "Open the profile to check appliance support and request a repair appointment.",
-    mockOffset: { lat: 17.3724, lon: 78.4378 },
-    verified: true,
-  },
-  {
-    id: 10,
-    name: "Neha Gupta",
-    profession: "Pest Control",
-    rating: 4.5,
-    price: 40,
-    availability: "Inspection slots open",
-    responseTime: "Replies in 15 min",
-    outcomeText:
-      "View treatment details and book an inspection without leaving the flow.",
-    mockOffset: { lat: 17.4065, lon: 78.4772 },
-    verified: true,
-  },
+const fallbackWorkers = [
+  { id: 1, name: "John Doe", profession: "Electrician", rating: 4.8, price: 40, availability: "Available today", responseTime: "Replies in 20 min", outcomeText: "Open the full profile to compare pricing.", mockOffset: { lat: 17.3850, lon: 78.4867 }, verified: true },
+  { id: 2, name: "Jane Smith", profession: "Plumber", rating: 4.9, price: 50, availability: "Next slot this afternoon", responseTime: "Replies in 15 min", outcomeText: "See availability first, then confirm a plumbing booking.", mockOffset: { lat: 17.4435, lon: 78.3772 }, verified: true },
+  { id: 3, name: "Mike Johnson", profession: "Carpenter", rating: 4.5, price: 35, availability: "Available tomorrow morning", responseTime: "Replies in 35 min", outcomeText: "Review past work and request a carpentry visit.", mockOffset: { lat: 17.4399, lon: 78.4983 }, verified: true },
+  { id: 4, name: "Ravi Kumar", profession: "Painter", rating: 4.6, price: 30, availability: "Next slot tomorrow", responseTime: "Replies in 25 min", outcomeText: "Check service details and book when ready.", mockOffset: { lat: 17.4483, lon: 78.3915 }, verified: true },
+  { id: 5, name: "Amit Sharma", profession: "AC Technician", rating: 4.7, price: 45, availability: "Emergency slots open", responseTime: "Replies in 10 min", outcomeText: "View service scope and book an AC repair visit.", mockOffset: { lat: 17.4126, lon: 78.4052 }, verified: true },
 ];
 
 const categories = [
@@ -454,12 +331,12 @@ const Services = () => {
 
         if (mappedBackend && mappedBackend.length > 0) {
           setWorkers(mappedBackend);
-        } else {
-          setWorkers(mockWorkers);
+        } else if (workers.length === 0) {
+          setWorkers(fallbackWorkers);
         }
       } catch (err) {
-        console.error("Failed to fetch search results from backend, falling back to mock data", err);
-        setWorkers(mockWorkers);
+        console.error("Failed to fetch search results from backend, falling back to local data", err);
+        if (workers.length === 0) setWorkers(fallbackWorkers);
       } finally {
         const storedRecent =
           JSON.parse(localStorage.getItem("recentWorkers")) || [];

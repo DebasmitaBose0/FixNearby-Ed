@@ -3,6 +3,8 @@ import {
   searchWorkers,
   getSearchSuggestions,
   getPopularSearches,
+  searchWorkersNearby,
+  getCategoryCounts,
 } from '../controllers/searchController.js';
 
 const router = express.Router();
@@ -27,5 +29,19 @@ router.get('/suggestions', getSearchSuggestions);
  * @access  Public
  */
 router.get('/popular', getPopularSearches);
+
+/**
+ * @route   GET /api/search/nearby
+ * @desc    Geospatial nearby worker search
+ * @access  Public
+ */
+router.get('/nearby', searchWorkersNearby);
+
+/**
+ * @route   GET /api/search/categories
+ * @desc    Get worker counts by category
+ * @access  Public
+ */
+router.get('/categories', getCategoryCounts);
 
 export default router;
