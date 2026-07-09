@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { lazyWithRetry } from "./utils/performance";
 
 // ─── Layout Components (always loaded — tiny, needed immediately) ─────────────
 import Navbar from "./components/Navbar";
@@ -23,11 +24,11 @@ const Home             = lazy(() => import('./pages/Home'));
 const Login            = lazy(() => import('./pages/Login'));
 const Register         = lazy(() => import('./pages/Register'));
 const Dashboard        = lazy(() => import('./pages/Dashboard'));
-const Services         = lazy(() => import('./pages/Services'));
-const WorkerProfile    = lazy(() => import('./pages/WorkerProfile'));
-const WorkerDashboard  = lazy(() => import('./pages/WorkerDashboard'));
-const Profile          = lazy(() => import('./pages/Profile'));
-const Bookings         = lazy(() => import('./pages/Bookings'));
+const Services         = lazy(() => lazyWithRetry(() => import('./pages/Services')));
+const WorkerProfile    = lazy(() => lazyWithRetry(() => import('./pages/WorkerProfile')));
+const WorkerDashboard  = lazy(() => lazyWithRetry(() => import('./pages/WorkerDashboard')));
+const Profile          = lazy(() => lazyWithRetry(() => import('./pages/Profile')));
+const Bookings         = lazy(() => lazyWithRetry(() => import('./pages/Bookings')));
 const WorkerRegister   = lazy(() => import('./pages/WorkerRegister'));
 const WorkerLogin      = lazy(() => import('./pages/WorkerLogin'));
 const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
