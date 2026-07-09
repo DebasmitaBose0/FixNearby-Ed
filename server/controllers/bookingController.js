@@ -303,12 +303,18 @@ export const cancelBooking = async (req, res, next) => {
     const principal = getPrincipal(req);
     const oldStatus = booking.status;
 
+    const cancelReason = req.body.reason || req.body.note || 'No reason provided';
+
     booking.status = 'Cancelled';
+    booking.cancelReason = cancelReason;
+    booking.cancelledAt = new Date();
+    booking.cancelledBy = principal.ref._id;
+    booking.cancelledByModel = principal.model;
     booking.statusHistory.push({
       status: 'Cancelled',
       changedBy: principal.ref._id,
       changedByModel: principal.model,
-      note: req.body.note || 'Booking cancelled'
+      note: `Booking cancelled. Reason: ${cancelReason}`
     });
     await booking.save();
 
@@ -316,7 +322,8 @@ export const cancelBooking = async (req, res, next) => {
       await queueNotification('booking_status_update', {
         bookingId: booking._id,
         oldStatus,
-        newStatus: 'Cancelled'
+        newStatus: 'Cancelled',
+        reason: cancelReason
       });
     } catch (notifyErr) {
       console.error('Failed to queue status update notification:', notifyErr.message);
@@ -335,6 +342,39 @@ export const cancelBooking = async (req, res, next) => {
       success: true,
       message: 'Booking cancelled successfully',
       booking
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Record cancel reason for an already-cancelled booking
+// @route   PATCH /api/bookings/:id/cancel-reason
+// @access  Private
+export const recordCancelReason = async (req, res, next) => {
+  try {
+    const booking = req.booking;
+    const { reason } = req.body;
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cancel reason is required'
+      });
+    }
+
+    booking.cancelReason = reason.trim();
+    booking.statusHistory.push({
+      status: booking.status,
+      changedBy: req.user?._id || req.worker?._id,
+      changedByModel: req.user ? 'User' : 'Worker',
+      note: `Cancel reason updated: ${reason.trim()}`
+    });
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Cancel reason recorded successfully'
     });
   } catch (error) {
     next(error);

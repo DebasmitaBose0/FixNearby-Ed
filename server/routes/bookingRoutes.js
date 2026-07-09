@@ -8,7 +8,8 @@ import {
   getBookings,
   getBookingById,
   rescheduleBooking,
-  updateBookingStatusController
+  updateBookingStatusController,
+  recordCancelReason
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { checkBookingOverlap } from '../middleware/bookingValidation.js';
@@ -41,6 +42,9 @@ router.route('/:id/complete')
 router.route('/:id/cancel')
   .patch(loadBooking, authorizeStatusTransition, cancelBooking)
   .post(loadBooking, authorizeStatusTransition, cancelBooking);
+
+router.route('/:id/cancel-reason')
+  .patch(loadBooking, requireBookingParticipant, recordCancelReason);
 
 router.route('/:id/reschedule')
   .patch(loadBooking, rescheduleBooking);

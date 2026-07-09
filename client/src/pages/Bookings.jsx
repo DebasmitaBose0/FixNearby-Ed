@@ -8,6 +8,7 @@ import { useBookings } from "../hooks/useBookings";
 import api from "../services/apiClient";
 import useToast from "../hooks/useToast";
 import { showApiError } from "../utils/apiErrorHandler";
+import RescheduleModal from "../components/RescheduleModal";
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
@@ -206,6 +207,8 @@ const Bookings = () => {
   const [cancelTargetId, setCancelTargetId] = useState(null);
 
   const [reschedulingId, setReschedulingId] = useState(null);
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
+  const [rescheduleTarget, setRescheduleTarget] = useState(null);
   const [newTime, setNewTime] = useState("");
   const [rescheduleError, setRescheduleError] = useState("");
   const [submittingReschedule, setSubmittingReschedule] = useState(null);
@@ -243,24 +246,19 @@ const Bookings = () => {
     }
   };
 
-  const handleRescheduleSubmit = async (id) => {
-    if (!newTime) {
-      setRescheduleError("Please select a valid date and time.");
-      return;
-    }
-    const selectedDate = new Date(newTime);
-    if (selectedDate.getTime() <= Date.now()) {
-      setRescheduleError("Rescheduled time must be in the future.");
-      return;
-    }
+  const handleRescheduleClick = (id) => {
+    setRescheduleTarget(id);
+    setRescheduleModalOpen(true);
+  };
 
+  const handleRescheduleSubmit = async (id, newDateStr) => {
     setRescheduleError("");
     setSubmittingReschedule(id);
-    const result = await rescheduleBooking(id, selectedDate.toISOString());
+    const result = await rescheduleBooking(id, newDateStr);
     setSubmittingReschedule(null);
     if (result.success) {
-      setReschedulingId(null);
-      setNewTime("");
+      setRescheduleModalOpen(false);
+      setRescheduleTarget(null);
       refresh();
     } else {
       setRescheduleError(result.message || "Failed to reschedule booking. Please try another time.");
@@ -463,11 +461,7 @@ const Bookings = () => {
                 {booking.status === "Pending" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setReschedulingId(booking.id);
-                      setNewTime("");
-                      setRescheduleError("");
-                    }}
+                    onClick={() => handleRescheduleClick(booking.id)}
                     className="font-medium text-blue-600 hover:text-blue-700"
                   >
                     Reschedule
@@ -489,45 +483,8 @@ const Bookings = () => {
                 )}
               </div>
 
-              {/* RESCHEDULE BOX */}
-              {reschedulingId === booking.id && (
-                <div className="mt-4 p-5 rounded-2xl border border-blue-100 bg-blue-50/50 space-y-3 max-w-md transition-all duration-300">
-                  <h4 className="text-sm font-bold text-slate-800">Reschedule Booking</h4>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <input
-                      type="datetime-local"
-                      value={newTime}
-                      onChange={(e) => setNewTime(e.target.value)}
-                      className="rounded-xl border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white text-slate-700"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleRescheduleSubmit(booking.id)}
-                        disabled={submittingReschedule === booking.id}
-                        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition"
-                      >
-                        {submittingReschedule === booking.id ? "Updating…" : "Confirm"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReschedulingId(null);
-                          setNewTime("");
-                          setRescheduleError("");
-                        }}
-                        className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                  {rescheduleError && (
-                    <p className="text-xs font-semibold text-rose-600">
-                      {rescheduleError}
-                    </p>
-                  )}
-                </div>
+              {rescheduleError && reschedulingId === booking.id && (
+                <p className="mt-2 text-xs font-semibold text-rose-600">{rescheduleError}</p>
               )}
 
               {/* ESTIMATE BREAKDOWN */}
@@ -724,6 +681,13 @@ const Bookings = () => {
         isOpen={cancelModalOpen}
         onClose={() => { setCancelModalOpen(false); setCancelTargetId(null); }}
         onConfirm={confirmCancel}
+      />
+      <RescheduleModal
+        isOpen={rescheduleModalOpen}
+        onClose={() => { setRescheduleModalOpen(false); setRescheduleTarget(null); setRescheduleError(""); }}
+        onConfirm={(newDate) => handleRescheduleSubmit(rescheduleTarget, newDate)}
+        submitting={submittingReschedule === rescheduleTarget}
+        error={rescheduleError}
       />
     </div>
   );

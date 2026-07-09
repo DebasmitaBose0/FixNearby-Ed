@@ -12,10 +12,15 @@ const CANCEL_REASONS = [
   'Other',
 ];
 
-export default function CancelBookingModal({ isOpen, onClose, onConfirm }) {
+export default function CancelBookingModal({ isOpen, onClose, onConfirm, onReasonSelect }) {
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const handleReasonChange = (r) => {
+    setReason(r);
+    if (onReasonSelect) onReasonSelect(r);
+  };
 
   const handleConfirm = async () => {
     const finalReason = reason === 'Other' ? customReason : reason;
@@ -28,6 +33,12 @@ export default function CancelBookingModal({ isOpen, onClose, onConfirm }) {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleClose = () => {
+    setReason('');
+    setCustomReason('');
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -101,7 +112,7 @@ export default function CancelBookingModal({ isOpen, onClose, onConfirm }) {
 
           <div className="mt-6 flex gap-3">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Keep Booking
