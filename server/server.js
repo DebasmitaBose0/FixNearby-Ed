@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import connectDB from './config/db.js';
@@ -16,6 +17,8 @@ import authMiddleware from './middleware/authMiddleware.js';
 import errorHandler from './middleware/errorHandler.js';
 import csrfProtection from './middleware/csrfMiddleware.js';
 import { compressionMiddleware } from './middleware/compression.js';
+import securityHeaders from './middleware/securityHeaders.js';
+import { sanitizeInput } from './middleware/securitySanitize.js';
 import allowedOrigins from './config/corsOrigins.js';
 import { initSocket } from './socket.js';
 import bookingRoutes from './routes/bookingRoutes.js';
@@ -36,6 +39,8 @@ validateEnv();
 const app = express();
 
 app.use(compressionMiddleware);
+app.use(cookieParser());
+app.use(securityHeaders);
 
 // Security Middleware: Strict CSP headers and cross-origin resource protection
 app.use(
@@ -43,11 +48,14 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com"],
-        connectSrc: ["'self'", "http://localhost:5000", "https://api.fixnearby.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https://images.unsplash.com", "https://*.cloudinary.com"],
+        connectSrc: ["'self'", "http://localhost:5000", "https://api.fixnearby.com", "ws://localhost:5000"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        baseUri: ["'self'"],
       },
     },
     crossOriginEmbedderPolicy: false,
@@ -66,9 +74,7 @@ app.use(limiter);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      // Strip trailing slash from request origin just in case
       const normalizedOrigin = origin.replace(/\/$/, '');
       if (allowedOrigins.indexOf(normalizedOrigin) === -1) {
         const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
@@ -81,6 +87,7 @@ app.use(
 );
 
 app.use(express.json({ limit: '10mb' }));
+app.use(sanitizeInput);
 app.use(csrfProtection);
 
 // Serve uploaded images
