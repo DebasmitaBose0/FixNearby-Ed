@@ -25,10 +25,8 @@ import { useLocation } from "../context/LocationContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { useAuth } from "../context/AuthContext";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
-import useToast from "../hooks/useToast";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
-import MapView from "../components/MapView";
 
 const mockWorkers = [
   {
