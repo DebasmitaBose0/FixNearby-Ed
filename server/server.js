@@ -27,8 +27,6 @@ import { startWorker } from './workers/notificationWorker.js';
 import { startBookingReminderScheduler } from './workers/bookingReminderWorker.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
-import availabilityRoutes from './routes/availabilityRoutes.js';
-import auditLogRoutes from './routes/auditLogRoutes.js';
 
 dotenv.config();
 
