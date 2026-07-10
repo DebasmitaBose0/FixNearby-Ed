@@ -25,10 +25,8 @@ import { useLocation } from "../context/LocationContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { useAuth } from "../context/AuthContext";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
-import useToast from "../hooks/useToast";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
-import MapView from "../components/MapView";
 
 const mockWorkers = [
   {
@@ -314,16 +312,6 @@ const Services = () => {
   const [loading, setLoading] = useState(true);
   const [favoritedWorkerIds, setFavoritedWorkerIds] = useState(new Set());
   const [selectedWorkerForWizard, setSelectedWorkerForWizard] = useState(null);
-  const [selectedWorkerId, setSelectedWorkerId] = useState(null);
-  const [expandedTrustId, setExpandedTrustId] = useState(null);
-
-  const handleMarkerClick = (workerId) => {
-    setSelectedWorkerId(workerId);
-    const cardElement = document.getElementById(`worker-card-${workerId}`);
-    if (cardElement) {
-      cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
 
   // Fetch favorited worker IDs
   useEffect(() => {
@@ -989,40 +977,23 @@ const Services = () => {
                             )}
                           </div>
 
-                          <div className="mt-auto space-y-3">
-                            {worker.mockOffset && (
-                              <a
-                                href={`https://www.google.com/maps?q=${worker.mockOffset.lat},${worker.mockOffset.lon}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block w-full rounded-xl border border-blue-600 bg-white py-4 text-center font-bold text-blue-600 transition hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                aria-label={`Open google maps location for ${worker.name}`}
-                              >
-                                📍 Open in Google Maps
-                              </a>
-                            )}
+                        {getEstimatorConfig(worker.profession) !== null && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedWorkerForWizard(worker)}
+                            className="block w-full rounded-xl border border-emerald-600 bg-emerald-50 text-center font-bold text-emerald-700 py-4 hover:bg-emerald-100/50 transition-all text-sm focus:outline-none"
+                          >
+                            🧮 Calculate Smart Estimate
+                          </button>
+                        )}
 
-                            {getEstimatorConfig(worker.profession) !== null && (
-                              <button
-                                type="button"
-                                onClick={() => setSelectedWorkerForWizard(worker)}
-                                className="block w-full rounded-xl border border-emerald-600 bg-emerald-50 text-center font-bold text-emerald-700 py-4 hover:bg-emerald-100/50 transition-all text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                                aria-label={`Calculate smart estimate for ${worker.name}`}
-                              >
-                                🧮 Calculate Smart Estimate
-                              </button>
-                            )}
-
-                            <Link
-                              to={`/worker/${worker.id}`}
-                              onClick={() => handleRecentlyViewed(worker)}
-                              className="block w-full rounded-xl bg-slate-900 py-4 text-center font-bold text-white transition hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                              aria-label={`View profile and book ${worker.name}`}
-                            >
-                              View Profile and Book
-                            </Link>
-                          </div>
-                        </div>
+                        <Link
+                          to={`/worker/${worker.id}`}
+                          onClick={() => handleRecentlyViewed(worker)}
+                          className="block w-full rounded-xl bg-slate-900 py-4 text-center font-bold text-white transition hover:bg-blue-600"
+                        >
+                          View Profile and Book
+                        </Link>
                       </div>
                     ))}
                   </div>

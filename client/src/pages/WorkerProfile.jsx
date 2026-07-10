@@ -280,76 +280,6 @@ const WorkerProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [showWizardModal, setShowWizardModal] = useState(false);
-  const [reviews, setReviews] = useState([]);
-
-  // Fetch reviews for this worker
-  useEffect(() => {
-    if (id) {
-      const fetchReviews = async () => {
-        try {
-          const res = await api.get(`/reviews?workerId=${id}`);
-          const reviewList = res.data.reviews || res.data.data || [];
-          if (res.data.success && reviewList.length > 0) {
-            const formatted = reviewList.map(r => ({
-              id: r._id,
-              name: r.user?.name || "Anonymous",
-              rating: r.rating,
-              text: r.reviewText,
-              images: r.images || [],
-              isVerified: r.isVerified || false,
-              reported: r.reported || false
-            }));
-            setReviews(formatted);
-          } else {
-            // Fallback to mock reviews
-            const formattedMock = REVIEWS.map((r, idx) => ({
-              id: `mock-${idx}`,
-              name: r.name,
-              rating: r.rating,
-              text: r.text,
-              images: [],
-              isVerified: true,
-              reported: false
-            }));
-            setReviews(formattedMock);
-          }
-        } catch (err) {
-          console.error("Failed to fetch reviews:", err);
-          const formattedMock = REVIEWS.map((r, idx) => ({
-            id: `mock-${idx}`,
-            name: r.name,
-            rating: r.rating,
-            text: r.text,
-            images: [],
-            isVerified: true,
-            reported: false
-          }));
-          setReviews(formattedMock);
-        }
-      };
-      fetchReviews();
-    }
-  }, [id]);
-
-  const handleReportReview = async (reviewId) => {
-    if (String(reviewId).startsWith('mock-')) {
-      alert("Mock reviews cannot be reported.");
-      return;
-    }
-    const reason = prompt("Please enter the reason for reporting this review:");
-    if (!reason) return;
-
-    try {
-      const res = await api.post(`/reviews/${reviewId}/report`, { reason });
-      if (res.data.success) {
-        alert("Review has been reported for moderation.");
-        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, reported: true } : r));
-      }
-    } catch (err) {
-      console.error("Failed to report review:", err);
-      alert(err.response?.data?.message || "Failed to report review.");
-    }
-  };
 
   useEffect(() => {
     if (isAuthenticated && id) {
@@ -936,12 +866,7 @@ const WorkerProfile = () => {
                       Estimate First
                     </button>
                   )}
-              </div>
-
-              {/* Availability Calendar */}
-              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mt-6">
-                <h2 className="text-2xl font-bold mb-4">Availability Calendar</h2>
-                <WorkerBookingCalendar onDateSelect={(date) => console.log("Selected Date: ", date)} />
+                </div>
               </div>
             </div>
           )}
