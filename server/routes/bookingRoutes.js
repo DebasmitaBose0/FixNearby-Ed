@@ -8,7 +8,8 @@ import {
   getBookings,
   getBookingById,
   rescheduleBooking,
-  updateBookingStatusController
+  updateBookingStatusController,
+  getBookingTimeline
 } from '../controllers/bookingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { checkBookingOverlap } from '../middleware/bookingValidation.js';
@@ -47,6 +48,9 @@ router.route('/:id/reschedule')
 
 router.route('/:id/status')
   .patch(loadBooking, authorizeStatusTransition, updateBookingStatusController);
+
+router.route('/:id/timeline')
+  .get(loadBooking, requireBookingParticipant, getBookingTimeline);
 
 router.route('/:id/review')
   .post(upload.array('images', 5), createBookingReview);
