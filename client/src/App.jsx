@@ -49,6 +49,7 @@ const NotFound            = lazy(() => import('./pages/NotFound'));
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsers          = lazy(() => import('./pages/admin/AdminUsers'));
+const ModerationPanel     = lazy(() => import('./pages/admin/ModerationPanel'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
 const ResetPasswordUser = lazy(()=>import('./pages/ResetPasswordUser'));
@@ -101,6 +102,7 @@ const ROUTES = [
   { path: '/civic-issues',     element: <CivicIssues /> },
   { path: '/admin',            element: <AdminDashboard /> },
   { path: '/admin/users',      element: <AdminUsers /> },
+  { path: '/admin/moderation', element: <ModerationPanel /> },
   // User (protected)
   {
     path: "/profile",
