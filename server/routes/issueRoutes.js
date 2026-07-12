@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { protect } from '../middleware/authMiddleware.js';
 import {
   getNearbyIssues,
   createIssue,
@@ -13,16 +14,12 @@ import {
   supportReviewDispute
 } from '../controllers/issueController.js';
 
-// Existing routes remain unchanged
+const router = express.Router();
 
 // Dispute routes
 router.post('/dispute', protect, createBookingDispute);
 router.post('/:id/respond', protect, respondToDispute);
 router.patch('/:id/dispute/status', protect, supportReviewDispute);
-
-import { protect } from '../middleware/authMiddleware.js';
-
-const router = express.Router();
 
 // Setup multer storage
 const __filename = fileURLToPath(import.meta.url);
