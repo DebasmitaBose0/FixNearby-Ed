@@ -45,6 +45,8 @@ const CivicIssues         = lazy(() => import('./pages/CivicIssues'));
 const ReportIssue         = lazy(() => import('./components/IssueSubmissionForm'));
 const IssueDetail         = lazy(() => import('./pages/IssueDetail'));
 const NotFound            = lazy(() => import('./pages/NotFound'));
+const NotFound            = lazy(() => import('./pages/NotFound'));
+const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -118,6 +120,14 @@ const ROUTES = [
     element: (
       <RequireAuth>
         <Bookings />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/notifications",
+    element: (
+      <RequireAuth>
+        <Notifications />
       </RequireAuth>
     ),
   },
