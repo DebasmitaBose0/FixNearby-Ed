@@ -10,6 +10,8 @@ import {
   SprayCan,
   Heart,
   Star,
+  Map,
+  List,
 } from "lucide-react";
 
 
@@ -27,6 +29,7 @@ import { useAuth } from "../context/AuthContext";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
+import WorkerMap from "../components/WorkerMap";
 
 const mockWorkers = [
   {
@@ -376,6 +379,7 @@ const Services = () => {
   const [favoritedWorkerIds, setFavoritedWorkerIds] = useState(new Set());
   const [selectedWorkerForWizard, setSelectedWorkerForWizard] = useState(null);
   const [selectedWorkerId, setSelectedWorkerId] = useState(null);
+  const [viewMode, setViewMode] = useState('list');
 
   const handleMarkerClick = (workerId) => {
     setSelectedWorkerId(workerId);
@@ -799,6 +803,23 @@ const Services = () => {
               </span>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode(prev => prev === 'list' ? 'map' : 'list')}
+            className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          >
+            {viewMode === 'list' ? (
+              <>
+                <Map className="h-5 w-5" />
+                <span>Map View</span>
+              </>
+            ) : (
+              <>
+                <List className="h-5 w-5" />
+                <span>List View</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* CATEGORY CHIPS (FULL FIX) */}
@@ -910,7 +931,21 @@ const Services = () => {
 
           {/* MAIN CONTENT */}
           <div className="flex-grow lg:grid lg:grid-cols-12 lg:gap-8 items-start w-full">
-            {/* WORKER LIST (Left part of split) */}
+            {/* MAP VIEW */}
+            {viewMode === 'map' ? (
+              <div className="lg:col-span-12 h-[600px]">
+                <WorkerMap
+                  workers={filteredWorkers}
+                  center={coords ? { lat: coords.latitude, lng: coords.longitude } : { lat: 17.385, lng: 78.4867 }}
+                  zoom={1.2}
+                  onWorkerClick={(id) => {
+                    const el = document.getElementById(`worker-card-${id}`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                />
+              </div>
+            ) : (
+            /* WORKER LIST (Left part of split) */
             <div className="lg:col-span-7 space-y-6">
               {/* WORKER CARDS */}
               {loading ? (
@@ -1048,8 +1083,10 @@ const Services = () => {
                 </>
               )}
             </div>
+            )}
 
-            {/* MAP CONTAINER (Right part of split, sticky) */}
+            {/* MAP CONTAINER (Right part of split, sticky) - hidden when in map view */}
+            {viewMode !== 'map' && (
             <div className="hidden lg:block lg:col-span-5 sticky top-24 h-[calc(100vh-140px)] rounded-3xl overflow-hidden shadow-sm border border-slate-200">
               <MapView
                 workers={filteredWorkers}
@@ -1057,6 +1094,7 @@ const Services = () => {
                 onMarkerClick={handleMarkerClick}
               />
             </div>
+            )}
           </div>
         </div>
       </div>
