@@ -32,6 +32,8 @@ import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
 import availabilityRoutes from './routes/availabilityRoutes.js';
 import auditLogRoutes from './routes/auditLogRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import verificationRoutes from './routes/verificationRoutes.js';
 
 dotenv.config();
 
@@ -136,6 +138,8 @@ app.use('/api/estimates', estimateRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // Start background workers after DB connection is established
 (async () => {
