@@ -102,6 +102,7 @@ const ROUTES = [
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },
   { path: '/recommendations',   element: <Recommendations /> }, // ✨ NEW
+  { path: '/request-service',   element: <RequestService /> },
   { path: '/civic-issues',           element: <CivicIssues /> },
   { path: '/civic-issues/report',    element: <ReportIssue /> },
   { path: '/civic-issues',     element: <CivicIssues /> },

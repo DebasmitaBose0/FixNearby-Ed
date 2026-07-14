@@ -31,6 +31,7 @@ import { startBookingReminderScheduler } from './workers/bookingReminderWorker.j
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 
