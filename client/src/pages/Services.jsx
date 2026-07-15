@@ -27,6 +27,7 @@ import { useAuth } from "../context/AuthContext";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
+import useToast from "../hooks/useToast";
 
 const mockWorkers = [
   {
@@ -398,7 +399,7 @@ const Services = () => {
     maxDistance: 50,
     availability: 'all',
     sortBy: sortBy,
-  });
+  }, isAuthenticated);
 
   const [suggestions, setSuggestions] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -471,13 +472,33 @@ const Services = () => {
   useEffect(() => {
     const urlCategory = searchParams.get("category") || "All";
     const urlUrgent = searchParams.get("urgent") === "true";
-    const urlSearch = searchParams.get("search") || "";
+    const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
     const urlSort = searchParams.get("sort") || "distance";
+    const urlMinPrice = searchParams.get("minPrice") !== null ? Number(searchParams.get("minPrice")) : 0;
+    const urlMaxPrice = searchParams.get("maxPrice") !== null ? Number(searchParams.get("maxPrice")) : 100;
+    const urlMinRating = searchParams.get("minRating") !== null ? Number(searchParams.get("minRating")) : 0;
+    const urlMaxDistance = searchParams.get("maxDistance") !== null ? Number(searchParams.get("maxDistance")) : 50;
+    const urlAvailability = searchParams.get("availability") || "all";
 
     if (urlCategory !== categoryFilter) setCategoryFilter(urlCategory);
     if (urlUrgent !== urgentFilter) setUrgentFilter(urlUrgent);
     if (urlSearch !== searchQuery) setSearchQuery(urlSearch);
     if (urlSort !== sortBy) setSortBy(urlSort);
+    if (
+      urlMinPrice !== advancedFilters.minPrice ||
+      urlMaxPrice !== advancedFilters.maxPrice ||
+      urlMinRating !== advancedFilters.minRating ||
+      urlMaxDistance !== advancedFilters.maxDistance ||
+      urlAvailability !== advancedFilters.availability
+    ) {
+      setAdvancedFilters({
+        minPrice: urlMinPrice,
+        maxPrice: urlMaxPrice,
+        minRating: urlMinRating,
+        maxDistance: urlMaxDistance,
+        availability: urlAvailability,
+      });
+    }
   }, [searchParams]);
 
   // SYNC STATE TO URL PARAMS
@@ -488,6 +509,12 @@ const Services = () => {
     if (categoryFilter !== "All") params.category = categoryFilter;
     if (sortBy !== "distance") params.sort = sortBy;
     if (urgentFilter) params.urgent = "true";
+    
+    if (advancedFilters.minPrice > 0) params.minPrice = advancedFilters.minPrice;
+    if (advancedFilters.maxPrice < 100) params.maxPrice = advancedFilters.maxPrice;
+    if (advancedFilters.minRating > 0) params.minRating = advancedFilters.minRating;
+    if (advancedFilters.maxDistance < 50) params.maxDistance = advancedFilters.maxDistance;
+    if (advancedFilters.availability !== "all") params.availability = advancedFilters.availability;
 
     setSearchParams(params);
   }, [
@@ -495,6 +522,7 @@ const Services = () => {
     categoryFilter,
     sortBy,
     urgentFilter,
+    advancedFilters,
     setSearchParams,
   ]);
   /* FILTER + SORT */
@@ -604,19 +632,53 @@ const Services = () => {
     addToHistory(query, { category: categoryFilter, ...advancedFilters });
   };
 
-  const handleSaveFavorite = (name) => {
-    const success = saveFavoriteSearch(name, searchQuery, { category: categoryFilter, ...advancedFilters });
+  const handleSaveFavorite = async (name) => {
+    const success = await saveFavoriteSearch(name, searchQuery, {
+      category: categoryFilter,
+      sortBy,
+      ...advancedFilters
+    });
     if (success) {
-      alert('Search saved to favorites!');
+      showToast('Search saved to favorites!', 'success');
+    } else {
+      showToast('Failed to save search.', 'error');
     }
   };
 
+  const handleLoadFavorite = (favorite) => {
+    setSearchQuery(favorite.query || "");
+    const favFilters = favorite.filters || {};
+    if (favFilters.category) setCategoryFilter(favFilters.category);
+    if (favFilters.sortBy) setSortBy(favFilters.sortBy);
+    setAdvancedFilters({
+      minPrice: favFilters.minPrice !== undefined ? Number(favFilters.minPrice) : 0,
+      maxPrice: favFilters.maxPrice !== undefined ? Number(favFilters.maxPrice) : 100,
+      minRating: favFilters.minRating !== undefined ? Number(favFilters.minRating) : 0,
+      maxDistance: favFilters.maxDistance !== undefined ? Number(favFilters.maxDistance) : 50,
+      availability: favFilters.availability || 'all',
+    });
+    showToast(`Loaded search template: ${favorite.name}`, 'info');
+  };
+
   const handleShareSearch = () => {
-    const url = getShareableUrl();
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (categoryFilter !== "All") params.set('category', categoryFilter);
+    if (sortBy !== "distance") params.set('sort', sortBy);
+    if (urgentFilter) params.set('urgent', "true");
+    
+    if (advancedFilters.minPrice > 0) params.set('minPrice', advancedFilters.minPrice);
+    if (advancedFilters.maxPrice < 100) params.set('maxPrice', advancedFilters.maxPrice);
+    if (advancedFilters.minRating > 0) params.set('minRating', advancedFilters.minRating);
+    if (advancedFilters.maxDistance < 50) params.set('maxDistance', advancedFilters.maxDistance);
+    if (advancedFilters.availability !== "all") params.set('availability', advancedFilters.availability);
+
+    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(url).then(() => {
-      alert('Search URL copied to clipboard!');
+      showToast('Search URL copied to clipboard!', 'success');
     }).catch(err => {
       console.error('Failed to copy URL:', err);
+      showToast('Failed to copy URL.', 'error');
     });
   };
 
@@ -694,7 +756,8 @@ const Services = () => {
             favoriteSearches={favoriteSearches}
             onRemoveHistory={removeHistoryItem}
             onClearHistory={clearHistory}
-            onLoadFavorite={loadFavoriteSearch}
+            onLoadFavorite={handleLoadFavorite}
+            onRemoveFavorite={removeFavoriteSearch}
             onSaveFavorite={handleSaveFavorite}
             onShare={handleShareSearch}
             suggestions={suggestions}
