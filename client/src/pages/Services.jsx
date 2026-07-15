@@ -20,7 +20,7 @@ import FilterSidebar from "../components/FilterSidebar";
 import ReviewBadge from "../components/ReviewBadge";
 import useSearch from "../hooks/useSearch";
 import { fetchWorkers } from "../services/workerService";
-import { getSearchSuggestions } from "../services/searchService";
+import { getSearchSuggestions, searchWorkers } from "../services/searchService";
 import { useLocation } from "../context/LocationContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { useAuth } from "../context/AuthContext";
@@ -431,7 +431,6 @@ const Services = () => {
         };
         const searchResponse = await searchWorkers(queryParams);
         const backendWorkers = searchResponse?.data || [];
-        // Map backend search result to client expectations
         const mappedBackend = backendWorkers.map(w => ({
           ...w,
           id: w._id || w.id,
@@ -441,12 +440,17 @@ const Services = () => {
             (w.availabilityStatus === "available" ? "Available today" : 
              w.availabilityStatus === "busy" ? "Busy" : 
              w.availabilityStatus === "offline" ? "Offline" : "Available today"),
-          responseTime: w.responseTime || "Replies in 15 min",
+          responseTime: w.slaResponseMins ? `Replies in ${w.slaResponseMins} min` : (w.responseTime || "Replies in 15 min"),
           outcomeText: w.outcomeText || `Review past work and request a ${w.category?.toLowerCase() || 'service'} visit.`,
           mockOffset: w.mockOffset || (w.coordinates ? { lat: w.coordinates.lat, lon: w.coordinates.lon } : null),
-          verified: w.verified ?? true,
+          verified: w.verificationStatus ? w.verificationStatus === 'verified' : (w.verified ?? true),
           rating: Number(w.rating) || 4.5,
           completedJobs: w.completedJobs || 12,
+          slaResponseMins: w.slaResponseMins,
+          serviceCoverage: w.serviceCoverage,
+          cancellationPolicy: w.cancellationPolicy,
+          refundPolicy: w.refundPolicy,
+          verificationStatus: w.verificationStatus || 'verified',
         }));
 
         if (mappedBackend && mappedBackend.length > 0) {

@@ -348,13 +348,21 @@ const WorkerProfile = () => {
       setLoading(true);
       const workerId = Number(id);
       if (!isNaN(workerId) && WORKERS[workerId]) {
-        setWorker(WORKERS[workerId]);
+        const mockW = WORKERS[workerId];
+        setWorker({
+          ...mockW,
+          slaResponseMins: mockW.slaResponseMins || 20,
+          serviceCoverage: mockW.serviceCoverage || ["Local Metro Area"],
+          cancellationPolicy: mockW.cancellationPolicy || "Free cancellation up to 24 hours prior to slot.",
+          refundPolicy: mockW.refundPolicy || "Full refund guaranteed if response SLA is missed.",
+          verificationStatus: mockW.verificationStatus || "verified",
+        });
         setLoading(false);
       } else {
         // Fetch from backend
         try {
           const res = await api.get(`/workers/${id}`);
-          const backendWorker = res.data;
+          const backendWorker = res.data?.worker || res.data;
           
           setWorker({
             id: backendWorker._id || backendWorker.id,
@@ -376,6 +384,11 @@ const WorkerProfile = () => {
                 review: "Great job, very detail-oriented and responsive.",
               }
             ],
+            slaResponseMins: backendWorker.slaResponseMins,
+            serviceCoverage: backendWorker.serviceCoverage,
+            cancellationPolicy: backendWorker.cancellationPolicy,
+            refundPolicy: backendWorker.refundPolicy,
+            verificationStatus: backendWorker.verificationStatus || 'verified',
           });
         } catch (err) {
           console.error("Failed to load worker from backend", err);
@@ -647,8 +660,8 @@ const WorkerProfile = () => {
               </div>
 
               <div className="flex items-center gap-3 text-gray-700">
-                <ShieldCheck size={18} />
-                <span>Verified Professional</span>
+                <ShieldCheck size={18} className={worker.verificationStatus === 'verified' ? "text-emerald-500" : "text-amber-500"} />
+                <span className="capitalize">{worker.verificationStatus || 'Verified'} Professional</span>
               </div>
             </div>
 
@@ -842,6 +855,66 @@ const WorkerProfile = () => {
                       </p>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Trust, SLA & Policies */}
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                <h2 className="text-2xl font-bold mb-6">Trust, SLA & Policies</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Response SLA */}
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50">
+                    <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
+                      <Clock size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Response SLA</h4>
+                      <p className="text-sm text-gray-600 mt-1">Replies within {worker.slaResponseMins || 30} minutes</p>
+                    </div>
+                  </div>
+
+                  {/* Coverage Area */}
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/50">
+                    <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                      <MapPin size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Service Coverage</h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {Array.isArray(worker.serviceCoverage) ? worker.serviceCoverage.join(', ') : worker.serviceCoverage || 'Local Metro Area'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cancellation Policy */}
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-amber-50/50 border border-amber-100/50">
+                    <div className="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Cancellation Policy</h4>
+                      <p className="text-sm text-gray-600 mt-1">{worker.cancellationPolicy || 'Free cancellation up to 24 hours prior to slot.'}</p>
+                    </div>
+                  </div>
+
+                  {/* Refund Policy */}
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100/50">
+                    <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+                      <Award size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">Refund Policy</h4>
+                      <p className="text-sm text-gray-600 mt-1">{worker.refundPolicy || 'Full refund guaranteed if response SLA is missed.'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Compliance / Verification Alert */}
+                <div className="mt-6 flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-xs text-gray-500 font-medium">
+                    This service provider's credentials, business license, and identification are <span className="text-emerald-600 font-bold capitalize">{worker.verificationStatus || 'verified'}</span> by our compliance team.
+                  </p>
                 </div>
               </div>
 

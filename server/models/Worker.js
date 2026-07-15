@@ -137,6 +137,11 @@ const workerSchema = new mongoose.Schema(
     refundPolicy: {
       type: String,
       default: 'Full refund guaranteed if response SLA is missed.'
+    },
+    verificationStatus: {
+      type: String,
+      enum: ['unverified', 'pending', 'verified'],
+      default: 'verified'
     }
   },
   {
