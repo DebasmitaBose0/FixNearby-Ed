@@ -53,13 +53,9 @@ const reviewSchema = new mongoose.Schema({
     enum: ['approved', 'pending', 'flagged'],
     default: 'approved'
   },
-  replyText: {
+  adminNote: {
     type: String,
-    trim: true,
-    maxlength: [1000, 'Reply text must be less than 1000 characters']
-  },
-  repliedAt: {
-    type: Date
+    default: ''
   }
 }, {
   timestamps: true
@@ -96,6 +92,7 @@ reviewSchema.index({ worker: 1, createdAt: -1 });
 reviewSchema.index({ user: 1, createdAt: -1 });
 reviewSchema.index({ moderationStatus: 1, createdAt: -1 });
 reviewSchema.index({ worker: 1, moderationStatus: 1, createdAt: -1 });
+reviewSchema.index({ reportedAt: -1 });
 
 reviewSchema.post('save', async function() {
   await this.constructor.calculateAverageRating(this.worker);
