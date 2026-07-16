@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
+import SkeletonLoader from "../components/SkeletonLoader";
+import CancelBookingModal from "../components/CancelBookingModal";
 import StarRating from "../components/StarRating";
 import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History } from "lucide-react";
 import BookingTimeline from "../components/BookingTimeline";
@@ -140,7 +142,7 @@ const formatEventAt = (at) => {
   return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 };
 
-const BookingTimeline = ({ booking }) => {
+const BookingStatusTimeline = ({ booking }) => {
   const status = booking.status;
 
   const steps = [
@@ -709,7 +711,7 @@ const Bookings = () => {
                 </div>
               )}
               {/* BOOKING TIMELINE */}
-              <BookingTimeline booking={booking} />
+              <BookingStatusTimeline booking={booking} />
 
               {/* ESTIMATE BREAKDOWN */}
               {booking.estimateSpecs && (
