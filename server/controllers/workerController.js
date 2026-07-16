@@ -27,6 +27,11 @@ export const registerWorker = async (req, res) => {
       location,
       contact,
       bio,
+      slaResponseMins,
+      serviceCoverage,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus,
     } = req.body;
 
     if (
@@ -66,6 +71,58 @@ export const registerWorker = async (req, res) => {
         });
       }
 
+      // Validations for new SLA/Policy fields
+      if (slaResponseMins !== undefined) {
+        const mins = Number(slaResponseMins);
+        if (isNaN(mins) || mins <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Response SLA must be a positive number of minutes",
+          });
+        }
+      }
+      if (serviceCoverage !== undefined) {
+        if (!Array.isArray(serviceCoverage) && typeof serviceCoverage !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: "Service coverage must be an array or string",
+          });
+        }
+        const coverageArray = Array.isArray(serviceCoverage)
+          ? serviceCoverage
+          : serviceCoverage.split(',').map(s => s.trim());
+        if (coverageArray.some(item => typeof item !== 'string' || item.trim().length === 0)) {
+          return res.status(400).json({
+            success: false,
+            message: "Service coverage items must be valid non-empty strings",
+          });
+        }
+      }
+      if (cancellationPolicy !== undefined) {
+        if (typeof cancellationPolicy !== 'string' || cancellationPolicy.trim().length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Cancellation policy must be a valid non-empty string",
+          });
+        }
+      }
+      if (refundPolicy !== undefined) {
+        if (typeof refundPolicy !== 'string' || refundPolicy.trim().length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Refund policy must be a valid non-empty string",
+          });
+        }
+      }
+      if (verificationStatus !== undefined) {
+        if (!['unverified', 'pending', 'verified'].includes(verificationStatus)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid verification status value",
+          });
+        }
+      }
+
       const existingWorker =
         await Worker.findOne({
           email: normalizedEmail,
@@ -88,6 +145,11 @@ export const registerWorker = async (req, res) => {
       contact: contact.trim(),
       bio: bio.trim(),
       profilePicture: req.file?.path || "",
+      slaResponseMins: slaResponseMins !== undefined ? Number(slaResponseMins) : undefined,
+      serviceCoverage: serviceCoverage !== undefined ? (Array.isArray(serviceCoverage) ? serviceCoverage : serviceCoverage.split(',').map(s => s.trim())) : undefined,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus,
     });
 
     res.status(201).json({
@@ -182,7 +244,7 @@ export const getWorkers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const workers = await Worker.find()
-      .select("name email category experience location contact availabilityStatus profilePicture lastActive averageRating reviewCount")
+      .select("name email category experience location contact availabilityStatus profilePicture lastActive averageRating reviewCount slaResponseMins serviceCoverage cancellationPolicy refundPolicy verificationStatus")
       .limit(limit)
       .skip(skip)
       .lean();
@@ -252,6 +314,108 @@ export const getWorkerProfile = async (req, res) => {
     success: true,
     worker: req.worker,
   });
+};
+
+export const updateWorkerProfile = async (req, res) => {
+  try {
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: "Worker not found" });
+    }
+
+    const {
+      name,
+      category,
+      experience,
+      location,
+      contact,
+      bio,
+      slaResponseMins,
+      serviceCoverage,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus
+    } = req.body;
+
+    // Validate fields if they are provided
+    if (slaResponseMins !== undefined) {
+      const mins = Number(slaResponseMins);
+      if (isNaN(mins) || mins <= 0) {
+        return res.status(400).json({ success: false, message: "Response SLA must be a positive number of minutes" });
+      }
+      worker.slaResponseMins = mins;
+    }
+
+    if (serviceCoverage !== undefined) {
+      if (!Array.isArray(serviceCoverage) && typeof serviceCoverage !== 'string') {
+        return res.status(400).json({ success: false, message: "Service coverage must be an array or string" });
+      }
+      const coverageArray = Array.isArray(serviceCoverage) 
+        ? serviceCoverage 
+        : serviceCoverage.split(',').map(s => s.trim());
+      if (coverageArray.some(item => typeof item !== 'string' || item.trim().length === 0)) {
+        return res.status(400).json({ success: false, message: "Service coverage items must be valid non-empty strings" });
+      }
+      worker.serviceCoverage = coverageArray;
+    }
+
+    if (cancellationPolicy !== undefined) {
+      if (typeof cancellationPolicy !== 'string' || cancellationPolicy.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "Cancellation policy must be a valid non-empty string" });
+      }
+      worker.cancellationPolicy = cancellationPolicy;
+    }
+
+    if (refundPolicy !== undefined) {
+      if (typeof refundPolicy !== 'string' || refundPolicy.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "Refund policy must be a valid non-empty string" });
+      }
+      worker.refundPolicy = refundPolicy;
+    }
+
+    if (verificationStatus !== undefined) {
+      if (!['unverified', 'pending', 'verified'].includes(verificationStatus)) {
+        return res.status(400).json({ success: false, message: "Invalid verification status value" });
+      }
+      worker.verificationStatus = verificationStatus;
+    }
+
+    if (name) worker.name = name.trim();
+    if (category) worker.category = category.trim();
+    if (experience) worker.experience = experience.trim();
+    if (location) {
+      worker.location = (typeof location === "string" && location.startsWith("{")) 
+        ? JSON.parse(location) 
+        : (typeof location === "object" ? location : worker.location);
+    }
+    if (contact) worker.contact = contact.trim();
+    if (bio) worker.bio = bio.trim();
+
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Worker profile updated successfully",
+      worker: {
+        id: worker._id,
+        name: worker.name,
+        email: worker.email,
+        category: worker.category,
+        experience: worker.experience,
+        location: worker.location,
+        contact: worker.contact,
+        bio: worker.bio,
+        slaResponseMins: worker.slaResponseMins,
+        serviceCoverage: worker.serviceCoverage,
+        cancellationPolicy: worker.cancellationPolicy,
+        refundPolicy: worker.refundPolicy,
+        verificationStatus: worker.verificationStatus,
+      }
+    });
+  } catch (error) {
+    console.error("Error updating worker profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
 export const updateWorkerAvailabilityStatus = async (req, res) => {

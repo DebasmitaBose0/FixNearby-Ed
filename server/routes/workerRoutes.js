@@ -12,6 +12,7 @@ router.post('/batch', getWorkersBatch);
 router.post('/register', upload.single('profilePicture'), validateGeoCoordinates, registerWorker);
 router.post('/login', loginWorker);
 router.get('/profile', protectWorker, getWorkerProfile);
+router.put('/profile', protectWorker, updateWorkerProfile);
 router.get('/nearby', getNearbyWorkers);
 router.get('/map-bounds', getWorkersByBounds);
 router.get('/clusters', getWorkerClusters);

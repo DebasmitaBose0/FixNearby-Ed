@@ -116,6 +116,7 @@ export const searchWorkers = async (req, res) => {
           serviceCoverage: 1,
           cancellationPolicy: 1,
           refundPolicy: 1,
+          verificationStatus: 1,
           contact: 1,
           responsiveness: 1,
           karmaScore: 1,
