@@ -31,6 +31,7 @@ import { checkUpcomingBookings } from './workers/bookingReminderWorker.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
 import availabilityRoutes from './routes/availabilityRoutes.js';
+import { createGracefulShutdown } from './utils/gracefulShutdown.js';
 import { healthHandlers } from './controllers/healthController.js';
 import auditLogRoutes from './routes/auditLogRoutes.js';
 import earningRoutes from './routes/earningRoutes.js';
@@ -213,3 +214,7 @@ initSocket(server);
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const shutdown = createGracefulShutdown({ server });
+process.once('SIGTERM', () => shutdown('SIGTERM'));
+process.once('SIGINT', () => shutdown('SIGINT'));
