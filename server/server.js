@@ -38,6 +38,8 @@ import earningRoutes from './routes/earningRoutes.js';
 import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
+import pricingRoutes from './routes/pricingRoutes.js';
+
 
 dotenv.config();
 
@@ -148,6 +150,8 @@ app.use('/api/admin/moderation', moderationRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/verification', verificationRoutes);
+app.use('/api/pricing', pricingRoutes);
+
 
 // Start background workers after DB connection is established
 (async () => {
