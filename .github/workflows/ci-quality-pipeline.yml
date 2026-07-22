@@ -1,0 +1,28 @@
+name: FixNearby CI Quality Gate Pipeline
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint-and-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Server Dependencies
+        run: cd server && npm ci
+
+      - name: Run Server ESLint
+        run: cd server && npm run lint --if-present
+
+      - name: Security Audit
+        run: cd server && npm audit --audit-level=high --if-present
