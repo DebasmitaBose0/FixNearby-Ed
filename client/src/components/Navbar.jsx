@@ -38,7 +38,7 @@ const Navbar = () => {
 
   // Fetch unread notification count when authenticated
   useEffect(() => {
-    if (!authenticated) return;
+    if (!isAuthenticated) return;
     let cancelled = false;
     const fetchCount = async () => {
       try {
@@ -52,7 +52,8 @@ const Navbar = () => {
     // Poll every 60s for fresh count
     const interval = setInterval(fetchCount, 60000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [authenticated]);
+  }, [isAuthenticated]);
+
 
   // Scroll shadow
   useEffect(() => {
