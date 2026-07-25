@@ -48,6 +48,7 @@ const IssueDetail         = lazy(() => import('./pages/IssueDetail'));
 const NotFound            = lazy(() => import('./pages/NotFound'));
 const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
 const RequestService      = lazy(() => import('./pages/RequestService'));
+const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -144,6 +145,14 @@ const ROUTES = [
     element: (
       <RequireAuth>
         <Notifications />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/referrals",
+    element: (
+      <RequireAuth>
+        <ReferralDashboard />
       </RequireAuth>
     ),
   },
