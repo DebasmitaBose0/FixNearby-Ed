@@ -269,6 +269,18 @@ const Navbar = () => {
                         Saved Workers
                       </Link>
 
+                      <Link
+                        to="/wallet"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        role="menuitem"
+                      >
+                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                        Digital Wallet
+                      </Link>
+
                       <div className="my-1 border-t border-slate-100" />
 
                       <button

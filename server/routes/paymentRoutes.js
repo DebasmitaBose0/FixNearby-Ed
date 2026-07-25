@@ -3,6 +3,7 @@ import { protect } from '../middleware/authMiddleware.js';
 import {
   createPaymentIntent,
   confirmPayment,
+  handleStripeWebhook,
   getPaymentHistory,
   getPaymentById,
   requestRefund
@@ -10,7 +11,10 @@ import {
 
 const router = express.Router();
 
-// All payment routes require authentication
+// Stripe Webhook (Public, signature-verified)
+router.post('/webhook', handleStripeWebhook);
+
+// Protected routes (require user authentication)
 router.use(protect);
 
 router.post('/create-intent', createPaymentIntent);
