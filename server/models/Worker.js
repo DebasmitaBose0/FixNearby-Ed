@@ -102,6 +102,10 @@ const workerSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
     verificationBadge: {
       type: String,
       default: '',
@@ -159,6 +163,43 @@ const workerSchema = new mongoose.Schema(
         type: String
       }
     }],
+    // Service catalog with per-service pricing
+    services: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        description: {
+          type: String,
+          default: '',
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        duration: {
+          type: Number, // duration in minutes
+          default: 60,
+          min: 0,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
+
+    // Flat hourly rate for quick filtering and fallback pricing
+    hourlyRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     blockedSlots: [{
       date: {
         type: Date
@@ -172,6 +213,29 @@ const workerSchema = new mongoose.Schema(
       reason: {
         type: String,
         default: ''
+      }
+    }],
+    payoutMethods: [{
+      type: {
+        type: String,
+        enum: ['bank_account', 'upi', 'stripe_connect'],
+        required: true
+      },
+      isDefault: {
+        type: Boolean,
+        default: false
+      },
+      details: {
+        accountNumber: { type: String, default: '' },
+        ifscCode: { type: String, default: '' },
+        bankName: { type: String, default: '' },
+        accountHolderName: { type: String, default: '' },
+        upiId: { type: String, default: '' },
+        stripeAccountId: { type: String, default: '' }
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
       }
     }]
   },

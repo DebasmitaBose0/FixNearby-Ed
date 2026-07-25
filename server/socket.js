@@ -8,6 +8,7 @@ import { verifySocketAuth } from './utils/verifySocketAuth.js';
 import { messageRetryService } from './services/messageRetryService.js';
 import { handleSendMessage, handleTyping } from './socketHandlers/chatHandler.js';
 import { handlePresenceUpdate } from './socketHandlers/presenceHandler.js';
+import { registerBookingHandlers } from './socketHandlers/bookingHandler.js';
 
 // Map to track active user socket mappings
 // Map format: userId -> Set of socket.ids
@@ -74,6 +75,8 @@ export const initSocket = (server) => {
     });
 
     // Presence management toggles
+    registerBookingHandlers(io, socket);
+
     socket.on('update_status', async (data) => {
       try {
         const { status } = data; // 'online' / 'available', 'busy', 'offline'
