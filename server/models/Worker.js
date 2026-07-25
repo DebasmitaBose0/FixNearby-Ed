@@ -159,6 +159,43 @@ const workerSchema = new mongoose.Schema(
         type: String
       }
     }],
+    // Service catalog with per-service pricing
+    services: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        description: {
+          type: String,
+          default: '',
+          trim: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        duration: {
+          type: Number, // duration in minutes
+          default: 60,
+          min: 0,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
+
+    // Flat hourly rate for quick filtering and fallback pricing
+    hourlyRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     blockedSlots: [{
       date: {
         type: Date
