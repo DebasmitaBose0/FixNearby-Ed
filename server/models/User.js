@@ -38,9 +38,6 @@ const userSchema = new mongoose.Schema({
   },
   role: { type: String, enum: ['customer', 'worker', 'support', 'admin'], default: 'customer' },
   isBanned: { type: Boolean, default: false },
-  walletBalance: { type: Number, default: 0 },
-  referralCode: { type: String, sparse: true },
-  referredBy: { type: String, default: null },
 }, {
   timestamps: true
 });

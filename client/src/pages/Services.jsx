@@ -513,7 +513,7 @@ const Services = () => {
           ...w,
           id: w._id || w.id,
           profession: w.category || w.profession,
-          price: w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : "$30/hr",
+          price: w.hourlyRate ? Number(w.hourlyRate) : (w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : 30),
           availability: w.availability || 
             (w.availabilityStatus === "available" ? "Available today" : 
              w.availabilityStatus === "busy" ? "Busy" : 

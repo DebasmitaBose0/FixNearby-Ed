@@ -270,14 +270,14 @@ const Navbar = () => {
                       </Link>
 
                       <Link
-                        to="/referrals"
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-purple-600 hover:bg-purple-50 transition-colors"
+                        to="/worker/earnings"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                         role="menuitem"
                       >
-                        <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H4.5a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m-6 3.75h12a1.5 1.5 0 011.5 1.5v2.25a1.5 1.5 0 01-1.5 1.5H6a1.5 1.5 0 01-1.5-1.5v-2.25a1.5 1.5 0 011.5-1.5z" />
+                        <svg className="w-4 h-4 text-[#0056D2]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-6h6M6 12h12" />
                         </svg>
-                        Refer & Earn ₹500
+                        Worker Earnings
                       </Link>
 
                       <div className="my-1 border-t border-slate-100" />

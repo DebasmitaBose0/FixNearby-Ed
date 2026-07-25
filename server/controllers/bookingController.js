@@ -7,6 +7,7 @@ import { queueNotification } from '../utils/queue.js';
 import mongoose from 'mongoose';
 import { getPrincipal } from '../middleware/bookingMiddleware.js';
 import { getIo } from '../socket.js';
+import { emitBookingStatusUpdate } from '../socketHandlers/bookingHandler.js';
 import { acquireLock, releaseLock } from '../utils/lockManager.js';
 
 // @desc    Create a new booking with concurrency control, transactions, and standalone DB fallback
@@ -190,6 +191,7 @@ export const createBooking = async (req, res, next) => {
         const io = getIo();
         if (io) {
           io.emit('availability-update', { workerId: booking.workerId });
+          emitBookingStatusUpdate(io, booking, { oldStatus: null });
         }
       } catch (ioErr) {
         console.error('Failed to emit availability update:', ioErr.message);
@@ -204,6 +206,7 @@ export const createBooking = async (req, res, next) => {
             pendingBooking.status = 'Expired';
             await pendingBooking.save();
             console.log(`Booking ${booking._id} has expired due to worker response timeout.`);
+            emitBookingStatusUpdate(getIo(), pendingBooking, { oldStatus: 'Pending' });
           }
         } catch (err) {
           console.error('Error running booking expiry timeout:', err.message);
@@ -248,6 +251,7 @@ export const acceptBooking = async (req, res, next) => {
       const io = getIo();
       if (io) {
         io.emit('availability-update', { workerId: booking.workerId });
+        emitBookingStatusUpdate(io, booking, { oldStatus: 'Pending' });
       }
     } catch (ioErr) {
       console.error('Failed to emit availability update:', ioErr.message);
@@ -362,6 +366,7 @@ export const completeBooking = async (req, res, next) => {
       const io = getIo();
       if (io) {
         io.emit('availability-update', { workerId: booking.workerId });
+        emitBookingStatusUpdate(io, booking, { oldStatus });
       }
     } catch (ioErr) {
       console.error('Failed to emit availability update:', ioErr.message);
@@ -409,6 +414,7 @@ export const cancelBooking = async (req, res, next) => {
       const io = getIo();
       if (io) {
         io.emit('availability-update', { workerId: booking.workerId });
+        emitBookingStatusUpdate(io, booking, { oldStatus, note: req.body.note || 'Booking cancelled' });
       }
     } catch (ioErr) {
       console.error('Failed to emit availability update:', ioErr.message);
@@ -586,6 +592,7 @@ export const rescheduleBooking = async (req, res, next) => {
       const io = getIo();
       if (io) {
         io.emit('availability-update', { workerId: booking.workerId });
+        emitBookingStatusUpdate(io, booking, { oldStatus: 'Pending', note: 'Booking rescheduled' });
       }
     } catch (ioErr) {
       console.error('Failed to emit availability update:', ioErr.message);
@@ -634,6 +641,7 @@ export const updateBookingStatusController = async (req, res, next) => {
       const io = getIo();
       if (io) {
         io.emit('availability-update', { workerId: booking.workerId });
+        emitBookingStatusUpdate(io, booking, { oldStatus, note: req.body.note || `Booking status updated to ${to}` });
       }
     } catch (ioErr) {
       console.error('Failed to emit availability update:', ioErr.message);

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from "react-i18next";
 import { useLocation } from "../context/LocationContext";
 import { formatDistance, getDistanceKm } from "../utils/distance";
+import { getNearbyIssues } from "../services/issueService";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Icon = ({ children, className = "" }) => (
@@ -193,12 +194,28 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [minRating, setMinRating]           = useState(0);
   const [showAll, setShowAll]               = useState(false);
+  const [trendingIssues, setTrendingIssues] = useState([]);
 
   // Simulate async fetch of recommendations
   useEffect(() => {
     const timer = setTimeout(() => setRecLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const lat = coords?.latitude || 17.4065;
+        const lng = coords?.longitude || 78.4772;
+        const data = await getNearbyIssues({ latitude: lat, longitude: lng, radiusKm: 50 });
+        const list = data?.data || data || [];
+        setTrendingIssues(Array.isArray(list) ? list.slice(0, 3) : []);
+      } catch (e) {
+        console.warn("Failed to load trending issues for Home:", e.message);
+      }
+    };
+    fetchTrending();
+  }, [coords]);
 
   // ── Closest workers (existing logic) ───────────────────────────────────────
   const nearbyWorkers = useMemo(() => {
@@ -576,6 +593,67 @@ const Home = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── TRENDING CIVIC ISSUES ───────────────────────────────────────────── */}
+      <section className="bg-slate-50 border-t border-slate-200/60 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-bold text-amber-700">
+                <IconBolt className="h-3.5 w-3.5" />
+                Community Portal
+              </div>
+              <h2 className="mt-4 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                Trending Civic Issues Nearby
+              </h2>
+              <p className="mt-2 text-slate-500 text-sm">
+                Reported infrastructure needs, potholes, street lights, and neighborhood requests.
+              </p>
+            </div>
+            <Link to="/civic-issues" className="font-bold text-[#0056D2] hover:underline shrink-0 text-sm">
+              View All Issues Map &rarr;
+            </Link>
+          </div>
+
+          {trendingIssues.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-xs">
+              <p className="text-slate-600 font-semibold mb-2">No active civic issues reported nearby yet.</p>
+              <Link to="/civic-issues/report" className="inline-block px-5 py-2.5 bg-[#0056D2] text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition">
+                Report First Neighborhood Issue
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {trendingIssues.slice(0, 3).map((issue) => (
+                <div key={issue._id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                        issue.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                        issue.status === 'in-progress' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                        'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {issue.status || 'OPEN'}
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-400">
+                        {issue.category}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-slate-900 text-base mb-1 line-clamp-1">{issue.title}</h3>
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4">{issue.description}</p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500 font-medium">👍 {issue.upvotes || 0} upvotes</span>
+                    <Link to="/civic-issues" className="font-bold text-[#0056D2] hover:underline text-xs">
+                      View on Map &rarr;
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
