@@ -173,6 +173,22 @@ const workerSchema = new mongoose.Schema(
         type: String,
         default: ''
       }
+    }],
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false
+    },
+    twoFactorSecret: {
+      type: String,
+      default: ''
+    },
+    twoFactorTempSecret: {
+      type: String,
+      default: ''
+    },
+    twoFactorRecoveryCodes: [{
+      code: { type: String, required: true },
+      used: { type: Boolean, default: false }
     }]
   },
   {

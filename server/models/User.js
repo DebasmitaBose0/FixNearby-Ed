@@ -37,6 +37,24 @@ const userSchema = new mongoose.Schema({
     push: { type: Boolean, default: true }
   },
   role: { type: String, enum: ['customer', 'worker', 'support'], default: 'customer' },
+  
+  // Two-Factor Authentication (2FA) fields
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: {
+    type: String,
+    default: ''
+  },
+  twoFactorTempSecret: {
+    type: String,
+    default: ''
+  },
+  twoFactorRecoveryCodes: [{
+    code: { type: String, required: true },
+    used: { type: Boolean, default: false }
+  }]
 }, {
   timestamps: true
 });
