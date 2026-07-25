@@ -210,6 +210,29 @@ const workerSchema = new mongoose.Schema(
         type: String,
         default: ''
       }
+    }],
+    payoutMethods: [{
+      type: {
+        type: String,
+        enum: ['bank_account', 'upi', 'stripe_connect'],
+        required: true
+      },
+      isDefault: {
+        type: Boolean,
+        default: false
+      },
+      details: {
+        accountNumber: { type: String, default: '' },
+        ifscCode: { type: String, default: '' },
+        bankName: { type: String, default: '' },
+        accountHolderName: { type: String, default: '' },
+        upiId: { type: String, default: '' },
+        stripeAccountId: { type: String, default: '' }
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
     }]
   },
   {
