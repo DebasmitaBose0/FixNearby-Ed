@@ -36,25 +36,8 @@ const userSchema = new mongoose.Schema({
     sms: { type: Boolean, default: true },
     push: { type: Boolean, default: true }
   },
-  role: { type: String, enum: ['customer', 'worker', 'support'], default: 'customer' },
-  
-  // Two-Factor Authentication (2FA) fields
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false
-  },
-  twoFactorSecret: {
-    type: String,
-    default: ''
-  },
-  twoFactorTempSecret: {
-    type: String,
-    default: ''
-  },
-  twoFactorRecoveryCodes: [{
-    code: { type: String, required: true },
-    used: { type: Boolean, default: false }
-  }]
+  role: { type: String, enum: ['customer', 'worker', 'support', 'admin'], default: 'customer' },
+  isBanned: { type: Boolean, default: false },
 }, {
   timestamps: true
 });

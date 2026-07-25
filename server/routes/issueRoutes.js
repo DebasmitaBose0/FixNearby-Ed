@@ -81,7 +81,8 @@ router.patch('/:id/dispute/status', protect, supportReviewDispute);
 // GET /:id — issue detail
 router.get('/:id', getIssueById);
 
-// PATCH /:id/status
+// PUT & PATCH /:id/status — status update
+router.put('/:id/status', updateIssueStatus);
 router.patch('/:id/status', updateIssueStatus);
 
 export default router;

@@ -1,4 +1,4 @@
-import { MapPin, ThumbsUp, Clock } from 'lucide-react';
+import { MapPin, ThumbsUp, Clock, User } from 'lucide-react';
 
 const getStatusBadgeColor = (status) => {
   switch (status) {
@@ -12,6 +12,8 @@ const getStatusBadgeColor = (status) => {
 };
 
 const IssueCard = ({ issue, onUpvote, isUpvoting }) => {
+  const reporterName = issue.reportedBy?.name || issue.reportedByName || 'Anonymous Citizen';
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between hover:shadow-md transition duration-200">
       <div>
@@ -21,7 +23,7 @@ const IssueCard = ({ issue, onUpvote, isUpvoting }) => {
           </span>
           <span className="text-xs text-slate-400 flex items-center gap-1">
             <Clock size={12} />
-            {new Date(issue.reportedAt || Date.now()).toLocaleDateString()}
+            {new Date(issue.reportedAt || issue.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
         </div>
 
@@ -29,7 +31,7 @@ const IssueCard = ({ issue, onUpvote, isUpvoting }) => {
           <img
             src={issue.thumbnailUrl}
             alt={issue.title}
-            className="w-full h-40 object-cover rounded-xl mb-4"
+            className="w-full h-44 object-cover rounded-xl mb-4"
           />
         )}
 
@@ -37,6 +39,11 @@ const IssueCard = ({ issue, onUpvote, isUpvoting }) => {
         <p className="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-3">
           {issue.description}
         </p>
+
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-4 bg-slate-50 p-2 rounded-xl border border-slate-100">
+          <User size={14} className="text-blue-500" />
+          <span>Reported by <strong className="text-slate-700">{reporterName}</strong></span>
+        </div>
       </div>
 
       <div className="border-t border-slate-100 pt-4 flex items-center justify-between mt-auto">

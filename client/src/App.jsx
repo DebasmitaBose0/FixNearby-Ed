@@ -57,6 +57,7 @@ const ModerationPanel     = lazy(() => import('./pages/admin/ModerationPanel'));
 const ScheduleManager     = lazy(() => import('./pages/worker/ScheduleManager'));
 
 const VerificationPage = lazy(() => lazyWithRetry(() => import('./pages/worker/VerificationPage')));
+const ServiceManager = lazy(() => import('./components/ServiceManager'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
 const ResetPasswordUser = lazy(()=>import('./pages/ResetPasswordUser'));
@@ -103,6 +104,7 @@ const ROUTES = [
   { path: '/worker/dashboard',    element: <WorkerDashboard /> }, 
   { path: '/worker/earnings',      element: <EarningsDashboard /> },
   { path: '/worker/schedule',     element: <ScheduleManager /> },
+  { path: '/worker/services',     element: <ServiceManager /> },
   { path: '/worker/verification', element: <VerificationPage /> },
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },

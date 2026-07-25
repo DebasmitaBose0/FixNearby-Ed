@@ -906,6 +906,214 @@ export const getWorkerClusters = async (req, res) => {
   }
 };
 
+/**
+ * Add a service to the worker's service catalog
+ * @route POST /api/workers/services
+ */
+export const addService = async (req, res) => {
+  try {
+    const { name, description, price, duration, isActive } = req.body;
+
+    if (!name || price === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Service name and price are required',
+      });
+    }
+
+    if (typeof price !== 'number' || price < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Price must be a non-negative number',
+      });
+    }
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const newService = {
+      name: name.trim(),
+      description: description?.trim() || '',
+      price: Number(price),
+      duration: duration !== undefined ? Number(duration) : 60,
+      isActive: isActive !== undefined ? isActive : true,
+    };
+
+    worker.services.push(newService);
+    await worker.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Service added successfully',
+      service: worker.services[worker.services.length - 1],
+    });
+  } catch (error) {
+    console.error('Error adding service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Update a service in the worker's service catalog
+ * @route PUT /api/workers/services/:serviceId
+ */
+export const updateService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const { name, description, price, duration, isActive } = req.body;
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const service = worker.services.id(serviceId);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+
+    if (name !== undefined) service.name = name.trim();
+    if (description !== undefined) service.description = description.trim();
+    if (price !== undefined) {
+      if (typeof price !== 'number' || price < 0) {
+        return res.status(400).json({ success: false, message: 'Price must be a non-negative number' });
+      }
+      service.price = Number(price);
+    }
+    if (duration !== undefined) service.duration = Number(duration);
+    if (isActive !== undefined) service.isActive = isActive;
+
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Service updated successfully',
+      service,
+    });
+  } catch (error) {
+    console.error('Error updating service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Remove a service from the worker's service catalog
+ * @route DELETE /api/workers/services/:serviceId
+ */
+export const removeService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const service = worker.services.id(serviceId);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+
+    service.deleteOne();
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Service removed successfully',
+    });
+  } catch (error) {
+    console.error('Error removing service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get all services for the authenticated worker
+ * @route GET /api/workers/services
+ */
+export const getMyServices = async (req, res) => {
+  try {
+    const worker = await Worker.findById(req.worker._id).select('services hourlyRate');
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      services: worker.services,
+      hourlyRate: worker.hourlyRate,
+    });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Update the worker's hourly rate
+ * @route PUT /api/workers/hourly-rate
+ */
+export const updateHourlyRate = async (req, res) => {
+  try {
+    const { hourlyRate } = req.body;
+
+    if (hourlyRate === undefined || typeof hourlyRate !== 'number' || hourlyRate < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hourly rate must be a non-negative number',
+      });
+    }
+
+    const worker = await Worker.findByIdAndUpdate(
+      req.worker._id,
+      { hourlyRate: Number(hourlyRate) },
+      { new: true, runValidators: true }
+    ).select('hourlyRate');
+
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Hourly rate updated successfully',
+      hourlyRate: worker.hourlyRate,
+    });
+  } catch (error) {
+    console.error('Error updating hourly rate:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get services for a specific worker by ID (public)
+ * @route GET /api/workers/:id/services
+ */
+export const getWorkerServices = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const worker = await Worker.findById(id).select('services hourlyRate name');
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const activeServices = worker.services.filter(s => s.isActive);
+
+    res.status(200).json({
+      success: true,
+      services: activeServices,
+      hourlyRate: worker.hourlyRate,
+      workerName: worker.name,
+    });
+  } catch (error) {
+    console.error('Error fetching worker services:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 export const getWorkerDashboardStats = async (req, res) => {
   try {
     const workerId = req.worker._id;

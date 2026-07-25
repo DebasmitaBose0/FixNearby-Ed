@@ -19,6 +19,14 @@ import {
 import { protectWorker } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 import { validateGeoCoordinates } from '../middleware/geoValidator.js';
+import {
+  addService,
+  updateService,
+  removeService,
+  getMyServices,
+  updateHourlyRate,
+  getWorkerServices,
+} from '../controllers/workerController.js';
 
 const router = express.Router();
 
@@ -32,9 +40,19 @@ router.get('/map-bounds', getWorkersByBounds);
 router.get('/clusters', getWorkerClusters);
 router.get('/dashboard/stats', protectWorker, getWorkerDashboardStats);
 router.post('/recalculate-karma', protectWorker, recalculateKarmaScoresController);
+
+// Service catalog management (protected - worker only)
+router.get('/services', protectWorker, getMyServices);
+router.post('/services', protectWorker, addService);
+router.put('/services/:serviceId', protectWorker, updateService);
+router.delete('/services/:serviceId', protectWorker, removeService);
+router.put('/hourly-rate', protectWorker, updateHourlyRate);
+
+// Public routes
 router.get('/', getWorkers);
 router.get('/:id', getWorkerById);
 router.get('/:id/availability', getWorkerAvailability);
 router.get('/:id/reviews', getWorkerReviews);
+router.get('/:id/services', getWorkerServices);
 
 export default router;
