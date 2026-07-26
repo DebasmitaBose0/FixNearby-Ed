@@ -653,6 +653,8 @@ const WorkerProfile = () => {
             cancellationPolicy: backendWorker.cancellationPolicy,
             refundPolicy: backendWorker.refundPolicy,
             verificationStatus: backendWorker.verificationStatus || 'verified',
+            topPerformerBadge: backendWorker.topPerformerBadge || false,
+            monthlyCompletedJobs: backendWorker.monthlyCompletedJobs || 0,
           });
         } catch (err) {
           console.error("Failed to load worker from backend", err);
@@ -936,6 +938,19 @@ const WorkerProfile = () => {
                 <ShieldCheck size={18} className={worker.verificationStatus === 'verified' ? "text-emerald-500" : "text-amber-500"} />
                 <span className="capitalize">{worker.verificationStatus || 'Verified'} Professional</span>
               </div>
+
+              {/* Top Performer Milestone Reward Badge */}
+              {(worker.topPerformerBadge || (worker.monthlyCompletedJobs && worker.monthlyCompletedJobs >= 10)) && (
+                <div className="mt-3 flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl p-3 shadow-md border border-amber-400/30">
+                  <div className="p-1.5 bg-white/20 rounded-xl">
+                    <Award size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider">Top Performer</p>
+                    <p className="text-[11px] text-amber-100 font-medium">{worker.monthlyCompletedJobs || 10}+ jobs completed this month</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Smart Estimate Badge */}

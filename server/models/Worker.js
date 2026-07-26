@@ -110,6 +110,22 @@ const workerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    walletBalance: {
+      type: Number,
+      default: 0,
+    },
+    referralCode: {
+      type: String,
+      sparse: true,
+    },
+    monthlyCompletedJobs: {
+      type: Number,
+      default: 0,
+    },
+    topPerformerBadge: {
+      type: Boolean,
+      default: false,
+    },
     notificationPreferences: {
       email: { type: Boolean, default: true },
       sms: { type: Boolean, default: true },

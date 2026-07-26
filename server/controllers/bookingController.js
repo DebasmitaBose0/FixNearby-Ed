@@ -1,5 +1,8 @@
-// Auto booking expiry checks enabled
 import Booking, { STATUS_ENUM } from '../models/Booking.js';
+import Referral from '../models/Referral.js';
+import Reward from '../models/Reward.js';
+import User from '../models/User.js';
+import WorkerModel from '../models/Worker.js';
 import { queueNotification } from '../utils/queue.js';
 import mongoose from 'mongoose';
 import { getPrincipal } from '../middleware/bookingMiddleware.js';
@@ -264,6 +267,68 @@ export const acceptBooking = async (req, res, next) => {
   }
 };
 
+const processReferralsAndRewardsOnCompletion = async (booking) => {
+  try {
+    // 1. Process Referral Credit for the customer's referrer
+    const customer = await User.findById(booking.userId);
+    if (customer && customer.email) {
+      const referral = await Referral.findOne({
+        referredEmail: customer.email.toLowerCase(),
+        status: { $in: ['pending', 'joined'] }
+      });
+
+      if (referral) {
+        referral.status = 'credited';
+        referral.referredUserId = customer._id;
+        referral.creditedAt = new Date();
+        await referral.save();
+
+        // Credit referrer (User or Worker)
+        let referrer = await User.findById(referral.referrerId);
+        if (!referrer) {
+          referrer = await WorkerModel.findById(referral.referrerId);
+        }
+        if (referrer) {
+          referrer.walletBalance = (referrer.walletBalance || 0) + referral.rewardAmount;
+          await referrer.save({ validateBeforeSave: false });
+          console.log(`[Referral] Credited ₹${referral.rewardAmount} to referrer ${referrer.name} for booking completion by ${customer.email}`);
+        }
+      }
+    }
+
+    // 2. Process Worker Monthly Job Milestone & Reward Badge
+    const worker = await WorkerModel.findById(booking.workerId);
+    if (worker) {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      let reward = await Reward.findOne({ workerId: worker._id, month: currentMonth });
+
+      if (!reward) {
+        reward = await Reward.create({
+          workerId: worker._id,
+          month: currentMonth,
+          jobsCompleted: 0,
+          milestoneTarget: 10,
+          bonusAmount: 1000,
+          claimed: false,
+          badgeEarned: 'Top Performer'
+        });
+      }
+
+      reward.jobsCompleted += 1;
+      await reward.save();
+
+      worker.monthlyCompletedJobs = (worker.monthlyCompletedJobs || 0) + 1;
+      if (reward.jobsCompleted >= reward.milestoneTarget) {
+        worker.topPerformerBadge = true;
+      }
+      await worker.save({ validateBeforeSave: false });
+      console.log(`[Reward] Worker ${worker.name} completed job ${reward.jobsCompleted}/${reward.milestoneTarget} for ${currentMonth}`);
+    }
+  } catch (err) {
+    console.error('[Referral/Reward] Failed to process completion reward logic:', err.message);
+  }
+};
+
 // @desc    Complete booking
 // @route   PATCH /api/bookings/:id/complete
 // @access  Private
@@ -281,6 +346,11 @@ export const completeBooking = async (req, res, next) => {
       note: 'Booking completed by worker'
     });
     await booking.save();
+
+    // Trigger referral crediting and worker milestone rewards asynchronously
+    processReferralsAndRewardsOnCompletion(booking).catch(err =>
+      console.error('[Referral/Reward] Background completion handler failed:', err.message)
+    );
 
     try {
       await queueNotification('booking_status_update', {
