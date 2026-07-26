@@ -39,6 +39,8 @@ import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+app.use('/api/reports', reportRoutes);
 
 dotenv.config();
 
