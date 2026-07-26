@@ -41,6 +41,7 @@ const Feedback         = lazy(() => import('./pages/Feedback'));
 const FAQ              = lazy(() => import('./pages/FAQ'));
 const SavedWorkers     = lazy(() => import('./pages/SavedWorkers'));
 const Recommendations  = lazy(() => import('./pages/Recommendations')); // ✨ NEW
+const WalletPage       = lazy(() => import('./pages/WalletPage'));
 const PaymentCheckout     = lazy(() => import('./pages/PaymentCheckout'));
 const CivicIssues         = lazy(() => import('./pages/CivicIssues'));
 const ReportIssue         = lazy(() => import('./components/IssueSubmissionForm'));
@@ -109,6 +110,7 @@ const ROUTES = [
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },
   { path: '/recommendations',   element: <Recommendations /> }, // ✨ NEW
+  { path: '/wallet',            element: <WalletPage /> },
   { path: '/request-service',   element: <RequestService /> },
   { path: '/civic-issues',           element: <CivicIssues /> },
   { path: '/civic-issues/report',    element: <ReportIssue /> },
