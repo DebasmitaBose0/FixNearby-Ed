@@ -214,9 +214,20 @@ export const loginWorker = async (req, res) => {
       });
     }
 
+    if (worker.twoFactorEnabled) {
+      return res.status(200).json({
+        success: true,
+        require2FA: true,
+        userId: worker._id,
+        userType: 'Worker',
+        message: '2FA authentication code required to complete login',
+      });
+    }
+
     res.status(200).json({
       success: true,
       token: generateToken(worker._id),
+      twoFactorEnabled: !!worker.twoFactorEnabled,
       worker: {
         id: worker._id,
         name: worker.name,
