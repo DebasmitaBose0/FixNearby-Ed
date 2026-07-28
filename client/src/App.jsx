@@ -41,6 +41,7 @@ const Feedback         = lazy(() => import('./pages/Feedback'));
 const FAQ              = lazy(() => import('./pages/FAQ'));
 const SavedWorkers     = lazy(() => import('./pages/SavedWorkers'));
 const Recommendations  = lazy(() => import('./pages/Recommendations')); // ✨ NEW
+const WalletPage       = lazy(() => import('./pages/WalletPage'));
 const PaymentCheckout     = lazy(() => import('./pages/PaymentCheckout'));
 const CivicIssues         = lazy(() => import('./pages/CivicIssues'));
 const ReportIssue         = lazy(() => import('./components/IssueSubmissionForm'));
@@ -48,6 +49,7 @@ const IssueDetail         = lazy(() => import('./pages/IssueDetail'));
 const NotFound            = lazy(() => import('./pages/NotFound'));
 const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
 const RequestService      = lazy(() => import('./pages/RequestService'));
+const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -57,6 +59,7 @@ const ModerationPanel     = lazy(() => import('./pages/admin/ModerationPanel'));
 const ScheduleManager     = lazy(() => import('./pages/worker/ScheduleManager'));
 
 const VerificationPage = lazy(() => lazyWithRetry(() => import('./pages/worker/VerificationPage')));
+const ServiceManager = lazy(() => import('./components/ServiceManager'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
 const ResetPasswordUser = lazy(()=>import('./pages/ResetPasswordUser'));
@@ -103,10 +106,12 @@ const ROUTES = [
   { path: '/worker/dashboard',    element: <WorkerDashboard /> }, 
   { path: '/worker/earnings',      element: <EarningsDashboard /> },
   { path: '/worker/schedule',     element: <ScheduleManager /> },
+  { path: '/worker/services',     element: <ServiceManager /> },
   { path: '/worker/verification', element: <VerificationPage /> },
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },
   { path: '/recommendations',   element: <Recommendations /> }, // ✨ NEW
+  { path: '/wallet',            element: <WalletPage /> },
   { path: '/request-service',   element: <RequestService /> },
   { path: '/civic-issues',           element: <CivicIssues /> },
   { path: '/civic-issues/report',    element: <ReportIssue /> },
@@ -144,6 +149,14 @@ const ROUTES = [
     element: (
       <RequireAuth>
         <Notifications />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/referrals",
+    element: (
+      <RequireAuth>
+        <ReferralDashboard />
       </RequireAuth>
     ),
   },

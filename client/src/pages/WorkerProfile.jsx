@@ -22,6 +22,8 @@ import {
   ChevronUp,
   Heart,
   Share2,
+  DollarSign,
+  CheckCircle,
 } from "lucide-react";
 
 import SkeletonLoader from "../components/SkeletonLoader";
@@ -37,6 +39,7 @@ import { getFavorites, toggleFavorite } from "../services/favoriteService";
 import useToast from "../hooks/useToast";
 import ReviewBadge from "../components/ReviewBadge";
 import { shareWorkerProfile } from "../utils/shareWorkerProfile";
+import { getWorkerServices } from "../services/workerService";
 
 /* ✅ Move data outside component */
 const WORKERS = {
@@ -483,6 +486,8 @@ const WorkerProfile = () => {
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [workerServices, setWorkerServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
 
   const fetchReviews = useCallback(async () => {
     if (!id) return;
@@ -502,6 +507,28 @@ const WorkerProfile = () => {
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
+
+  // Fetch worker's service catalog
+  useEffect(() => {
+    const fetchServices = async () => {
+      if (!id) return;
+      setServicesLoading(true);
+      try {
+        const data = await getWorkerServices(id);
+        if (data?.success && data.services) {
+          setWorkerServices(data.services);
+        }
+      } catch (err) {
+        console.error('Failed to fetch worker services:', err);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+    // Only fetch for non-mock workers (valid ObjectId)
+    if (id && !/^\d+$/.test(id)) {
+      fetchServices();
+    }
+  }, [id]);
 
   const isOwnProfile = isAuthenticated && user && String(user._id || user.id) === String(id);
 
@@ -626,6 +653,8 @@ const WorkerProfile = () => {
             cancellationPolicy: backendWorker.cancellationPolicy,
             refundPolicy: backendWorker.refundPolicy,
             verificationStatus: backendWorker.verificationStatus || 'verified',
+            topPerformerBadge: backendWorker.topPerformerBadge || false,
+            monthlyCompletedJobs: backendWorker.monthlyCompletedJobs || 0,
           });
         } catch (err) {
           console.error("Failed to load worker from backend", err);
@@ -909,6 +938,19 @@ const WorkerProfile = () => {
                 <ShieldCheck size={18} className={worker.verificationStatus === 'verified' ? "text-emerald-500" : "text-amber-500"} />
                 <span className="capitalize">{worker.verificationStatus || 'Verified'} Professional</span>
               </div>
+
+              {/* Top Performer Milestone Reward Badge */}
+              {(worker.topPerformerBadge || (worker.monthlyCompletedJobs && worker.monthlyCompletedJobs >= 10)) && (
+                <div className="mt-3 flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-2xl p-3 shadow-md border border-amber-400/30">
+                  <div className="p-1.5 bg-white/20 rounded-xl">
+                    <Award size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wider">Top Performer</p>
+                    <p className="text-[11px] text-amber-100 font-medium">{worker.monthlyCompletedJobs || 10}+ jobs completed this month</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Smart Estimate Badge */}
@@ -1088,20 +1130,58 @@ const WorkerProfile = () => {
 
               {/* Services */}
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-2xl font-bold mb-6">Services Offered</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {["Installation", "Maintenance", "Repair", "Emergency Service"].map((service, index) => (
-                    <div
-                      key={index}
-                      className="border border-gray-200 rounded-2xl p-4 hover:border-blue-500 transition"
-                    >
-                      <h3 className="font-semibold text-gray-800">{service}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Professional {worker.profession.toLowerCase()} service.
-                      </p>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold">Services & Pricing</h2>
+                  {servicesLoading && (
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <span className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      Loading...
+                    </span>
+                  )}
                 </div>
+                {workerServices.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {workerServices.map((service, index) => (
+                      <div
+                        key={service._id || index}
+                        className="border border-gray-200 rounded-2xl p-4 hover:border-blue-500 hover:shadow-sm transition"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-800 truncate">{service.name}</h3>
+                            {service.description && (
+                              <p className="text-sm text-gray-500 mt-1 line-clamp-2">{service.description}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold text-blue-600">${Number(service.price).toFixed(2)}</p>
+                            <p className="text-[10px] text-gray-400">{service.duration || 60} min</p>
+                          </div>
+                        </div>
+                        {service.isActive && (
+                          <div className="mt-2 flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            <span className="text-[10px] font-medium text-green-600">Available</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {["Installation", "Maintenance", "Repair", "Emergency Service"].map((service, index) => (
+                      <div
+                        key={index}
+                        className="border border-gray-200 rounded-2xl p-4 hover:border-blue-500 transition"
+                      >
+                        <h3 className="font-semibold text-gray-800">{service}</h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Professional {worker.profession.toLowerCase()} service.
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Trust, SLA & Policies */}

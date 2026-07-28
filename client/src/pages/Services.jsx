@@ -19,7 +19,6 @@ import {
 
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import SkeletonLoader from "../components/SkeletonLoader";
-import LoadingSpinner from "../components/LoadingSpinner";
 import MapView from "../components/MapView";
 import SearchBar from "../components/SearchBar";
 import FilterSidebar from "../components/FilterSidebar";
@@ -514,7 +513,7 @@ const Services = () => {
           ...w,
           id: w._id || w.id,
           profession: w.category || w.profession,
-          price: w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : "$30/hr",
+          price: w.hourlyRate ? Number(w.hourlyRate) : (w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : 30),
           availability: w.availability || 
             (w.availabilityStatus === "available" ? "Available today" : 
              w.availabilityStatus === "busy" ? "Busy" : 

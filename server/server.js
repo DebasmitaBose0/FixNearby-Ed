@@ -40,6 +40,9 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 
+import recommendationRoutes from './routes/recommendationRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+app.use('/api/reports', reportRoutes);
 
 dotenv.config();
 
@@ -152,6 +155,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/disputes', disputeRoutes);
 
+app.use('/api/recommendations', recommendationRoutes);
 
 // Start background workers after DB connection is established
 (async () => {
