@@ -130,6 +130,16 @@ export const loginUser = async (req, res) => {
 
     // 3. Check password
     if (user && (await user.matchPassword(password))) {
+      if (user.twoFactorEnabled) {
+        return res.status(200).json({
+          success: true,
+          require2FA: true,
+          userId: user._id,
+          userType: 'User',
+          message: '2FA authentication code required to complete login'
+        });
+      }
+
       writeAuditLog({
         actorId: user._id,
         actorType: 'User',
@@ -146,6 +156,7 @@ export const loginUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         notificationPreferences: user.notificationPreferences,
+        twoFactorEnabled: !!user.twoFactorEnabled,
         token: generateToken(user._id),
       });
     } else {

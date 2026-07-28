@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
-import CancelBookingModal from "../components/CancelBookingModal";
 import StarRating from "../components/StarRating";
 import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History } from "lucide-react";
 import BookingTimeline from "../components/BookingTimeline";
@@ -13,6 +12,8 @@ import api from "../services/apiClient";
 import useToast from "../hooks/useToast";
 import { showApiError } from "../utils/apiErrorHandler";
 import CancelBookingModal from "../components/CancelBookingModal";
+import useBookingSocket from "../hooks/useBookingSocket";
+import AnimatedBookingProgressBar from "../components/AnimatedBookingProgressBar";
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
@@ -365,6 +366,26 @@ const Bookings = () => {
 
   // Timeline toggle state
   const [expandedTimelineId, setExpandedTimelineId] = useState(null);
+  const [liveUpdatedId, setLiveUpdatedId] = useState(null);
+
+  // Subscribe to real-time booking socket status updates
+  const handleSocketStatusUpdate = (eventData) => {
+    const updatedId = eventData?.bookingId || eventData?.booking?._id || eventData?.booking?.id;
+    const newStatus = eventData?.status;
+    if (newStatus) {
+      showToast(`Real-time update: Booking status changed to "${newStatus}"`, "info");
+    }
+    if (updatedId) {
+      setLiveUpdatedId(updatedId);
+      setTimeout(() => setLiveUpdatedId(null), 4000);
+    }
+    refresh();
+  };
+
+  useBookingSocket({
+    onStatusUpdate: handleSocketStatusUpdate,
+    enableNotifications: true,
+  });
 
   const filteredBookings = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -710,6 +731,9 @@ const Bookings = () => {
                   <BookingTimelineInline bookingId={booking.id} currentStatus={booking.status} />
                 </div>
               )}
+              {/* REAL-TIME ANIMATED STATUS PROGRESS BAR */}
+              <AnimatedBookingProgressBar booking={booking} liveUpdated={liveUpdatedId === booking.id} />
+
               {/* BOOKING TIMELINE */}
               <BookingStatusTimeline booking={booking} />
 

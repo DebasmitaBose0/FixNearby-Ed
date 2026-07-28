@@ -1,7 +1,7 @@
 import api from "./apiClient";
 
 /**
- * Fetch worker schedule for a date range.
+ * Fetch worker schedule for a date range (logged-in worker).
  * @param {{ startDate: string, endDate: string }} params
  */
 export const getWorkerSchedule = async (params) => {
@@ -17,24 +17,46 @@ export const getWorkerSchedule = async (params) => {
 };
 
 /**
- * Set recurring weekly availability.
- * @param {{ dayOfWeek: number, startTime: string, endTime: string }[]} slots
+ * Fetch schedule for a worker by ID (for customer booking or viewing).
+ * @param {string} workerId
+ * @param {{ startDate?: string, endDate?: string }} params
  */
-export const setRecurringAvailability = async (slots) => {
+export const getWorkerScheduleById = async (workerId, params = {}) => {
   try {
-    const response = await api.post("/schedule/recurring", { slots });
+    const response = await api.get(`/schedule/worker/${workerId}`, { params });
     return response.data;
   } catch (error) {
     throw {
-      message: error.response?.data?.message || "Failed to update availability",
+      message: error.response?.data?.message || "Failed to load worker schedule",
       status: error.response?.status,
     };
   }
 };
 
 /**
+ * Set recurring weekly availability.
+ * @param {{ dayOfWeek: number, startTime: string, endTime: string }[]} slots
+ */
+export const setRecurringAvailability = async (slots) => {
+  try {
+    const response = await api.post("/schedule/set-recurring", { slots });
+    return response.data;
+  } catch (error) {
+    try {
+      const fallbackResponse = await api.post("/schedule/recurring", { slots });
+      return fallbackResponse.data;
+    } catch (fallbackError) {
+      throw {
+        message: fallbackError.response?.data?.message || error.response?.data?.message || "Failed to update availability",
+        status: fallbackError.response?.status || error.response?.status,
+      };
+    }
+  }
+};
+
+/**
  * Block a specific time slot.
- * @param {{ date: string, startTime: string, endTime: string, reason?: string }} data
+ * @param {{ date: string, startDate?: string, endDate?: string, startTime: string, endTime: string, reason?: string }} data
  */
 export const blockTimeSlot = async (data) => {
   try {
@@ -82,6 +104,7 @@ export const removeBlockedSlot = async (id) => {
 
 export default {
   getWorkerSchedule,
+  getWorkerScheduleById,
   setRecurringAvailability,
   blockTimeSlot,
   getBlockedSlots,

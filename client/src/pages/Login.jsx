@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { loginUser } from "../services/authService";
 import useToast from "../hooks/useToast";
 import { parseApiError } from "../utils/apiErrorHandler";
+import TwoFactorChallenge from "../components/TwoFactorChallenge";
 import {
   FaEye,
   FaEyeSlash,
@@ -21,6 +22,8 @@ const Login = () => {
     email: "",
     password: "",
   });
+
+  const [twoFactorChallenge, setTwoFactorChallenge] = useState(null);
 
   const [errors, setErrors] = useState({});
   const [interacted, setInteracted] = useState({});
@@ -97,6 +100,14 @@ const Login = () => {
 
     try {
       const userData = await loginUser(formData);
+
+      if (userData?.require2FA) {
+        setTwoFactorChallenge({
+          userId: userData.userId,
+          userType: userData.userType || "User",
+        });
+        return;
+      }
 
       login(userData);
 
@@ -265,6 +276,19 @@ const Login = () => {
           </Link>
         </p>
       </div>
+
+      {twoFactorChallenge && (
+        <TwoFactorChallenge
+          userId={twoFactorChallenge.userId}
+          userType={twoFactorChallenge.userType}
+          onSuccess={(authData) => {
+            login(authData);
+            showToast("Logged in successfully");
+            navigate("/dashboard");
+          }}
+          onCancel={() => setTwoFactorChallenge(null)}
+        />
+      )}
     </div>
   );
 };

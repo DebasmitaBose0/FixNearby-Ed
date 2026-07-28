@@ -270,6 +270,17 @@ const Navbar = () => {
                         Saved Workers
                       </Link>
 
+                      <Link
+                        to="/worker/earnings"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                        role="menuitem"
+                      >
+                        <svg className="w-4 h-4 text-[#0056D2]" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-6h6M6 12h12" />
+                        </svg>
+                        Worker Earnings
+                      </Link>
+
                       <div className="my-1 border-t border-slate-100" />
 
                       <button

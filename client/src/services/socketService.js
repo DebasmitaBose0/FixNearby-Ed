@@ -123,6 +123,26 @@ export const onConversationUpdate = (handler) => {
   };
 };
 
+export const joinBooking = (bookingId) => {
+  if (!socket?.connected) return;
+  socket.emit('join_booking', { bookingId });
+};
+
+export const leaveBooking = (bookingId) => {
+  if (!socket?.connected) return;
+  socket.emit('leave_booking', { bookingId });
+};
+
+export const onBookingStatusUpdate = (handler) => {
+  if (!socket) return () => {};
+  socket.on('booking:statusUpdate', handler);
+  listeners.set('booking:statusUpdate', handler);
+  return () => {
+    socket.off('booking:statusUpdate', handler);
+    listeners.delete('booking:statusUpdate');
+  };
+};
+
 export default {
   connectSocket,
   disconnectSocket,
@@ -131,10 +151,13 @@ export default {
   sendMessage,
   joinConversation,
   leaveConversation,
+  joinBooking,
+  leaveBooking,
   startTyping,
   stopTyping,
   onMessage,
   onTyping,
   onPresenceUpdate,
   onConversationUpdate,
+  onBookingStatusUpdate,
 };

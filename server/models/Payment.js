@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema({
   method: {
     type: String,
     enum: {
-      values: ['card', 'bank_transfer', 'wallet'],
+      values: ['card', 'stripe', 'bank_transfer', 'wallet'],
       message: '{VALUE} is not a valid payment method'
     },
     required: [true, 'Payment method is required']
@@ -37,6 +37,18 @@ const paymentSchema = new mongoose.Schema({
     default: 'pending'
   },
   transactionId: {
+    type: String,
+    default: null
+  },
+  stripePaymentIntentId: {
+    type: String,
+    default: null
+  },
+  stripeRefundId: {
+    type: String,
+    default: null
+  },
+  clientSecret: {
     type: String,
     default: null
   },
@@ -56,9 +68,9 @@ const paymentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Query patterns for the payments collection
 paymentSchema.index({ userId: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
+paymentSchema.index({ stripePaymentIntentId: 1 });
 
 const Payment = mongoose.model('Payment', paymentSchema);
 export default Payment;

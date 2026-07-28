@@ -33,6 +33,84 @@ export const getWorkersByIds = async (ids) => {
   return res.data;
 };
 
+/**
+ * Add a service to the worker's catalog
+ */
+export const addWorkerService = async (serviceData) => {
+  try {
+    const res = await api.post('/workers/services', serviceData);
+    return res.data;
+  } catch (error) {
+    console.error('Error adding service:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a service in the worker's catalog
+ */
+export const updateWorkerService = async (serviceId, serviceData) => {
+  try {
+    const res = await api.put(`/workers/services/${serviceId}`, serviceData);
+    return res.data;
+  } catch (error) {
+    console.error('Error updating service:', error);
+    throw error;
+  }
+};
+
+/**
+ * Remove a service from the worker's catalog
+ */
+export const removeWorkerService = async (serviceId) => {
+  try {
+    const res = await api.delete(`/workers/services/${serviceId}`);
+    return res.data;
+  } catch (error) {
+    console.error('Error removing service:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get all services for the authenticated worker
+ */
+export const getMyServices = async () => {
+  try {
+    const res = await api.get('/workers/services');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update worker's hourly rate
+ */
+export const updateHourlyRate = async (hourlyRate) => {
+  try {
+    const res = await api.put('/workers/hourly-rate', { hourlyRate });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating hourly rate:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get services for a specific worker (public)
+ */
+export const getWorkerServices = async (workerId) => {
+  try {
+    const res = await api.get(`/workers/${workerId}/services`);
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching worker services:', error);
+    throw error;
+  }
+};
+
 export const fetchWorkers = async () => {
   try {
     const res = await api.get("/workers");

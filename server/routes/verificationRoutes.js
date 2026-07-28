@@ -31,14 +31,14 @@ router.post(
 router.get('/status', protectWorker, getVerificationStatus);
 
 // Admin: list pending verifications
-router.get('/pending', protect, getPendingVerifications);
+router.get('/pending', protect, adminOnly, getPendingVerifications);
 
 // Admin: get stats
-router.get('/stats', protect, getVerificationStats);
+router.get('/stats', protect, adminOnly, getVerificationStats);
 
 // Admin: approve / reject
-router.patch('/:id/approve', protect, approveVerification);
-router.patch('/:id/reject', protect, rejectVerification);
+router.patch('/:id/approve', protect, adminOnly, approveVerification);
+router.patch('/:id/reject', protect, adminOnly, rejectVerification);
 
 // Worker: upload a single document
 router.post('/upload', protectWorker, upload.single('document'), uploadDocument);
