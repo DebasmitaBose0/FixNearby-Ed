@@ -1,6 +1,6 @@
 import api from "./apiClient";
 
-const BASE_URL = "/api/estimates";
+const BASE_URL = "/estimates";
 
 /**
  * Preview estimate based on inputs
