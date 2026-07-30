@@ -179,6 +179,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/estimates', estimateRoutes);
+app.use('/api/estimator', estimatorRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
