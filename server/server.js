@@ -34,30 +34,16 @@ import availabilityRoutes from './routes/availabilityRoutes.js';
 import { createGracefulShutdown } from './utils/gracefulShutdown.js';
 import { healthHandlers } from './controllers/healthController.js';
 import auditLogRoutes from './routes/auditLogRoutes.js';
-import calendarRoutes from './routes/calendarRoutes.js';
-import payoutRoutes from './routes/payoutRoutes.js';
-import attachmentRoutes from './routes/attachmentRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import emergencyRoutes from './routes/emergencyRoutes.js';
-import rewardsRoutes from './routes/rewardsRoutes.js';
 import earningRoutes from './routes/earningRoutes.js';
 import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
-import calendarRoutes from './routes/calendarRoutes.js';
-import payoutRoutes from './routes/payoutRoutes.js';
-import attachmentRoutes from './routes/attachmentRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import emergencyRoutes from './routes/emergencyRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
-import attachmentRoutes from './routes/attachmentRoutes.js';
-import calendarRoutes from './routes/calendarRoutes.js';
-import payoutRoutes from './routes/payoutRoutes.js';
-
-import calendarRoutes from './routes/calendarRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
 import payoutRoutes from './routes/payoutRoutes.js';
 import attachmentRoutes from './routes/attachmentRoutes.js';
@@ -65,19 +51,10 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import emergencyRoutes from './routes/emergencyRoutes.js';
 import rewardsRoutes from './routes/rewardsRoutes.js';
 import badgeRoutes from './routes/badgeRoutes.js';
-
-app.use('/api/reports', reportRoutes);
-app.use('/api/calendar', calendarRoutes);
-app.use('/api/payouts', payoutRoutes);
-app.use('/api/attachments', attachmentRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/emergency', emergencyRoutes);
-app.use('/api/rewards', rewardsRoutes);
-app.use('/api/badges', badgeRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/attachments', attachmentRoutes);
-app.use('/api/calendar', calendarRoutes);
-app.use('/api/payouts', payoutRoutes);
+import geofenceRoutes from './routes/geofenceRoutes.js';
+import estimatorRoutes from './routes/estimatorRoutes.js';
+import referralRoutes from './routes/referralRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 
 dotenv.config();
 
@@ -194,9 +171,15 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/disputes', disputeRoutes);
 app.use('/api/wallet', walletRoutes);
-app.use('/api/reports', reportRoutes);
-
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/payouts', payoutRoutes);
+app.use('/api/attachments', attachmentRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/emergency', emergencyRoutes);
+app.use('/api/rewards', rewardsRoutes);
+app.use('/api/referrals', referralRoutes);
+app.use('/api/service-requests', serviceRequestRoutes);
 
 // Start background workers after DB connection is established
 (async () => {
