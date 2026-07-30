@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { getAdminStats } from '../../services/adminService';
-import { getHealth } from '../../services/healthService'; // Or fallback api
 import api from '../../services/apiClient';
 import { exportToCSV, exportToPDFReport } from '../../utils/exportUtils';
 
