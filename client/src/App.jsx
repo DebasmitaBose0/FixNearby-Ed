@@ -6,7 +6,23 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { lazyWithRetry } from "./utils/performance";
+
+// Inlined here to avoid TDZ caused by performance.js being both statically
+// imported (here) and dynamically imported (main.jsx), which breaks Vite's
+// chunk execution order in production builds.
+function lazyWithRetry(importFn, retries = 2, delay = 1000) {
+  return new Promise((resolve, reject) => {
+    const attempt = (remaining) => {
+      importFn()
+        .then(resolve)
+        .catch((err) => {
+          if (remaining <= 0) { reject(err); return; }
+          setTimeout(() => attempt(remaining - 1), delay);
+        });
+    };
+    attempt(retries);
+  });
+}
 
 // ─── Layout Components (always loaded — tiny, needed immediately) ─────────────
 import Navbar from "./components/Navbar";
