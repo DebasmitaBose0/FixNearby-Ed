@@ -34,6 +34,12 @@ import availabilityRoutes from './routes/availabilityRoutes.js';
 import { createGracefulShutdown } from './utils/gracefulShutdown.js';
 import { healthHandlers } from './controllers/healthController.js';
 import auditLogRoutes from './routes/auditLogRoutes.js';
+import calendarRoutes from './routes/calendarRoutes.js';
+import payoutRoutes from './routes/payoutRoutes.js';
+import attachmentRoutes from './routes/attachmentRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import emergencyRoutes from './routes/emergencyRoutes.js';
+import rewardsRoutes from './routes/rewardsRoutes.js';
 import earningRoutes from './routes/earningRoutes.js';
 import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
@@ -43,6 +49,12 @@ import disputeRoutes from './routes/disputeRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 app.use('/api/reports', reportRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/payouts', payoutRoutes);
+app.use('/api/attachments', attachmentRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/emergency', emergencyRoutes);
+app.use('/api/rewards', rewardsRoutes);
 
 dotenv.config();
 
