@@ -40,11 +40,18 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import attachmentRoutes from './routes/attachmentRoutes.js';
+import calendarRoutes from './routes/calendarRoutes.js';
+import payoutRoutes from './routes/payoutRoutes.js';
 
+import calendarRoutes from './routes/calendarRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 app.use('/api/reports', reportRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/attachments', attachmentRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/payouts', payoutRoutes);
 
 dotenv.config();
 
@@ -156,6 +163,8 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/disputes', disputeRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.use('/api/recommendations', recommendationRoutes);
 
