@@ -7,23 +7,6 @@ import {
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
-// Inlined here to avoid TDZ caused by performance.js being both statically
-// imported (here) and dynamically imported (main.jsx), which breaks Vite's
-// chunk execution order in production builds.
-function lazyWithRetry(importFn, retries = 2, delay = 1000) {
-  return new Promise((resolve, reject) => {
-    const attempt = (remaining) => {
-      importFn()
-        .then(resolve)
-        .catch((err) => {
-          if (remaining <= 0) { reject(err); return; }
-          setTimeout(() => attempt(remaining - 1), delay);
-        });
-    };
-    attempt(retries);
-  });
-}
-
 // ─── Layout Components (always loaded — tiny, needed immediately) ─────────────
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -41,11 +24,11 @@ const Home             = lazy(() => import('./pages/Home'));
 const Login            = lazy(() => import('./pages/Login'));
 const Register         = lazy(() => import('./pages/Register'));
 const Dashboard        = lazy(() => import('./pages/Dashboard'));
-const Services         = lazy(() => lazyWithRetry(() => import('./pages/Services')));
-const WorkerProfile    = lazy(() => lazyWithRetry(() => import('./pages/WorkerProfile')));
-const WorkerDashboard  = lazy(() => lazyWithRetry(() => import('./pages/WorkerDashboard')));
-const Profile          = lazy(() => lazyWithRetry(() => import('./pages/Profile')));
-const Bookings         = lazy(() => lazyWithRetry(() => import('./pages/Bookings')));
+const Services         = lazy(() => import('./pages/Services'));
+const WorkerProfile    = lazy(() => import('./pages/WorkerProfile'));
+const WorkerDashboard  = lazy(() => import('./pages/WorkerDashboard'));
+const Profile          = lazy(() => import('./pages/Profile'));
+const Bookings         = lazy(() => import('./pages/Bookings'));
 const WorkerRegister   = lazy(() => import('./pages/WorkerRegister'));
 const WorkerLogin      = lazy(() => import('./pages/WorkerLogin'));
 const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
@@ -63,7 +46,7 @@ const CivicIssues         = lazy(() => import('./pages/CivicIssues'));
 const ReportIssue         = lazy(() => import('./components/IssueSubmissionForm'));
 const IssueDetail         = lazy(() => import('./pages/IssueDetail'));
 const NotFound            = lazy(() => import('./pages/NotFound'));
-const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
+const Notifications       = lazy(() => import('./pages/Notifications'));
 const RequestService      = lazy(() => import('./pages/RequestService'));
 const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
 
@@ -74,7 +57,7 @@ const EarningsDashboard   = lazy(() => import('./pages/worker/EarningsDashboard'
 const ModerationPanel     = lazy(() => import('./pages/admin/ModerationPanel'));
 const ScheduleManager     = lazy(() => import('./pages/worker/ScheduleManager'));
 
-const VerificationPage = lazy(() => lazyWithRetry(() => import('./pages/worker/VerificationPage')));
+const VerificationPage = lazy(() => import('./pages/worker/VerificationPage'));
 const ServiceManager = lazy(() => import('./components/ServiceManager'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
