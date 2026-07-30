@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect, protectWorker } from '../middleware/authMiddleware.js';
+import { protect, protectWorker, adminOnly } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 import {
   submitVerification,
