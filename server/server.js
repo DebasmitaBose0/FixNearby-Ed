@@ -42,6 +42,7 @@ import disputeRoutes from './routes/disputeRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
 import payoutRoutes from './routes/payoutRoutes.js';
 
+import calendarRoutes from './routes/calendarRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 app.use('/api/reports', reportRoutes);
@@ -158,6 +159,8 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/verification', verificationRoutes);
 app.use('/api/disputes', disputeRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/reports', reportRoutes);
 
 app.use('/api/recommendations', recommendationRoutes);
 
