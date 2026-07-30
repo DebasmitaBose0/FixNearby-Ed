@@ -10,6 +10,7 @@ We love your input! We want to make contributing to FixNearby as easy and transp
 ## Our Development Process
 
 We use GitHub issues to track public bugs and features. All active development happens in feature branches.
+Before submitting code, please review the [API Specification](./API_SPECIFICATION.md) and [Real-Time Socket Protocols](./REALTIME_SOCKET_PROTOCOLS.md).
 
 ### Code Review Guidelines
 
