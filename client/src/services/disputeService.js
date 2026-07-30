@@ -1,22 +1,20 @@
-import axios from 'axios';
-
-const API_URL = '/api/disputes';
+import api from './apiClient';
 
 const disputeService = {
   createDispute: async (disputeData) => {
-    const res = await axios.post(API_URL, disputeData);
+    const res = await api.post('/disputes', disputeData);
     return res.data;
   },
   getUserDisputes: async () => {
-    const res = await axios.get(API_URL);
+    const res = await api.get('/disputes');
     return res.data;
   },
   getDisputeById: async (id) => {
-    const res = await axios.get(`${API_URL}/${id}`);
+    const res = await api.get(`/disputes/${id}`);
     return res.data;
   },
   resolveDispute: async (id, resolutionData) => {
-    const res = await axios.patch(`${API_URL}/${id}/resolve`, resolutionData);
+    const res = await api.patch(`/disputes/${id}/resolve`, resolutionData);
     return res.data;
   }
 };
