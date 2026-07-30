@@ -1,7 +1,7 @@
-const Dispute = require('../models/Dispute');
-const Booking = require('../models/Booking');
+import Dispute from '../models/Dispute.js';
+import Booking from '../models/Booking.js';
 
-exports.createDispute = async (req, res) => {
+export const createDispute = async (req, res) => {
   try {
     const { bookingId, againstUser, reason, claimAmount, evidenceUrls } = req.body;
     const booking = await Booking.findById(bookingId);
@@ -24,7 +24,7 @@ exports.createDispute = async (req, res) => {
   }
 };
 
-exports.getDisputes = async (req, res) => {
+export const getDisputes = async (req, res) => {
   try {
     const disputes = await Dispute.find()
       .populate('bookingId')
@@ -38,7 +38,7 @@ exports.getDisputes = async (req, res) => {
   }
 };
 
-exports.getDisputeById = async (req, res) => {
+export const getDisputeById = async (req, res) => {
   try {
     const dispute = await Dispute.findById(req.params.id)
       .populate('bookingId')
@@ -55,7 +55,7 @@ exports.getDisputeById = async (req, res) => {
   }
 };
 
-exports.resolveDispute = async (req, res) => {
+export const resolveDispute = async (req, res) => {
   try {
     const { status, resolutionNotes } = req.body;
     const dispute = await Dispute.findById(req.params.id);

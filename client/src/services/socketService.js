@@ -63,6 +63,16 @@ export const sendMessage = (data) => {
   return true;
 };
 
+export const sendAttachmentMessage = (conversationId, attachment) => {
+  if (!socket?.connected) return false;
+  socket.emit('send_message', {
+    conversationId,
+    content: `[Attachment] ${attachment.fileName}`,
+    attachment
+  });
+  return true;
+};
+
 export const joinConversation = (conversationId) => {
   if (!socket?.connected) return;
   socket.emit('join_conversation', { conversationId });
