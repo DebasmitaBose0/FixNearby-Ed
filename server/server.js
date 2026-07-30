@@ -39,17 +39,15 @@ import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
+import calendarRoutes from './routes/calendarRoutes.js';
+import payoutRoutes from './routes/payoutRoutes.js';
 
 import calendarRoutes from './routes/calendarRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 app.use('/api/reports', reportRoutes);
 app.use('/api/calendar', calendarRoutes);
-import recommendationRoutes from './routes/recommendationRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
-import scheduleRoutes from './routes/scheduleRoutes.js';
-import walletRoutes from './routes/walletRoutes.js';
+app.use('/api/payouts', payoutRoutes);
 
 dotenv.config();
 
