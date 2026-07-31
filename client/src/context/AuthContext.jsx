@@ -88,7 +88,12 @@ export const AuthProvider = ({ children }) => {
         setAuthLoading(false);
         return;
       } catch (e) {
-        if (!e.response || e.code === 'ERR_NETWORK' || e.message === 'Network Error') {
+        const isOfflineOrNotFound = !e.response || 
+          e.code === 'ERR_NETWORK' || 
+          e.message === 'Network Error' || 
+          [404, 502, 503, 504].includes(e.response?.status);
+
+        if (isOfflineOrNotFound) {
           if (!cancelled && stored) {
             setAuthData(stored);
             setAuthLoading(false);
