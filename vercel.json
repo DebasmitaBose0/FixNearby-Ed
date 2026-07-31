@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node -e \"const fs = require('fs'); const cp = require('child_process'); const cwd = fs.existsSync('client') ? 'client' : '.'; cp.execSync('npm install && npm run build', { cwd, stdio: 'inherit' });\"",
+  "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
