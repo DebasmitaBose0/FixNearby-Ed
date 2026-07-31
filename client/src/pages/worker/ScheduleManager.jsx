@@ -22,6 +22,7 @@ import {
   removeBlockedSlot,
 } from "../../services/scheduleService";
 import { getSocket } from "../../services/socketService";
+import AvailabilityCalendar from "../../components/worker/AvailabilityCalendar";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = Array.from({ length: 13 }, (_, i) => i + 8); // 8:00 AM to 8:00 PM (8..20)
@@ -653,6 +654,11 @@ const ScheduleManager = () => {
             ? "Saving..."
             : "Save Recurring Availability Template"}
         </button>
+      </div>
+
+      {/* Interactive Slot Calendar */}
+      <div className="mt-8">
+        <AvailabilityCalendar schedule={recurring} onUpdateSchedule={(newSlots) => setRecurring(newSlots)} />
       </div>
 
       {/* Block Off Date/Time Range Modal */}

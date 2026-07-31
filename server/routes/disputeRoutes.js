@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { createDispute, getDisputes, getDisputeById, resolveDispute } = require('../controllers/disputeController');
-const { protect, admin } = require('../middleware/authMiddleware');
+import { createDispute, getDisputes, getDisputeById, resolveDispute } from '../controllers/disputeController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 router.post('/', protect, createDispute);
-router.get('/', protect, admin, getDisputes);
+router.get('/', protect, adminOnly, getDisputes);
 router.get('/:id', protect, getDisputeById);
-router.patch('/:id/resolve', protect, admin, resolveDispute);
+router.patch('/:id/resolve', protect, adminOnly, resolveDispute);
 
-module.exports = router;
+export default router;

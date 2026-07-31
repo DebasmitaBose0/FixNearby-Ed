@@ -14,9 +14,10 @@
   <p align="center">
     <a href="#-features">Features</a> •
     <a href="#-tech-stack">Tech Stack</a> •
-    <a href="#-getting-started">Getting Started</a> •
-    <a href="#-how-to-contribute">Contributing</a> •
-    <a href="#-license">License</a>
+    <a href="./docs/API_SPECIFICATION.md">API Specs</a> •
+    <a href="./docs/REALTIME_SOCKET_PROTOCOLS.md">Socket Protocols</a> •
+    <a href="./docs/SYSTEM_DEPLOYMENT_GUIDE.md">Deployment Guide</a> •
+    <a href="#-how-to-contribute">Contributing</a>
   </p>
 </div>
 
