@@ -49,6 +49,7 @@ const NotFound            = lazy(() => import('./pages/NotFound'));
 const Notifications       = lazy(() => import('./pages/Notifications'));
 const RequestService      = lazy(() => import('./pages/RequestService'));
 const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
+const ChatPage            = lazy(() => import('./pages/ChatPage'));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -132,6 +133,14 @@ const ROUTES = [
     element: (
       <RequireAuth>
         <Bookings />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/chat",
+    element: (
+      <RequireAuth>
+        <ChatPage />
       </RequireAuth>
     ),
   },

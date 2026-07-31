@@ -29,9 +29,9 @@ const MOCK_MESSAGES = {
 };
 
 const ChatPage = () => {
-  const [activeConversation, setActiveConversation] = useState(null);
+  const [activeConversation, setActiveConversation] = useState('conv1');
   const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
-  const [messages, setMessages] = useState({});
+  const [messages, setMessages] = useState(MOCK_MESSAGES);
   const [connected, setConnected] = useState(false);
 
   useDocumentTitle('Chat');

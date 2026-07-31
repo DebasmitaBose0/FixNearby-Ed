@@ -38,12 +38,7 @@ import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
 import CostEstimatorWidget from "../components/calculator/CostEstimatorWidget";
 import WorkerMap from "../components/WorkerMap";
-import {
-  addRecentWorker,
-  clearRecentWorkers,
-  getRecentWorkers,
-  removeRecentWorker,
-} from "../services/recentWorkerService";
+
 
 const mockWorkers = [
   {

@@ -1035,6 +1035,20 @@ const WorkerProfile = () => {
               )}
             </button>
 
+            <button
+              onClick={() => {
+                if (!isAuthenticated) {
+                  navigate("/login", { state: { from: `/worker/${id}` } });
+                  return;
+                }
+                navigate("/chat");
+              }}
+              className="w-full mt-2.5 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-200 transition font-semibold py-3 rounded-2xl flex items-center justify-center gap-2"
+            >
+              <MessageSquare size={18} />
+              Chat with Professional
+            </button>
+
             {bookingError && (
               <p
                 role="alert"

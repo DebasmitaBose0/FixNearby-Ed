@@ -4,7 +4,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 import StarRating from "../components/StarRating";
-import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History } from "lucide-react";
+import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History, MessageSquare } from "lucide-react";
 import BookingTimeline from "../components/BookingTimeline";
 import useBookingTimeline from "../hooks/useBookingTimeline";
 import { useBookings } from "../hooks/useBookings";
@@ -667,6 +667,13 @@ const Bookings = () => {
                     Rated {booking.review.rating}/5
                   </span>
                 )}
+                <Link
+                  to="/chat"
+                  className="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 transition"
+                >
+                  <MessageSquare size={14} />
+                  Chat
+                </Link>
                 <button
                   type="button"
                   onClick={() =>
