@@ -164,6 +164,13 @@ export const createBooking = async (req, res, next) => {
       });
     }
 
+    if (start.getTime() < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: 'scheduledTime cannot be in the past'
+      });
+    }
+
     let result;
     try {
       result = await executeCreate(true);
