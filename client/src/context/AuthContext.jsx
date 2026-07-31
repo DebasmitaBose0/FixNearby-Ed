@@ -88,6 +88,18 @@ export const AuthProvider = ({ children }) => {
         setAuthLoading(false);
         return;
       } catch (e) {
+        const isOfflineOrNotFound = !e.response || 
+          e.code === 'ERR_NETWORK' || 
+          e.message === 'Network Error' || 
+          [404, 502, 503, 504].includes(e.response?.status);
+
+        if (isOfflineOrNotFound) {
+          if (!cancelled && stored) {
+            setAuthData(stored);
+            setAuthLoading(false);
+            return;
+          }
+        }
         // 2) Try as a worker
         try {
           const workerProfile = await api.get('/auth/worker/profile');

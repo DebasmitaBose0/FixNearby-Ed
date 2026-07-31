@@ -2,7 +2,8 @@ import axios from "axios";
 import { getCsrfToken, fetchCsrfToken } from "./csrfService";
 
 const normalizeApiBaseURL = (value) => {
-  const baseURL = (value || "http://localhost:5000/api").replace(/\/+$/, "");
+  const fallback = import.meta.env.PROD ? "/api" : "http://localhost:5000/api";
+  const baseURL = (value || fallback).replace(/\/+$/, "");
   return baseURL.endsWith("/api") ? baseURL : `${baseURL}/api`;
 };
 
