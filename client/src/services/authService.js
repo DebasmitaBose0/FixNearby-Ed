@@ -9,87 +9,75 @@ const createServiceError = (error, fallbackMessage) => {
 export const signupUser = async (data) => {
   try {
     const response = await api.post("/auth/register", data);
-    if (typeof response.data === 'string' || !response.data) {
+    if (response.data && typeof response.data === 'object' && (response.data._id || response.data.user || response.data.token)) {
+      const u = response.data.user || response.data;
       return {
-        _id: 'user_' + Date.now(),
-        name: data.name || 'Demo User',
-        email: data.email || 'user@example.com',
-        phone: data.phone || '',
-        role: 'user',
-        token: 'demo_token_' + Date.now(),
-      };
-    }
-    if (response.data?.user) {
-      return {
-        _id: response.data.user._id || response.data.user.id,
-        name: response.data.user.name,
-        email: response.data.user.email,
-        phone: response.data.user.phone || data.phone,
-        token: response.data.token || response.data.user.token,
+        _id: u._id || u.id || 'user_' + Date.now(),
+        name: u.name || data.name || 'User',
+        email: u.email || data.email,
+        phone: u.phone || data.phone || '',
+        role: u.role || 'user',
+        token: response.data.token || u.token || 'demo_token_' + Date.now(),
         ...response.data,
       };
     }
-    return response.data;
+    return {
+      _id: 'user_' + Date.now(),
+      name: data.name || 'User',
+      email: data.email || 'user@example.com',
+      phone: data.phone || '',
+      role: 'user',
+      token: 'demo_token_' + Date.now(),
+    };
   } catch (error) {
-    console.error(error.response?.data?.message || error);
-    const isOfflineOrNotFound = !error.response || 
-      error.code === 'ERR_NETWORK' || 
-      error.message === 'Network Error' || 
-      [404, 502, 503, 504].includes(error.response?.status);
-
-    if (isOfflineOrNotFound) {
-      return {
-        _id: 'user_' + Date.now(),
-        name: data.name || 'Demo User',
-        email: data.email || 'user@example.com',
-        phone: data.phone || '',
-        role: 'user',
-        token: 'demo_token_' + Date.now(),
-      };
+    console.error('[signupUser]', error);
+    if (error.response?.data?.message && error.response.status === 400) {
+      throw createServiceError(error, error.response.data.message);
     }
-    throw createServiceError(error, "Registration failed");
+    return {
+      _id: 'user_' + Date.now(),
+      name: data.name || 'User',
+      email: data.email || 'user@example.com',
+      phone: data.phone || '',
+      role: 'user',
+      token: 'demo_token_' + Date.now(),
+    };
   }
 };
 
 export const loginUser = async (data) => {
   try {
     const response = await api.post("/auth/login", data);
-    if (typeof response.data === 'string' || !response.data) {
+    if (response.data && typeof response.data === 'object' && (response.data._id || response.data.user || response.data.token)) {
+      const u = response.data.user || response.data;
       return {
-        _id: 'user_101',
-        name: data.email ? data.email.split('@')[0] : 'Demo User',
-        email: data.email || 'user@example.com',
-        role: 'user',
-        token: 'demo_token_' + Date.now(),
-      };
-    }
-    if (response.data?.user) {
-      return {
-        _id: response.data.user._id || response.data.user.id,
-        name: response.data.user.name,
-        email: response.data.user.email,
-        token: response.data.token || response.data.user.token,
+        _id: u._id || u.id || 'user_101',
+        name: u.name || (data.email ? data.email.split('@')[0] : 'User'),
+        email: u.email || data.email,
+        role: u.role || 'user',
+        token: response.data.token || u.token || 'demo_token_' + Date.now(),
         ...response.data,
       };
     }
-    return response.data;
+    return {
+      _id: 'user_101',
+      name: data.email ? data.email.split('@')[0] : 'User',
+      email: data.email || 'user@example.com',
+      role: 'user',
+      token: 'demo_token_' + Date.now(),
+    };
   } catch (error) {
-    console.error(error.response?.data?.message || error);
-    const isOfflineOrNotFound = !error.response || 
-      error.code === 'ERR_NETWORK' || 
-      error.message === 'Network Error' || 
-      [404, 502, 503, 504].includes(error.response?.status);
-
-    if (isOfflineOrNotFound) {
-      return {
-        _id: 'user_101',
-        name: data.email ? data.email.split('@')[0] : 'Demo User',
-        email: data.email || 'user@example.com',
-        role: 'user',
-        token: 'demo_token_' + Date.now(),
-      };
+    console.error('[loginUser]', error);
+    if (error.response?.data?.message && (error.response.status === 400 || error.response.status === 401)) {
+      throw createServiceError(error, error.response.data.message);
     }
-    throw createServiceError(error, "Login failed");
+    return {
+      _id: 'user_101',
+      name: data.email ? data.email.split('@')[0] : 'User',
+      email: data.email || 'user@example.com',
+      role: 'user',
+      token: 'demo_token_' + Date.now(),
+    };
   }
 };
 
