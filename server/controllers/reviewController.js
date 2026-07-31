@@ -16,6 +16,14 @@ export const createReview = async (req, res) => {
       });
     }
 
+    const numRating = Number(rating);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rating must be a number between 1 and 5'
+      });
+    }
+
     if (!mongoose.Types.ObjectId.isValid(bookingReference)) {
       return res.status(400).json({
         success: false,
