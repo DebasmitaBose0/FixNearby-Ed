@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const disputeSchema = new mongoose.Schema(
   {
@@ -52,4 +52,4 @@ const disputeSchema = new mongoose.Schema(
 
 disputeSchema.index({ status: 1, createdAt: -1 });
 
-module.exports = mongoose.model('Dispute', disputeSchema);
+export default mongoose.model('Dispute', disputeSchema);

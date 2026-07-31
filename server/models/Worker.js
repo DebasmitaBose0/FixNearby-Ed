@@ -35,6 +35,11 @@ const workerSchema = new mongoose.Schema(
       trim: true,
     },
 
+    serviceRadiusKm: {
+      type: Number,
+      default: 10,
+    },
+
     location: {
       type: {
         type: String,
