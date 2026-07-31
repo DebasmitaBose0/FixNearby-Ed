@@ -1,4 +1,10 @@
 {
+  "name": "fixnearby",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix client run build",
+    "vercel-build": "npm --prefix client run build"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",

@@ -32,7 +32,21 @@ Welcome! This guide consolidates all local development instructions, folder layo
   - `/models`: Database schema models
   - `/routes`: Server router endpoints
 
+## Testing Pipeline
+The project runs two test suites:
+- **Legacy tests** (`npm test` in `server/`): Core CRUD validation for bookings, auth, messaging, etc.
+- **New integration tests** (`npm run test:new` in `server/`): Health check, booking expiry, reminders, favorites, audit logs, rate limiting, review responses, validation schemas, and password policy.
+Both suites must pass before merging to `master`.
+
+## CI/CD Integration
+Pull requests against `master` automatically trigger:
+1. **Server Tests** — Integration test suite via GitHub Actions.
+2. **Client Lint** — ESLint on the React frontend.
+3. **Client Build** — Vite production build verification.
+Refer to `.github/workflows/ci-quality.yml` for the exact pipeline definition.
+
 ## Coding Rules
 - Do not commit secrets/credentials.
 - Follow conventional commits for branches and commits.
 - Ensure linting and tests pass before raising a PR.
+- All new features must include corresponding verification tests in `server/tests/`.
