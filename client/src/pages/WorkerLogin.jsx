@@ -12,9 +12,10 @@ import {
 import useToast from "../hooks/useToast";
 import { workerLogin } from "../services/workerService";
 import TwoFactorChallenge from "../components/TwoFactorChallenge";
+import { useAuth } from "../context/AuthContext";
 
 const WorkerLogin = () => {
-
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const { showToast } = useToast();
@@ -155,17 +156,18 @@ const WorkerLogin = () => {
       // STORE SESSION under the canonical key used by apiClient & AuthContext
       if (response?.token) {
         const workerData = response.worker || response;
-        localStorage.setItem(
-          "fixnearby_user",
-          JSON.stringify({
-            _id: workerData.id || workerData._id,
-            name: workerData.name,
-            email: workerData.email,
-            phone: workerData.phone,
-            role: "worker",
-            token: response.token,
-          })
-        );
+        const sessionObj = {
+          _id: workerData.id || workerData._id,
+          name: workerData.name,
+          email: workerData.email,
+          phone: workerData.phone,
+          role: "worker",
+          token: response.token,
+        };
+        localStorage.setItem("fixnearby_user", JSON.stringify(sessionObj));
+        if (typeof login === "function") {
+          login(sessionObj);
+        }
       }
 
       showToast("Worker login successful!");
