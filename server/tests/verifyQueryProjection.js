@@ -126,7 +126,7 @@ async function runTests() {
     console.log(`- Retrieved issue: ${JSON.stringify(matchedIssue)}`);
 
     // Verify unselected/extra fields or just match against exact projected keys
-    const allowedIssueKeys = new Set(['_id', 'title', 'description', 'category', 'location', 'latitude', 'longitude', 'status', 'upvotes', 'reportedAt']);
+    const allowedIssueKeys = new Set(['_id', 'title', 'description', 'category', 'location', 'latitude', 'longitude', 'thumbnailUrl', 'status', 'upvotes', 'reportedAt']);
     for (const key of Object.keys(matchedIssue)) {
       if (!allowedIssueKeys.has(key)) {
         throw new Error(`Field "${key}" was returned but is not in the allowed projection list!`);
