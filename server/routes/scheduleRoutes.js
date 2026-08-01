@@ -7,19 +7,20 @@ import {
   getBlockedSlots,
   removeBlockedSlot,
 } from '../controllers/scheduleController.js';
-import { protectWorker } from '../middleware/authMiddleware.js';
+import { protectWorker, requireRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Public/Customer-facing worker schedule lookup
 router.get('/worker/:id', getWorkerScheduleById);
 
-// Worker-protected management routes
-router.get('/', protectWorker, getWorkerSchedule);
-router.post('/set-recurring', protectWorker, setRecurringAvailability);
-router.post('/recurring', protectWorker, setRecurringAvailability);
-router.post('/block', protectWorker, blockTimeSlot);
-router.get('/blocked', protectWorker, getBlockedSlots);
-router.delete('/block/:id', protectWorker, removeBlockedSlot);
+// Worker-protected management routes (requires worker/provider/admin role)
+router.use(protectWorker, requireRole('provider', 'worker', 'admin'));
+router.get('/', getWorkerSchedule);
+router.post('/set-recurring', setRecurringAvailability);
+router.post('/recurring', setRecurringAvailability);
+router.post('/block', blockTimeSlot);
+router.get('/blocked', getBlockedSlots);
+router.delete('/block/:id', removeBlockedSlot);
 
 export default router;

@@ -4,12 +4,14 @@ import {
   createConnectAccount,
   requestPayout
 } from '../controllers/payoutController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, requireRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/details', protect, getPayoutDetails);
-router.post('/stripe-connect', protect, createConnectAccount);
-router.post('/request', protect, requestPayout);
+router.use(protect, requireRole('provider', 'worker', 'admin'));
+
+router.get('/details', getPayoutDetails);
+router.post('/stripe-connect', createConnectAccount);
+router.post('/request', requestPayout);
 
 export default router;

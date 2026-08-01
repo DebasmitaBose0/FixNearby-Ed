@@ -8,12 +8,12 @@ import {
   deletePayoutMethod,
   exportEarningsCSV,
 } from '../controllers/earningController.js';
-import { protectWorker } from '../middleware/authMiddleware.js';
+import { protectWorker, requireRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All earning routes require worker authentication
-router.use(protectWorker);
+// All earning routes require worker/provider authentication & role check
+router.use(protectWorker, requireRole('provider', 'worker', 'admin'));
 
 router.get('/summary', getEarningsDashboard);
 router.get('/dashboard/stats', getEarningsDashboard);
