@@ -516,6 +516,7 @@ const Services = () => {
           outcomeText: w.outcomeText || `Review past work and request a ${w.category?.toLowerCase() || 'service'} visit.`,
           mockOffset: w.mockOffset || (w.coordinates ? { lat: w.coordinates.lat, lon: w.coordinates.lon } : null),
           verified: w.verified ?? true,
+          isAvailableNow: w.isAvailableNow === true,
           rating: Number(w.rating) || 4.5,
           completedJobs: w.completedJobs || 12,
         }));
@@ -634,13 +635,21 @@ const Services = () => {
         !urgentFilter ||
         /today|emergency|open/i.test(w.availability || "");
 
+      // Availability filter
+      const matchesAvailability = 
+        advancedFilters.availability === 'all' || 
+        (advancedFilters.availability === 'available' && w.isAvailableNow) ||
+        (advancedFilters.availability === 'today' && /today/i.test(w.availability || "")) ||
+        (advancedFilters.availability === 'week' && /week|today|tomorrow/i.test(w.availability || ""));
+
       return (
         matchesSearch &&
         matchesCategory &&
         matchesPrice &&
         matchesRating &&
         matchesDistance &&
-        matchesUrgent
+        matchesUrgent &&
+        matchesAvailability
       );
     });
 
@@ -1072,7 +1081,15 @@ const Services = () => {
                         {/* CONTENT */}
                         <div className="flex flex-1 flex-col p-6">
                           <div className="mb-2 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900">{worker.name}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold text-gray-900">{worker.name}</h3>
+                              {worker.isAvailableNow && (
+                                <span className="relative flex h-3 w-3" title="Available Now">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                               <span className="text-sm font-bold text-gray-700">{worker.rating}</span>

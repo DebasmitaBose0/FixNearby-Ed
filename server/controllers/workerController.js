@@ -182,7 +182,7 @@ export const getWorkers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const workers = await Worker.find()
-      .select("name email category experience location contact availabilityStatus profilePicture lastActive averageRating reviewCount")
+      .select("name email category experience location contact availabilityStatus isAvailableNow profilePicture lastActive averageRating reviewCount")
       .limit(limit)
       .skip(skip)
       .lean();
@@ -252,6 +252,50 @@ export const getWorkerProfile = async (req, res) => {
     success: true,
     worker: req.worker,
   });
+};
+
+export const updateAvailableNowStatus = async (req, res) => {
+  try {
+    const { isAvailableNow } = req.body;
+    
+    if (typeof isAvailableNow !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        message: "isAvailableNow must be a boolean",
+      });
+    }
+
+    const worker = await Worker.findByIdAndUpdate(
+      req.worker._id,
+      {
+        isAvailableNow,
+        lastActive: new Date(),
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("isAvailableNow lastActive");
+
+    if (!worker) {
+      return res.status(404).json({
+        success: false,
+        message: "Worker not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      isAvailableNow: worker.isAvailableNow,
+      lastActive: worker.lastActive,
+    });
+  } catch (error) {
+    console.error("Error updating available now status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 export const updateWorkerAvailabilityStatus = async (req, res) => {
@@ -659,7 +703,7 @@ export const getWorkersByBounds = async (req, res) => {
     if (minRating) query.averageRating = { $gte: parseFloat(minRating) };
 
     const workers = await Worker.find(query)
-      .select('name category experience location averageRating availabilityStatus profilePicture price bio')
+      .select('name category experience location averageRating availabilityStatus isAvailableNow profilePicture price bio')
       .limit(100)
       .lean();
 

@@ -14,12 +14,14 @@ import {
 } from "react-icons/fa";
 
 import api from "../services/apiClient";
+import useToast from "../hooks/useToast";
 
 const WorkerDashboard = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [worker, setWorker] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [stats, setStats] = useState([
     { label: "Total Jobs", value: "0" },
     { label: "Active Jobs", value: "0" },
@@ -39,6 +41,11 @@ const WorkerDashboard = () => {
         const savedAvailability = localStorage.getItem("workerAvailability");
         if (savedAvailability !== null) {
           setIsAvailable(savedAvailability === "true");
+        }
+
+        const profileRes = await api.get("/workers/profile");
+        if (profileRes.data?.success && profileRes.data.worker) {
+          setIsAvailable(profileRes.data.worker.isAvailableNow === true);
         }
 
         // Fetch dashboard stats from backend
@@ -69,15 +76,21 @@ const WorkerDashboard = () => {
     navigate("/worker/login");
   };
 
-  const toggleAvailability = () => {
+  const toggleAvailability = async () => {
     const newStatus = !isAvailable;
 
-    setIsAvailable(newStatus);
-
-    localStorage.setItem(
-        "workerAvailability",
-        newStatus.toString()
-    );
+    try {
+      const res = await api.patch("/workers/profile/available-now", { isAvailableNow: newStatus });
+      if (res.data?.success) {
+        setIsAvailable(res.data.isAvailableNow);
+        localStorage.setItem("workerAvailability", res.data.isAvailableNow.toString());
+        showToast(res.data.isAvailableNow ? "You are now online" : "You are now offline", "success");
+      }
+    } catch (error) {
+      console.error("Failed to update availability status", error);
+      showToast("Failed to update status", "error");
+      setIsAvailable(!newStatus); // Revert back
+    }
   };
 
   const statIcons = [
