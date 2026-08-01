@@ -6,6 +6,8 @@ import Verification from '../models/Verification.js';
 import Review from '../models/Review.js';
 import mongoose from 'mongoose';
 import logger from '../utils/logger.js';
+import { generateEncryptedAuditReport } from '../services/encryptedExportService.js';
+
 
 /**
  * @desc    Get aggregate platform stats, 30-day analytics graphs, system health & recent activity
