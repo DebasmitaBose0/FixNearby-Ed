@@ -258,7 +258,11 @@ const workerSchema = new mongoose.Schema(
         type: Date,
         default: Date.now
       }
-    }]
+    }],
+    stripeConnectAccountId: {
+      type: String,
+      default: ''
+    }
   },
   {
     timestamps: true,

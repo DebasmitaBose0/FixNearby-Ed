@@ -6,7 +6,10 @@ import {
   handleStripeWebhook,
   getPaymentHistory,
   getPaymentById,
-  requestRefund
+  requestRefund,
+  releaseEscrowFunds,
+  getEscrowStatus,
+  linkStripeConnectAccount
 } from '../controllers/paymentController.js';
 
 const router = express.Router();
@@ -23,4 +26,10 @@ router.get('/history', getPaymentHistory);
 router.get('/:id', getPaymentById);
 router.post('/:id/refund', requestRefund);
 
+// Escrow & Stripe Connect Multi-Party Routing Routes
+router.post('/escrow/:bookingId/release', releaseEscrowFunds);
+router.get('/escrow/status/:bookingId', getEscrowStatus);
+router.post('/escrow/connect-account', linkStripeConnectAccount);
+
 export default router;
+
