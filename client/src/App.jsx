@@ -50,6 +50,7 @@ const Notifications       = lazy(() => import('./pages/Notifications'));
 const RequestService      = lazy(() => import('./pages/RequestService'));
 const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
 const ChatPage            = lazy(() => import('./pages/ChatPage'));
+const JobsFeed            = lazy(() => import('./pages/JobsFeed'));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -101,6 +102,8 @@ const ROUTES = [
 
   // Workers & Services
   { path: '/services',          element: <Services /> },
+  { path: '/providers',         element: <Services /> },
+  { path: '/jobs',              element: <JobsFeed /> },
   { path: '/worker/register',   element: <WorkerRegister /> },
   { path: '/worker/login',      element: <WorkerLogin /> },
   { path: '/worker/dashboard',    element: <WorkerDashboard /> }, 
