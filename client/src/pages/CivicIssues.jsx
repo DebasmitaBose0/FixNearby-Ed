@@ -34,6 +34,7 @@ const CivicIssues = () => {
   const [activeTab, setActiveTab] = useState("map"); // 'map', 'list', 'report'
   const [selectedIssueId, setSelectedIssueId] = useState(null);
   const [upvotingIds, setUpvotingIds] = useState(new Set());
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const fetchIssues = useCallback(async () => {
     try {
