@@ -3,9 +3,9 @@ import { io } from "socket.io-client";
 let socketSingleton = null;
 
 const getServerUrl = () => {
-  // Match backend websocket URL used in server/server.js and CSP.
-  // Allows overriding in deployments.
-  return import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  if (import.meta.env.PROD && typeof window !== 'undefined') return window.location.origin;
+  return "http://localhost:5000";
 };
 
 export const getSocket = () => {
@@ -26,4 +26,3 @@ export const disconnectSocket = () => {
     socketSingleton = null;
   }
 };
-

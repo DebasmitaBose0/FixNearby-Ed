@@ -5,15 +5,19 @@ import Worker from './models/Worker.js';
 import Message from './models/Message.js';
 import allowedOrigins from './config/corsOrigins.js';
 import { verifySocketAuth } from './utils/verifySocketAuth.js';
+import { socketAuthMiddleware } from './middleware/socketAuthMiddleware.js';
+import { initSocketLifecycle } from './utils/socketLifecycle.js';
 import { messageRetryService } from './services/messageRetryService.js';
 import { handleSendMessage, handleTyping } from './socketHandlers/chatHandler.js';
 import { handlePresenceUpdate } from './socketHandlers/presenceHandler.js';
+import { registerBookingHandlers } from './socketHandlers/bookingHandler.js';
 
 // Map to track active user socket mappings
 // Map format: userId -> Set of socket.ids
 const userSockets = new Map();
 
 let ioInstance;
+let lifecycleManager;
 
 export const getIo = () => ioInstance;
 
@@ -28,11 +32,17 @@ export const initSocket = (server) => {
   ioInstance = io;
 
   // Socket middleware for authentication
-  io.use(verifySocketAuth);
+  io.use(socketAuthMiddleware);
+
+  // Initialize connection lifecycle heartbeat monitor
+  lifecycleManager = initSocketLifecycle(io);
 
   io.on('connection', async (socket) => {
     const userId = socket.user._id.toString();
     const userType = socket.userType;
+
+    // Register socket with lifecycle heartbeat monitor
+    lifecycleManager.registerSocket(socket);
 
     // Track active connection
     if (!userSockets.has(userId)) {
@@ -42,6 +52,7 @@ export const initSocket = (server) => {
 
     // Join personal room for targeting user directly
     socket.join(userId);
+
 
     // Set online status in database and broadcast
     try {
@@ -74,6 +85,8 @@ export const initSocket = (server) => {
     });
 
     // Presence management toggles
+    registerBookingHandlers(io, socket);
+
     socket.on('update_status', async (data) => {
       try {
         const { status } = data; // 'online' / 'available', 'busy', 'offline'
@@ -98,6 +111,9 @@ export const initSocket = (server) => {
 
     // Handle Socket Disconnection
     socket.on('disconnect', async () => {
+      if (lifecycleManager) {
+        lifecycleManager.unregisterSocket(socket.id);
+      }
       const sockets = userSockets.get(userId);
       if (sockets) {
         sockets.delete(socket.id);

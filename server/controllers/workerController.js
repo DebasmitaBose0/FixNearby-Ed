@@ -27,6 +27,11 @@ export const registerWorker = async (req, res) => {
       location,
       contact,
       bio,
+      slaResponseMins,
+      serviceCoverage,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus,
     } = req.body;
 
     if (
@@ -66,6 +71,58 @@ export const registerWorker = async (req, res) => {
         });
       }
 
+      // Validations for new SLA/Policy fields
+      if (slaResponseMins !== undefined) {
+        const mins = Number(slaResponseMins);
+        if (isNaN(mins) || mins <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Response SLA must be a positive number of minutes",
+          });
+        }
+      }
+      if (serviceCoverage !== undefined) {
+        if (!Array.isArray(serviceCoverage) && typeof serviceCoverage !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: "Service coverage must be an array or string",
+          });
+        }
+        const coverageArray = Array.isArray(serviceCoverage)
+          ? serviceCoverage
+          : serviceCoverage.split(',').map(s => s.trim());
+        if (coverageArray.some(item => typeof item !== 'string' || item.trim().length === 0)) {
+          return res.status(400).json({
+            success: false,
+            message: "Service coverage items must be valid non-empty strings",
+          });
+        }
+      }
+      if (cancellationPolicy !== undefined) {
+        if (typeof cancellationPolicy !== 'string' || cancellationPolicy.trim().length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Cancellation policy must be a valid non-empty string",
+          });
+        }
+      }
+      if (refundPolicy !== undefined) {
+        if (typeof refundPolicy !== 'string' || refundPolicy.trim().length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Refund policy must be a valid non-empty string",
+          });
+        }
+      }
+      if (verificationStatus !== undefined) {
+        if (!['unverified', 'pending', 'verified'].includes(verificationStatus)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid verification status value",
+          });
+        }
+      }
+
       const existingWorker =
         await Worker.findOne({
           email: normalizedEmail,
@@ -88,6 +145,11 @@ export const registerWorker = async (req, res) => {
       contact: contact.trim(),
       bio: bio.trim(),
       profilePicture: req.file?.path || "",
+      slaResponseMins: slaResponseMins !== undefined ? Number(slaResponseMins) : undefined,
+      serviceCoverage: serviceCoverage !== undefined ? (Array.isArray(serviceCoverage) ? serviceCoverage : serviceCoverage.split(',').map(s => s.trim())) : undefined,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus,
     });
 
     res.status(201).json({
@@ -152,9 +214,20 @@ export const loginWorker = async (req, res) => {
       });
     }
 
+    if (worker.twoFactorEnabled) {
+      return res.status(200).json({
+        success: true,
+        require2FA: true,
+        userId: worker._id,
+        userType: 'Worker',
+        message: '2FA authentication code required to complete login',
+      });
+    }
+
     res.status(200).json({
       success: true,
       token: generateToken(worker._id),
+      twoFactorEnabled: !!worker.twoFactorEnabled,
       worker: {
         id: worker._id,
         name: worker.name,
@@ -182,7 +255,7 @@ export const getWorkers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const workers = await Worker.find()
-      .select("name email category experience location contact availabilityStatus isAvailableNow profilePicture lastActive averageRating reviewCount")
+      .select("name email category experience location contact availabilityStatus isAvailableNow profilePicture lastActive averageRating reviewCount slaResponseMins serviceCoverage cancellationPolicy refundPolicy verificationStatus")
       .limit(limit)
       .skip(skip)
       .lean();
@@ -295,6 +368,108 @@ export const updateAvailableNowStatus = async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+export const updateWorkerProfile = async (req, res) => {
+  try {
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: "Worker not found" });
+    }
+
+    const {
+      name,
+      category,
+      experience,
+      location,
+      contact,
+      bio,
+      slaResponseMins,
+      serviceCoverage,
+      cancellationPolicy,
+      refundPolicy,
+      verificationStatus
+    } = req.body;
+
+    // Validate fields if they are provided
+    if (slaResponseMins !== undefined) {
+      const mins = Number(slaResponseMins);
+      if (isNaN(mins) || mins <= 0) {
+        return res.status(400).json({ success: false, message: "Response SLA must be a positive number of minutes" });
+      }
+      worker.slaResponseMins = mins;
+    }
+
+    if (serviceCoverage !== undefined) {
+      if (!Array.isArray(serviceCoverage) && typeof serviceCoverage !== 'string') {
+        return res.status(400).json({ success: false, message: "Service coverage must be an array or string" });
+      }
+      const coverageArray = Array.isArray(serviceCoverage) 
+        ? serviceCoverage 
+        : serviceCoverage.split(',').map(s => s.trim());
+      if (coverageArray.some(item => typeof item !== 'string' || item.trim().length === 0)) {
+        return res.status(400).json({ success: false, message: "Service coverage items must be valid non-empty strings" });
+      }
+      worker.serviceCoverage = coverageArray;
+    }
+
+    if (cancellationPolicy !== undefined) {
+      if (typeof cancellationPolicy !== 'string' || cancellationPolicy.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "Cancellation policy must be a valid non-empty string" });
+      }
+      worker.cancellationPolicy = cancellationPolicy;
+    }
+
+    if (refundPolicy !== undefined) {
+      if (typeof refundPolicy !== 'string' || refundPolicy.trim().length === 0) {
+        return res.status(400).json({ success: false, message: "Refund policy must be a valid non-empty string" });
+      }
+      worker.refundPolicy = refundPolicy;
+    }
+
+    if (verificationStatus !== undefined) {
+      if (!['unverified', 'pending', 'verified'].includes(verificationStatus)) {
+        return res.status(400).json({ success: false, message: "Invalid verification status value" });
+      }
+      worker.verificationStatus = verificationStatus;
+    }
+
+    if (name) worker.name = name.trim();
+    if (category) worker.category = category.trim();
+    if (experience) worker.experience = experience.trim();
+    if (location) {
+      worker.location = (typeof location === "string" && location.startsWith("{")) 
+        ? JSON.parse(location) 
+        : (typeof location === "object" ? location : worker.location);
+    }
+    if (contact) worker.contact = contact.trim();
+    if (bio) worker.bio = bio.trim();
+
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Worker profile updated successfully",
+      worker: {
+        id: worker._id,
+        name: worker.name,
+        email: worker.email,
+        category: worker.category,
+        experience: worker.experience,
+        location: worker.location,
+        contact: worker.contact,
+        bio: worker.bio,
+        slaResponseMins: worker.slaResponseMins,
+        serviceCoverage: worker.serviceCoverage,
+        cancellationPolicy: worker.cancellationPolicy,
+        refundPolicy: worker.refundPolicy,
+        verificationStatus: worker.verificationStatus,
+      }
+    });
+  } catch (error) {
+    console.error("Error updating worker profile:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -679,6 +854,11 @@ export const getWorkersBatch = async (req, res) => {
     const ordered = ids.map(id => workers.find(w => w._id.toString() === id)).filter(Boolean);
 
     res.json({ success: true, workers: ordered });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getWorkersByBounds = async (req, res) => {
   try {
     const { north, south, east, west, category, availabilityStatus, minRating, maxPrice } = req.query;
@@ -767,6 +947,214 @@ export const getWorkerClusters = async (req, res) => {
     res.json({ success: true, clusters: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Add a service to the worker's service catalog
+ * @route POST /api/workers/services
+ */
+export const addService = async (req, res) => {
+  try {
+    const { name, description, price, duration, isActive } = req.body;
+
+    if (!name || price === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Service name and price are required',
+      });
+    }
+
+    if (typeof price !== 'number' || price < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Price must be a non-negative number',
+      });
+    }
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const newService = {
+      name: name.trim(),
+      description: description?.trim() || '',
+      price: Number(price),
+      duration: duration !== undefined ? Number(duration) : 60,
+      isActive: isActive !== undefined ? isActive : true,
+    };
+
+    worker.services.push(newService);
+    await worker.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Service added successfully',
+      service: worker.services[worker.services.length - 1],
+    });
+  } catch (error) {
+    console.error('Error adding service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Update a service in the worker's service catalog
+ * @route PUT /api/workers/services/:serviceId
+ */
+export const updateService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const { name, description, price, duration, isActive } = req.body;
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const service = worker.services.id(serviceId);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+
+    if (name !== undefined) service.name = name.trim();
+    if (description !== undefined) service.description = description.trim();
+    if (price !== undefined) {
+      if (typeof price !== 'number' || price < 0) {
+        return res.status(400).json({ success: false, message: 'Price must be a non-negative number' });
+      }
+      service.price = Number(price);
+    }
+    if (duration !== undefined) service.duration = Number(duration);
+    if (isActive !== undefined) service.isActive = isActive;
+
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Service updated successfully',
+      service,
+    });
+  } catch (error) {
+    console.error('Error updating service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Remove a service from the worker's service catalog
+ * @route DELETE /api/workers/services/:serviceId
+ */
+export const removeService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+
+    const worker = await Worker.findById(req.worker._id);
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const service = worker.services.id(serviceId);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Service not found' });
+    }
+
+    service.deleteOne();
+    await worker.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Service removed successfully',
+    });
+  } catch (error) {
+    console.error('Error removing service:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get all services for the authenticated worker
+ * @route GET /api/workers/services
+ */
+export const getMyServices = async (req, res) => {
+  try {
+    const worker = await Worker.findById(req.worker._id).select('services hourlyRate');
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      services: worker.services,
+      hourlyRate: worker.hourlyRate,
+    });
+  } catch (error) {
+    console.error('Error fetching services:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Update the worker's hourly rate
+ * @route PUT /api/workers/hourly-rate
+ */
+export const updateHourlyRate = async (req, res) => {
+  try {
+    const { hourlyRate } = req.body;
+
+    if (hourlyRate === undefined || typeof hourlyRate !== 'number' || hourlyRate < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Hourly rate must be a non-negative number',
+      });
+    }
+
+    const worker = await Worker.findByIdAndUpdate(
+      req.worker._id,
+      { hourlyRate: Number(hourlyRate) },
+      { new: true, runValidators: true }
+    ).select('hourlyRate');
+
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Hourly rate updated successfully',
+      hourlyRate: worker.hourlyRate,
+    });
+  } catch (error) {
+    console.error('Error updating hourly rate:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+/**
+ * Get services for a specific worker by ID (public)
+ * @route GET /api/workers/:id/services
+ */
+export const getWorkerServices = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const worker = await Worker.findById(id).select('services hourlyRate name');
+    if (!worker) {
+      return res.status(404).json({ success: false, message: 'Worker not found' });
+    }
+
+    const activeServices = worker.services.filter(s => s.isActive);
+
+    res.status(200).json({
+      success: true,
+      services: activeServices,
+      hourlyRate: worker.hourlyRate,
+      workerName: worker.name,
+    });
+  } catch (error) {
+    console.error('Error fetching worker services:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 

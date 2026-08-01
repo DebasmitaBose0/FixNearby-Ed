@@ -269,6 +269,12 @@ const WorkerDashboard = () => {
                   View My Profile <FaArrowRight />
                 </Link>
               )}
+              <Link
+                to="/worker/services"
+                className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                Manage Service Catalog <FaArrowRight />
+              </Link>
               {["Update Availability", "View Job History", "Contact Support"].map((action) => (
                 <button
                   key={action}

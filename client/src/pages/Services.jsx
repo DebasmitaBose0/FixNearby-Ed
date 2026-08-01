@@ -19,19 +19,26 @@ import {
 
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import SkeletonLoader from "../components/SkeletonLoader";
+import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
+import useToast from "../hooks/useToast";
+
+
+import MapView from "../components/MapView";
 import SearchBar from "../components/SearchBar";
 import FilterSidebar from "../components/FilterSidebar";
 import ReviewBadge from "../components/ReviewBadge";
 import useSearch from "../hooks/useSearch";
 import { fetchWorkers } from "../services/workerService";
-import { getSearchSuggestions } from "../services/searchService";
+import { getSearchSuggestions, searchWorkers } from "../services/searchService";
 import { useLocation } from "../context/LocationContext";
 import { getWorkerAvailability } from "../services/availabilityService";
 import { useAuth } from "../context/AuthContext";
 import { getFavorites, toggleFavorite } from "../services/favoriteService";
 import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
+import CostEstimatorWidget from "../components/calculator/CostEstimatorWidget";
 import WorkerMap from "../components/WorkerMap";
+
 
 const mockWorkers = [
   {
@@ -469,7 +476,7 @@ const Services = () => {
     maxDistance: 50,
     availability: 'all',
     sortBy: sortBy,
-  });
+  }, isAuthenticated);
 
   const [suggestions, setSuggestions] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -502,23 +509,27 @@ const Services = () => {
         };
         const searchResponse = await searchWorkers(queryParams);
         const backendWorkers = searchResponse?.data || [];
-        // Map backend search result to client expectations
         const mappedBackend = backendWorkers.map(w => ({
           ...w,
           id: w._id || w.id,
           profession: w.category || w.profession,
-          price: w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : "$30/hr",
+          price: w.hourlyRate ? Number(w.hourlyRate) : (w.price ? (w.price.toString().startsWith('$') ? w.price : `$${w.price}/hr`) : 30),
           availability: w.availability || 
             (w.availabilityStatus === "available" ? "Available today" : 
              w.availabilityStatus === "busy" ? "Busy" : 
              w.availabilityStatus === "offline" ? "Offline" : "Available today"),
-          responseTime: w.responseTime || "Replies in 15 min",
+          responseTime: w.slaResponseMins ? `Replies in ${w.slaResponseMins} min` : (w.responseTime || "Replies in 15 min"),
           outcomeText: w.outcomeText || `Review past work and request a ${w.category?.toLowerCase() || 'service'} visit.`,
           mockOffset: w.mockOffset || (w.coordinates ? { lat: w.coordinates.lat, lon: w.coordinates.lon } : null),
-          verified: w.verified ?? true,
+          verified: w.verificationStatus ? w.verificationStatus === 'verified' : (w.verified ?? true),
           isAvailableNow: w.isAvailableNow === true,
           rating: Number(w.rating) || 4.5,
           completedJobs: w.completedJobs || 12,
+          slaResponseMins: w.slaResponseMins,
+          serviceCoverage: w.serviceCoverage,
+          cancellationPolicy: w.cancellationPolicy,
+          refundPolicy: w.refundPolicy,
+          verificationStatus: w.verificationStatus || 'verified',
         }));
 
         if (mappedBackend && mappedBackend.length > 0) {
@@ -530,9 +541,7 @@ const Services = () => {
         console.error("Failed to fetch search results from backend, falling back to mock data", err);
         setWorkers(mockWorkers);
       } finally {
-        const storedRecent =
-          JSON.parse(localStorage.getItem("recentWorkers")) || [];
-        setRecentWorkers(storedRecent);
+        setRecentWorkers(getRecentWorkers());
         setLoading(false);
       }
     };
@@ -543,13 +552,33 @@ const Services = () => {
   useEffect(() => {
     const urlCategory = searchParams.get("category") || "All";
     const urlUrgent = searchParams.get("urgent") === "true";
-    const urlSearch = searchParams.get("search") || "";
+    const urlSearch = searchParams.get("search") || searchParams.get("q") || "";
     const urlSort = searchParams.get("sort") || "distance";
+    const urlMinPrice = searchParams.get("minPrice") !== null ? Number(searchParams.get("minPrice")) : 0;
+    const urlMaxPrice = searchParams.get("maxPrice") !== null ? Number(searchParams.get("maxPrice")) : 100;
+    const urlMinRating = searchParams.get("minRating") !== null ? Number(searchParams.get("minRating")) : 0;
+    const urlMaxDistance = searchParams.get("maxDistance") !== null ? Number(searchParams.get("maxDistance")) : 50;
+    const urlAvailability = searchParams.get("availability") || "all";
 
     if (urlCategory !== categoryFilter) setCategoryFilter(urlCategory);
     if (urlUrgent !== urgentFilter) setUrgentFilter(urlUrgent);
     if (urlSearch !== searchQuery) setSearchQuery(urlSearch);
     if (urlSort !== sortBy) setSortBy(urlSort);
+    if (
+      urlMinPrice !== advancedFilters.minPrice ||
+      urlMaxPrice !== advancedFilters.maxPrice ||
+      urlMinRating !== advancedFilters.minRating ||
+      urlMaxDistance !== advancedFilters.maxDistance ||
+      urlAvailability !== advancedFilters.availability
+    ) {
+      setAdvancedFilters({
+        minPrice: urlMinPrice,
+        maxPrice: urlMaxPrice,
+        minRating: urlMinRating,
+        maxDistance: urlMaxDistance,
+        availability: urlAvailability,
+      });
+    }
   }, [searchParams]);
 
   // SYNC STATE TO URL PARAMS
@@ -560,6 +589,12 @@ const Services = () => {
     if (categoryFilter !== "All") params.category = categoryFilter;
     if (sortBy !== "distance") params.sort = sortBy;
     if (urgentFilter) params.urgent = "true";
+    
+    if (advancedFilters.minPrice > 0) params.minPrice = advancedFilters.minPrice;
+    if (advancedFilters.maxPrice < 100) params.maxPrice = advancedFilters.maxPrice;
+    if (advancedFilters.minRating > 0) params.minRating = advancedFilters.minRating;
+    if (advancedFilters.maxDistance < 50) params.maxDistance = advancedFilters.maxDistance;
+    if (advancedFilters.availability !== "all") params.availability = advancedFilters.availability;
 
     setSearchParams(params);
   }, [
@@ -567,6 +602,7 @@ const Services = () => {
     categoryFilter,
     sortBy,
     urgentFilter,
+    advancedFilters,
     setSearchParams,
   ]);
   /* FILTER + SORT */
@@ -699,31 +735,68 @@ const Services = () => {
   };
 
   const handleRecentlyViewed = (worker) => {
-    let stored = JSON.parse(localStorage.getItem("recentWorkers")) || [];
-    stored = stored.filter((i) => i.id !== worker.id);
-    stored.unshift(worker);
-    stored = stored.slice(0, 5);
-    localStorage.setItem("recentWorkers", JSON.stringify(stored));
-    setRecentWorkers(stored);
+    setRecentWorkers(addRecentWorker(worker));
+  };
+
+  const handleRemoveRecentWorker = (workerId) => {
+    setRecentWorkers(removeRecentWorker(workerId));
+  };
+
+  const handleClearRecentWorkers = () => {
+    setRecentWorkers(clearRecentWorkers());
   };
 
   const handleSearch = (query) => {
     addToHistory(query, { category: categoryFilter, ...advancedFilters });
   };
 
-  const handleSaveFavorite = (name) => {
-    const success = saveFavoriteSearch(name, searchQuery, { category: categoryFilter, ...advancedFilters });
+  const handleSaveFavorite = async (name) => {
+    const success = await saveFavoriteSearch(name, searchQuery, {
+      category: categoryFilter,
+      sortBy,
+      ...advancedFilters
+    });
     if (success) {
-      alert('Search saved to favorites!');
+      showToast('Search saved to favorites!', 'success');
+    } else {
+      showToast('Failed to save search.', 'error');
     }
   };
 
+  const handleLoadFavorite = (favorite) => {
+    setSearchQuery(favorite.query || "");
+    const favFilters = favorite.filters || {};
+    if (favFilters.category) setCategoryFilter(favFilters.category);
+    if (favFilters.sortBy) setSortBy(favFilters.sortBy);
+    setAdvancedFilters({
+      minPrice: favFilters.minPrice !== undefined ? Number(favFilters.minPrice) : 0,
+      maxPrice: favFilters.maxPrice !== undefined ? Number(favFilters.maxPrice) : 100,
+      minRating: favFilters.minRating !== undefined ? Number(favFilters.minRating) : 0,
+      maxDistance: favFilters.maxDistance !== undefined ? Number(favFilters.maxDistance) : 50,
+      availability: favFilters.availability || 'all',
+    });
+    showToast(`Loaded search template: ${favorite.name}`, 'info');
+  };
+
   const handleShareSearch = () => {
-    const url = getShareableUrl();
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (categoryFilter !== "All") params.set('category', categoryFilter);
+    if (sortBy !== "distance") params.set('sort', sortBy);
+    if (urgentFilter) params.set('urgent', "true");
+    
+    if (advancedFilters.minPrice > 0) params.set('minPrice', advancedFilters.minPrice);
+    if (advancedFilters.maxPrice < 100) params.set('maxPrice', advancedFilters.maxPrice);
+    if (advancedFilters.minRating > 0) params.set('minRating', advancedFilters.minRating);
+    if (advancedFilters.maxDistance < 50) params.set('maxDistance', advancedFilters.maxDistance);
+    if (advancedFilters.availability !== "all") params.set('availability', advancedFilters.availability);
+
+    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(url).then(() => {
-      alert('Search URL copied to clipboard!');
+      showToast('Search URL copied to clipboard!', 'success');
     }).catch(err => {
       console.error('Failed to copy URL:', err);
+      showToast('Failed to copy URL.', 'error');
     });
   };
 
@@ -801,7 +874,8 @@ const Services = () => {
             favoriteSearches={favoriteSearches}
             onRemoveHistory={removeHistoryItem}
             onClearHistory={clearHistory}
-            onLoadFavorite={loadFavoriteSearch}
+            onLoadFavorite={handleLoadFavorite}
+            onRemoveFavorite={removeFavoriteSearch}
             onSaveFavorite={handleSaveFavorite}
             onShare={handleShareSearch}
             suggestions={suggestions}
@@ -916,18 +990,35 @@ const Services = () => {
         {/* RECENTLY VIEWED */}
         {recentWorkers.length > 0 && (
           <div className="mb-14">
-            <div className="mb-6 flex items-center gap-2">
-              <span className="text-2xl">⭐</span>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Recently Viewed Professionals
-              </h2>
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl" aria-hidden="true">⭐</span>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Recently Viewed Professionals
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={handleClearRecentWorkers}
+                className="text-sm font-semibold text-slate-500 hover:text-rose-600"
+              >
+                Clear all
+              </button>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {recentWorkers.map((worker) => (
                 <div
-                  key={worker.id}
-                  className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
+                  key={worker._id || worker.id}
+                  className="relative rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:shadow-lg"
                 >
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveRecentWorker(worker._id || worker.id)}
+                    className="absolute right-3 top-3 rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                    aria-label={`Remove ${worker.name} from recently viewed`}
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
                   <div className="mb-4 text-4xl">
                     {(() => {
                       const Icon = iconMap[worker.profession];
@@ -989,7 +1080,7 @@ const Services = () => {
             <div className="lg:col-span-7 space-y-6">
               {/* WORKER CARDS */}
               {loading ? (
-                <LoadingSpinner />
+                <SkeletonLoader type="worker" count={4} />
               ) : filteredWorkers.length === 0 ? (
                 <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 text-center">
                   <h3 className="text-2xl font-bold text-gray-900">No services found</h3>

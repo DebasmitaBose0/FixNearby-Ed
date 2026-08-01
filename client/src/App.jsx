@@ -6,7 +6,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { lazyWithRetry } from "./utils/performance";
 
 // ─── Layout Components (always loaded — tiny, needed immediately) ─────────────
 import Navbar from "./components/Navbar";
@@ -25,11 +24,11 @@ const Home             = lazy(() => import('./pages/Home'));
 const Login            = lazy(() => import('./pages/Login'));
 const Register         = lazy(() => import('./pages/Register'));
 const Dashboard        = lazy(() => import('./pages/Dashboard'));
-const Services         = lazy(() => lazyWithRetry(() => import('./pages/Services')));
-const WorkerProfile    = lazy(() => lazyWithRetry(() => import('./pages/WorkerProfile')));
-const WorkerDashboard  = lazy(() => lazyWithRetry(() => import('./pages/WorkerDashboard')));
-const Profile          = lazy(() => lazyWithRetry(() => import('./pages/Profile')));
-const Bookings         = lazy(() => lazyWithRetry(() => import('./pages/Bookings')));
+const Services         = lazy(() => import('./pages/Services'));
+const WorkerProfile    = lazy(() => import('./pages/WorkerProfile'));
+const WorkerDashboard  = lazy(() => import('./pages/WorkerDashboard'));
+const Profile          = lazy(() => import('./pages/Profile'));
+const Bookings         = lazy(() => import('./pages/Bookings'));
 const WorkerRegister   = lazy(() => import('./pages/WorkerRegister'));
 const WorkerLogin      = lazy(() => import('./pages/WorkerLogin'));
 const HelpCenter       = lazy(() => import('./pages/HelpCenter'));
@@ -41,14 +40,16 @@ const Feedback         = lazy(() => import('./pages/Feedback'));
 const FAQ              = lazy(() => import('./pages/FAQ'));
 const SavedWorkers     = lazy(() => import('./pages/SavedWorkers'));
 const Recommendations  = lazy(() => import('./pages/Recommendations')); // ✨ NEW
+const WalletPage       = lazy(() => import('./pages/WalletPage'));
 const PaymentCheckout     = lazy(() => import('./pages/PaymentCheckout'));
 const CivicIssues         = lazy(() => import('./pages/CivicIssues'));
 const ReportIssue         = lazy(() => import('./components/IssueSubmissionForm'));
 const IssueDetail         = lazy(() => import('./pages/IssueDetail'));
 const NotFound            = lazy(() => import('./pages/NotFound'));
-const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
-const NotFound            = lazy(() => import('./pages/NotFound'));
-const Notifications       = lazy(() => lazyWithRetry(() => import('./pages/Notifications')));
+const Notifications       = lazy(() => import('./pages/Notifications'));
+const RequestService      = lazy(() => import('./pages/RequestService'));
+const ReferralDashboard   = lazy(() => import('./pages/ReferralDashboard'));
+const ChatPage            = lazy(() => import('./pages/ChatPage'));
 
 
 const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -57,7 +58,8 @@ const EarningsDashboard   = lazy(() => import('./pages/worker/EarningsDashboard'
 const ModerationPanel     = lazy(() => import('./pages/admin/ModerationPanel'));
 const ScheduleManager     = lazy(() => import('./pages/worker/ScheduleManager'));
 
-const VerificationPage = lazy(() => lazyWithRetry(() => import('./pages/worker/VerificationPage')));
+const VerificationPage = lazy(() => import('./pages/worker/VerificationPage'));
+const ServiceManager = lazy(() => import('./components/ServiceManager'));
 
 const ForgotPasswordUser = lazy(()=>import('./pages/ForgotPasswordUser'));
 const ResetPasswordUser = lazy(()=>import('./pages/ResetPasswordUser'));
@@ -104,15 +106,16 @@ const ROUTES = [
   { path: '/worker/dashboard',    element: <WorkerDashboard /> }, 
   { path: '/worker/earnings',      element: <EarningsDashboard /> },
   { path: '/worker/schedule',     element: <ScheduleManager /> },
-  { path: '/worker/dashboard',    element: <WorkerDashboard /> },
+  { path: '/worker/services',     element: <ServiceManager /> },
   { path: '/worker/verification', element: <VerificationPage /> },
   { path: '/worker/:id',        element: <WorkerProfile /> },
   { path: '/saved-workers',     element: <SavedWorkers /> },
   { path: '/recommendations',   element: <Recommendations /> }, // ✨ NEW
+  { path: '/wallet',            element: <WalletPage /> },
   { path: '/request-service',   element: <RequestService /> },
   { path: '/civic-issues',           element: <CivicIssues /> },
   { path: '/civic-issues/report',    element: <ReportIssue /> },
-  { path: '/civic-issues',     element: <CivicIssues /> },
+  { path: '/civic-issues/:id',      element: <IssueDetail /> },
   { path: '/admin',            element: <AdminDashboard /> },
   { path: '/admin/users',      element: <AdminUsers /> },
   { path: '/admin/moderation', element: <ModerationPanel /> },
@@ -134,14 +137,34 @@ const ROUTES = [
     ),
   },
   {
+    path: "/chat",
+    element: (
+      <RequireAuth>
+        <ChatPage />
+      </RequireAuth>
+    ),
+  },
+  {
     path: "/payment/checkout",
     element: (
       <RequireAuth>
         <PaymentCheckout />
+      </RequireAuth>
+    ),
+  },
+  {
     path: "/notifications",
     element: (
       <RequireAuth>
         <Notifications />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/referrals",
+    element: (
+      <RequireAuth>
+        <ReferralDashboard />
       </RequireAuth>
     ),
   },

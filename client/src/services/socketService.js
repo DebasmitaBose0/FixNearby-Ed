@@ -3,7 +3,13 @@ import { io } from 'socket.io-client';
 let socket = null;
 let listeners = new Map();
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  if (import.meta.env.PROD && typeof window !== 'undefined') return window.location.origin;
+  return 'http://localhost:5000';
+};
+
+const SOCKET_URL = getSocketUrl();
 
 export const connectSocket = (token) => {
   if (socket?.connected) {
@@ -60,6 +66,16 @@ export const sendMessage = (data) => {
     return false;
   }
   socket.emit('send_message', data);
+  return true;
+};
+
+export const sendAttachmentMessage = (conversationId, attachment) => {
+  if (!socket?.connected) return false;
+  socket.emit('send_message', {
+    conversationId,
+    content: `[Attachment] ${attachment.fileName}`,
+    attachment
+  });
   return true;
 };
 
@@ -123,6 +139,26 @@ export const onConversationUpdate = (handler) => {
   };
 };
 
+export const joinBooking = (bookingId) => {
+  if (!socket?.connected) return;
+  socket.emit('join_booking', { bookingId });
+};
+
+export const leaveBooking = (bookingId) => {
+  if (!socket?.connected) return;
+  socket.emit('leave_booking', { bookingId });
+};
+
+export const onBookingStatusUpdate = (handler) => {
+  if (!socket) return () => {};
+  socket.on('booking:statusUpdate', handler);
+  listeners.set('booking:statusUpdate', handler);
+  return () => {
+    socket.off('booking:statusUpdate', handler);
+    listeners.delete('booking:statusUpdate');
+  };
+};
+
 export default {
   connectSocket,
   disconnectSocket,
@@ -131,10 +167,13 @@ export default {
   sendMessage,
   joinConversation,
   leaveConversation,
+  joinBooking,
+  leaveBooking,
   startTyping,
   stopTyping,
   onMessage,
   onTyping,
   onPresenceUpdate,
   onConversationUpdate,
+  onBookingStatusUpdate,
 };

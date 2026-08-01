@@ -100,7 +100,7 @@ export const searchWorkers = async (req, res) => {
       } else if (sort === 'distance') {
         // $geoNear sorts by distance asc by default.
       } else if (sort === 'price') {
-        // price not present in Worker schema. Post-sort remains no-op.
+        pipeline.push({ $sort: { hourlyRate: 1 } });
       }
 
       // Keep shape stable
@@ -116,6 +116,7 @@ export const searchWorkers = async (req, res) => {
           serviceCoverage: 1,
           cancellationPolicy: 1,
           refundPolicy: 1,
+          verificationStatus: 1,
           contact: 1,
           responsiveness: 1,
           karmaScore: 1,
@@ -125,6 +126,8 @@ export const searchWorkers = async (req, res) => {
           faqs: 1,
           location: 1,
           distanceKm: 1,
+          hourlyRate: 1,
+          services: 1,
         },
       });
 
@@ -138,8 +141,26 @@ export const searchWorkers = async (req, res) => {
       workers = workers.filter(w => Number(w.averageRating || 0) >= minRatingNum);
     }
 
-    // Price filter: Worker schema currently has no price.
-    // Keep as no-op to avoid incorrect results.
+    // Price filter using hourlyRate and services array
+    if (minPrice && Number(minPrice) > 0) {
+      workers = workers.filter(w => {
+        const hourly = Number(w.hourlyRate || 0);
+        // Check if any service price falls within the range
+        const hasServiceInRange = w.services && w.services.some(s =>
+          Number(s.price) >= Number(minPrice)
+        );
+        return hourly >= Number(minPrice) || hasServiceInRange;
+      });
+    }
+    if (maxPrice && Number(maxPrice) < 1000) {
+      workers = workers.filter(w => {
+        const hourly = Number(w.hourlyRate || 0);
+        const hasServiceInRange = w.services && w.services.some(s =>
+          Number(s.price) <= Number(maxPrice)
+        );
+        return (hourly > 0 && hourly <= Number(maxPrice)) || hasServiceInRange;
+      });
+    }
 
     // Normalize output to match client expectations
     workers = workers.map(w => {
@@ -176,7 +197,12 @@ export const searchWorkers = async (req, res) => {
       workers.sort((a, b) => Number(b.rating) - Number(a.rating));
     }
 
-    // Price sort: no-op (no Worker.price in schema)
+    // Price sort by hourlyRate
+    if (sort === 'price') {
+      if (!hasGeo) {
+        workers.sort((a, b) => Number(a.hourlyRate || 0) - Number(b.hourlyRate || 0));
+      }
+    }
 
     // Pagination
     const startIndex = (Number(page) - 1) * Number(limit);

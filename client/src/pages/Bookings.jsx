@@ -2,14 +2,18 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
+import SkeletonLoader from "../components/SkeletonLoader";
 import StarRating from "../components/StarRating";
-import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History } from "lucide-react";
+import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History, MessageSquare } from "lucide-react";
 import BookingTimeline from "../components/BookingTimeline";
 import useBookingTimeline from "../hooks/useBookingTimeline";
 import { useBookings } from "../hooks/useBookings";
 import api from "../services/apiClient";
 import useToast from "../hooks/useToast";
 import { showApiError } from "../utils/apiErrorHandler";
+import CancelBookingModal from "../components/CancelBookingModal";
+import useBookingSocket from "../hooks/useBookingSocket";
+import AnimatedBookingProgressBar from "../components/AnimatedBookingProgressBar";
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
@@ -139,7 +143,7 @@ const formatEventAt = (at) => {
   return d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 };
 
-const BookingTimeline = ({ booking }) => {
+const BookingStatusTimeline = ({ booking }) => {
   const status = booking.status;
 
   const steps = [
@@ -358,9 +362,30 @@ const Bookings = () => {
   const [newTime, setNewTime] = useState("");
   const [rescheduleError, setRescheduleError] = useState("");
   const [submittingReschedule, setSubmittingReschedule] = useState(null);
+  const [submittingReview, setSubmittingReview] = useState(null);
 
   // Timeline toggle state
   const [expandedTimelineId, setExpandedTimelineId] = useState(null);
+  const [liveUpdatedId, setLiveUpdatedId] = useState(null);
+
+  // Subscribe to real-time booking socket status updates
+  const handleSocketStatusUpdate = (eventData) => {
+    const updatedId = eventData?.bookingId || eventData?.booking?._id || eventData?.booking?.id;
+    const newStatus = eventData?.status;
+    if (newStatus) {
+      showToast(`Real-time update: Booking status changed to "${newStatus}"`, "info");
+    }
+    if (updatedId) {
+      setLiveUpdatedId(updatedId);
+      setTimeout(() => setLiveUpdatedId(null), 4000);
+    }
+    refresh();
+  };
+
+  useBookingSocket({
+    onStatusUpdate: handleSocketStatusUpdate,
+    enableNotifications: true,
+  });
 
   const filteredBookings = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -432,6 +457,7 @@ const Bookings = () => {
       formData.append("images", img);
     });
 
+    setSubmittingReview(id);
     try {
       const response = await api.post(`/bookings/${id}/review`, formData, {
         headers: {
@@ -449,6 +475,8 @@ const Bookings = () => {
     } catch (err) {
       console.error("Error submitting review:", err);
       showApiError(err, showToast);
+    } finally {
+      setSubmittingReview(null);
     }
   };
 
@@ -639,6 +667,13 @@ const Bookings = () => {
                     Rated {booking.review.rating}/5
                   </span>
                 )}
+                <Link
+                  to="/chat"
+                  className="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 transition"
+                >
+                  <MessageSquare size={14} />
+                  Chat
+                </Link>
                 <button
                   type="button"
                   onClick={() =>
@@ -703,8 +738,11 @@ const Bookings = () => {
                   <BookingTimelineInline bookingId={booking.id} currentStatus={booking.status} />
                 </div>
               )}
+              {/* REAL-TIME ANIMATED STATUS PROGRESS BAR */}
+              <AnimatedBookingProgressBar booking={booking} liveUpdated={liveUpdatedId === booking.id} />
+
               {/* BOOKING TIMELINE */}
-              <BookingTimeline booking={booking} />
+              <BookingStatusTimeline booking={booking} />
 
               {/* ESTIMATE BREAKDOWN */}
               {booking.estimateSpecs && (
@@ -872,9 +910,10 @@ const Bookings = () => {
                       <button
                         type="button"
                         onClick={() => handleReviewSubmit(booking.id)}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition shadow-lg shadow-blue-100"
+                        disabled={submittingReview === booking.id}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Submit Review
+                        {submittingReview === booking.id ? "Submitting..." : "Submit Review"}
                       </button>
                       <button
                         type="button"
