@@ -23,6 +23,8 @@ import { sanitizeInput } from './middleware/securitySanitize.js';
 import allowedOrigins from './config/corsOrigins.js';
 import { initSocket } from './socket.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import { initializeTaskWorkers } from './workers/taskQueueWorker.js';
+
 import { startBookingExpiryScheduler } from './workers/bookingExpiryWorker.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import { initKarmaScheduler } from './utils/karmaScheduler.js';
