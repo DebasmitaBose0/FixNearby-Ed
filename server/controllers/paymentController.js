@@ -2,6 +2,8 @@ import Payment from '../models/Payment.js';
 import Booking from '../models/Booking.js';
 import { stripe } from '../config/stripe.js';
 import crypto from 'crypto';
+import { processExternalPaymentGateway } from '../services/externalGatewayService.js';
+
 
 // @desc    Create a real Stripe payment intent (with fallback for mock/demo)
 // @route   POST /api/payments/create-intent
