@@ -3,11 +3,17 @@ import mongoose from 'mongoose';
 const STATUS_ENUM = ['Pending', 'Accepted', 'Reminder Sent', 'Technician En Route', 'In-Progress', 'Completed', 'Cancelled', 'Expired'];
 
 const bookingSchema = new mongoose.Schema({
+  tenantId: {
+    type: String,
+    default: 'default_tenant',
+    index: true
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
+
   workerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Worker',
