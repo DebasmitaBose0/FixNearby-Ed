@@ -8,7 +8,9 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import connectDB from './config/db.js';
+import { dbSupervisor } from './config/dbPoolSupervisor.js';
 import { validateEnv } from './config/envValidate.js';
+
 import authRoutes from './routes/authRoutes.js';
 import workerRoutes from './routes/workerRoutes.js';
 import issueRoutes from './routes/issueRoutes.js';
