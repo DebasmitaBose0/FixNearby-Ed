@@ -4,6 +4,7 @@ const createRateLimitHandler = (message, retryAfter) => {
   return (req, res) => {
     res.status(429).json({
       success: false,
+      error: message,
       message,
       retryAfter: retryAfter || Math.ceil(req.rateLimit?.windowMs / 1000) || 900,
     });
@@ -19,7 +20,7 @@ export const userLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   handler: createRateLimitHandler(
-    "Too many login attempts. Please try again after 15 minutes.", 900
+    "Too many login attempts, please try again after 15 minutes.", 900
   ),
 });
 
@@ -28,7 +29,7 @@ export const workerLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   handler: createRateLimitHandler(
-    "Too many worker login attempts. Please try again after 15 minutes.", 900
+    "Too many worker login attempts, please try again after 15 minutes.", 900
   ),
 });
 
@@ -37,7 +38,7 @@ export const userRegisterLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   handler: createRateLimitHandler(
-    "Too many registration attempts. Please try again after 1 hour.", 3600
+    "Too many registration attempts, please try again after 1 hour.", 3600
   ),
 });
 
@@ -46,7 +47,7 @@ export const workerRegisterLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   handler: createRateLimitHandler(
-    "Too many worker registration attempts. Please try again after 1 hour.", 3600
+    "Too many worker registration attempts, please try again after 1 hour.", 3600
   ),
 });
 
@@ -55,7 +56,16 @@ export const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   handler: createRateLimitHandler(
-    "Too many password-reset requests from this IP. Please try again after 1 hour.", 3600
+    "Too many password-reset requests from this IP, please try again after 1 hour.", 3600
+  ),
+});
+
+export const twoFactorChallengeLimiter = rateLimit({
+  ...TIER_STRICT,
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  handler: createRateLimitHandler(
+    "Too many 2FA verification attempts, please try again after 15 minutes.", 900
   ),
 });
 
