@@ -10,9 +10,9 @@ const createRateLimitHandler = (message, retryAfter) => {
   };
 };
 
-const TIER_STANDARD = { windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, skipSuccessfulRequests: true };
-const TIER_STRICT  = { windowMs: 60 * 60 * 1000, max: 5,  standardHeaders: true, legacyHeaders: false, skipSuccessfulRequests: true };
-const TIER_SEVERE  = { windowMs: 24 * 60 * 60 * 1000, max: 3,  standardHeaders: true, legacyHeaders: false };
+const TIER_STANDARD = { windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, skipSuccessfulRequests: false };
+const TIER_STRICT  = { windowMs: 15 * 60 * 1000, max: 5,  standardHeaders: true, legacyHeaders: false, skipSuccessfulRequests: false };
+const TIER_SEVERE  = { windowMs: 60 * 60 * 1000, max: 5,  standardHeaders: true, legacyHeaders: false };
 
 export const userLoginLimiter = rateLimit({
   ...TIER_STRICT,
@@ -35,7 +35,7 @@ export const workerLoginLimiter = rateLimit({
 export const userRegisterLimiter = rateLimit({
   ...TIER_SEVERE,
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 5,
   handler: createRateLimitHandler(
     "Too many registration attempts. Please try again after 1 hour.", 3600
   ),
@@ -44,7 +44,7 @@ export const userRegisterLimiter = rateLimit({
 export const workerRegisterLimiter = rateLimit({
   ...TIER_SEVERE,
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 5,
   handler: createRateLimitHandler(
     "Too many worker registration attempts. Please try again after 1 hour.", 3600
   ),
@@ -53,9 +53,18 @@ export const workerRegisterLimiter = rateLimit({
 export const passwordResetLimiter = rateLimit({
   ...TIER_SEVERE,
   windowMs: 60 * 60 * 1000,
-  max: 2,
+  max: 5,
   handler: createRateLimitHandler(
     "Too many password-reset requests from this IP. Please try again after 1 hour.", 3600
+  ),
+});
+
+export const twoFactorChallengeLimiter = rateLimit({
+  ...TIER_STRICT,
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  handler: createRateLimitHandler(
+    "Too many 2FA verification attempts. Please try again after 15 minutes.", 900
   ),
 });
 
