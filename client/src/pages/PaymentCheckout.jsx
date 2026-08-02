@@ -339,6 +339,23 @@ const PaymentCheckout = () => {
         <div className="grid lg:grid-cols-5 gap-10">
           {/* Order Summary */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Escrow Protection Banner */}
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/40">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-emerald-100 p-2 text-emerald-600 dark:bg-emerald-900/60 dark:text-emerald-400">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-extrabold text-emerald-900 dark:text-emerald-300">
+                    FixNearby Escrow Protection
+                  </h4>
+                  <p className="mt-1 text-xs text-emerald-800 leading-relaxed dark:text-emerald-400">
+                    Your funds are held securely in Escrow by FixNearby and will only be released when you approve the completed job.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
               <h3 className="text-lg font-bold text-slate-900 mb-4">Order Summary</h3>
               <div className="space-y-3 text-sm">

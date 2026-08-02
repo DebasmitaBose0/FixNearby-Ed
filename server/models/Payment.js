@@ -63,6 +63,36 @@ const paymentSchema = new mongoose.Schema({
   refundReason: {
     type: String,
     default: ''
+  },
+  // ─── Escrow & Stripe Connect Multi-Party Routing Fields ───
+  escrowStatus: {
+    type: String,
+    enum: ['pending', 'held_in_escrow', 'released', 'disputed', 'refunded'],
+    default: 'pending'
+  },
+  platformFee: {
+    type: Number,
+    default: 0
+  },
+  providerPayoutAmount: {
+    type: Number,
+    default: 0
+  },
+  stripeTransferId: {
+    type: String,
+    default: null
+  },
+  stripeConnectAccountId: {
+    type: String,
+    default: null
+  },
+  escrowHoldDate: {
+    type: Date,
+    default: null
+  },
+  escrowReleaseDate: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

@@ -14,6 +14,8 @@ import { showApiError } from "../utils/apiErrorHandler";
 import CancelBookingModal from "../components/CancelBookingModal";
 import useBookingSocket from "../hooks/useBookingSocket";
 import AnimatedBookingProgressBar from "../components/AnimatedBookingProgressBar";
+import JobCompletionFlow from "../components/JobCompletionFlow";
+
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
@@ -367,6 +369,8 @@ const Bookings = () => {
   // Timeline toggle state
   const [expandedTimelineId, setExpandedTimelineId] = useState(null);
   const [liveUpdatedId, setLiveUpdatedId] = useState(null);
+  const [activeEscrowBooking, setActiveEscrowBooking] = useState(null);
+
 
   // Subscribe to real-time booking socket status updates
   const handleSocketStatusUpdate = (eventData) => {
@@ -630,6 +634,16 @@ const Bookings = () => {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-4 text-sm items-center">
+                {/* Escrow Release Action */}
+                {booking.status !== "Cancelled" && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveEscrowBooking(booking)}
+                    className="inline-flex items-center gap-1 font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-xs transition shadow-sm"
+                  >
+                    🔒 Escrow Approval
+                  </button>
+                )}
                 {(booking.status === "Pending" || booking.status === "Confirmed" || booking.status === "Reminder Sent" || booking.status === "Technician En Route") && (
                   <button
                     type="button"
@@ -940,6 +954,17 @@ const Bookings = () => {
         onClose={() => { setCancelModalOpen(false); setCancelTargetId(null); }}
         onConfirm={confirmCancel}
       />
+
+      {activeEscrowBooking && (
+        <JobCompletionFlow
+          booking={activeEscrowBooking}
+          isOpen={!!activeEscrowBooking}
+          onClose={() => setActiveEscrowBooking(null)}
+          onEscrowReleased={() => {
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 };
