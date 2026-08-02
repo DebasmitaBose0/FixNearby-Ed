@@ -34,7 +34,8 @@ import { startWorker } from './workers/notificationWorker.js';
 import { checkUpcomingBookings } from './workers/bookingReminderWorker.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import estimateRoutes from './routes/estimateRoutes.js';
-import availabilityRoutes from './routes/availabilityRoutes.js';
+import reliabilityRoutes from './routes/reliabilityRoutes.js';
+import quoteNegotiationRoutes from './routes/quoteNegotiationRoutes.js';
 import { createGracefulShutdown } from './utils/gracefulShutdown.js';
 import { healthHandlers } from './controllers/healthController.js';
 import auditLogRoutes from './routes/auditLogRoutes.js';
@@ -44,9 +45,13 @@ import complianceRoutes from './routes/complianceRoutes.js';
 import moderationRoutes from './routes/moderationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import skillCertificationRoutes from './routes/skillCertificationRoutes.js';
+import disputeEscalationRoutes from './routes/disputeEscalationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
@@ -61,6 +66,7 @@ import geofenceRoutes from './routes/geofenceRoutes.js';
 import estimatorRoutes from './routes/estimatorRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import skillCertificationRoutes from './routes/skillCertificationRoutes.js';
 
 dotenv.config();
 
@@ -154,6 +160,8 @@ connectDB();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', healthRoutes);
+app.use('/api/workers/service-zones', zoneManagementRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/workers', workerRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/search', searchRoutes);
@@ -167,10 +175,13 @@ app.use('/api/geofence', geofenceRoutes);
 app.use('/api/estimates', estimateRoutes);
 app.use('/api/estimator', estimatorRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/availability', availabilityRoutes);
+app.use('/api/workers/reliability', reliabilityRoutes);
+app.use('/api/chat/quote-negotiation', quoteNegotiationRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/earnings', earningRoutes);
+app.use('/api/chat/quote-negotiation', quoteNegotiationRoutes);
+app.use('/api/workers/service-zones', zoneManagementRoutes);
 app.use('/api/admin/moderation', moderationRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
@@ -187,6 +198,7 @@ app.use('/api/emergency', emergencyRoutes);
 app.use('/api/rewards', rewardsRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
+app.use('/api/workers/skills-certifications', skillCertificationRoutes);
 
 // Start background workers after DB connection is established
 (async () => {
