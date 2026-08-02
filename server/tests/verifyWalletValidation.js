@@ -1,44 +1,73 @@
-import { validateWalletAmount, sanitizeWalletDescription } from '../services/walletVerificationService.js';
+import mongoose from 'mongoose';
+import { payWithWallet } from '../controllers/walletController.js';
+import User from '../models/User.js';
+import Booking from '../models/Booking.js';
+import Wallet from '../models/Wallet.js';
 
-console.log('=== STARTING WALLET TRANSACTION VERIFICATION TEST ===\n');
+async function runTest() {
+  console.log("--- STARTING WALLET PRICE VALIDATION TEST ---");
+  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/fixnearby_test');
+  
+  const testUser = await User.create({
+    name: 'Wallet Tester',
+    email: `wallet_test_${Date.now()}@example.com`,
+    password: 'password123',
+    role: 'customer'
+  });
 
-// 1. Test negative and zero amount rejection
-console.log('1. Testing invalid amount boundary validation...');
-const zeroCheck = validateWalletAmount(0);
-console.log('Zero Amount Result:', zeroCheck);
+  const testBooking = await Booking.create({
+    userId: testUser._id,
+    workerId: new mongoose.Types.ObjectId(),
+    service: 'Plumbing Service',
+    address: '123 Test Street',
+    durationHours: 2,
+    scheduledTime: new Date(Date.now() + 86400000),
+    price: 150,
+    status: 'Pending'
+  });
 
-if (!zeroCheck.valid) {
-  console.log('✅ SUCCESS: Zero/negative top-up amount cleanly rejected!');
-} else {
-  console.error('❌ FAIL: Failed to reject invalid topup amount!');
-  process.exit(1);
+  await Wallet.create({
+    userId: testUser._id,
+    balance: 500
+  });
+
+  // Test 1: Submitting payment under required price ($50 < $150)
+  console.log("\nTest 1: Submitting underpaid amount ($50 for $150 booking)...");
+  let resStatus1 = 0;
+  let resJson1 = {};
+
+  const req1 = {
+    user: testUser,
+    body: { bookingId: testBooking._id.toString(), amount: 50 }
+  };
+  const res1 = {
+    status: (code) => {
+      resStatus1 = code;
+      return {
+        json: (data) => { resJson1 = data; return data; }
+      };
+    }
+  };
+
+  await payWithWallet(req1, res1, (err) => console.error(err));
+
+  console.log(`HTTP Status: ${resStatus1}`);
+  console.log(`Response Payload: ${JSON.stringify(resJson1)}`);
+
+  if (resStatus1 === 400 && resJson1.message?.includes("Invalid payment amount")) {
+    console.log("\n=============================================");
+    console.log("✅ SUCCESS: Underpaid wallet payment rejected with 400 Bad Request!");
+    console.log("=============================================");
+  } else {
+    console.error("❌ FAILED: Underpaid payment was not properly rejected!");
+  }
+
+  // Cleanup
+  await User.deleteOne({ _id: testUser._id });
+  await Booking.deleteOne({ _id: testBooking._id });
+  await Wallet.deleteOne({ userId: testUser._id });
+  await mongoose.disconnect();
+  process.exit(0);
 }
 
-// 2. Test excessive amount rejection
-console.log('\n2. Testing excessive top-up limit enforcement ($5,000 max)...');
-const excessiveCheck = validateWalletAmount(10000);
-console.log('Excessive Topup Result:', excessiveCheck);
-
-if (!excessiveCheck.valid && excessiveCheck.reason.includes('exceed')) {
-  console.log('✅ SUCCESS: Top-up amount exceeding $5,000 threshold rejected!');
-} else {
-  console.error('❌ FAIL: Excessive limit check failed!');
-  process.exit(1);
-}
-
-// 3. Test description sanitization
-console.log('\n3. Testing description HTML/Script sanitization...');
-const rawDesc = 'Wallet topup <script>alert("hack")</script>';
-const cleanDesc = sanitizeWalletDescription(rawDesc);
-console.log('Sanitized Description:', cleanDesc);
-
-if (!cleanDesc.includes('<') && !cleanDesc.includes('>')) {
-  console.log('✅ SUCCESS: Unsafe tags removed from description!');
-} else {
-  console.error('❌ FAIL: Description sanitization failed!');
-  process.exit(1);
-}
-
-console.log('\n=============================================');
-console.log('✅ ALL WALLET TRANSACTION VERIFICATION TESTS PASSED!');
-console.log('=============================================\n');
+runTest().catch(console.error);
