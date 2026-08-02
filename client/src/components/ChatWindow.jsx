@@ -137,6 +137,22 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
         </div>
       </div>
 
+      <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <span className="text-slate-400 font-medium shrink-0">Quick Replies:</span>
+          {['Hi, are you available for AC Repair today?', 'Can you share price estimate?', 'I have shared my location.', 'Please call me when you reach.'].map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => onSendMessage(chip)}
+              className="shrink-0 rounded-full bg-white border border-slate-200 px-3 py-1 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="border-t border-slate-200 px-6 py-3">
         <div className="flex items-center gap-2">
           <button
