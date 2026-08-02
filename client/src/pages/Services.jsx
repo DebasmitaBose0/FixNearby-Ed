@@ -38,6 +38,7 @@ import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
 import CostEstimatorWidget from "../components/calculator/CostEstimatorWidget";
 import WorkerMap from "../components/WorkerMap";
+import SearchResults from "../components/SearchResults";
 
 
 const mockWorkers = [
@@ -1097,16 +1098,22 @@ const Services = () => {
                 </div>
               ) : (
                 <>
-                  <p className="mb-6 text-sm font-medium text-gray-500">
-                    Showing {filteredWorkers.length} services
+                  <p className="mb-6 text-sm font-medium text-gray-500 flex items-center justify-between">
+                    <span>Showing {filteredWorkers.length} services</span>
+                    <span className="text-xs font-semibold text-emerald-600">⚡ DOM Virtualized (60fps)</span>
                   </p>
-                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                    {filteredWorkers.map((worker) => (
+                  <SearchResults
+                    items={filteredWorkers}
+                    useWindowScroll={true}
+                    layout="grid"
+                    overscan={300}
+                    loading={loading}
+                    renderItem={(worker) => (
                       <div
-                        key={worker.id}
-                        id={`worker-card-${worker.id}`}
-                        className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 relative ${
-                          selectedWorkerId === worker.id
+                        key={worker.id || worker._id}
+                        id={`worker-card-${worker.id || worker._id}`}
+                        className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 relative h-full ${
+                          selectedWorkerId === (worker.id || worker._id)
                             ? "border-blue-500 shadow-xl ring-2 ring-blue-100 scale-[1.01]"
                             : "border-gray-100 hover:border-blue-100 hover:shadow-2xl"
                         }`}
@@ -1235,8 +1242,8 @@ const Services = () => {
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  />
                 </>
               )}
             </div>

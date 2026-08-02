@@ -209,50 +209,54 @@ const WorkerDashboard = () => {
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Job Activity</h2>
                 <p className="text-sm text-slate-500">Your assigned and recent jobs</p>
-              </div>
+              <Link
+                to="/jobs"
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                View Full Feed <FaArrowRight className="text-xs" />
+              </Link>
             </div>
 
-            {jobs.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
-                <FaWrench className="mx-auto mb-3 text-3xl text-slate-300" />
-                <p className="font-medium text-slate-700">No jobs assigned yet.</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Jobs booked by customers will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {jobs.slice(0, 5).map((job, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col gap-4 rounded-xl border border-slate-100 p-5 transition hover:bg-slate-50 md:flex-row md:items-center md:justify-between"
-                  >
-                    <div>
-                      <h3 className="font-semibold text-slate-900">{job.service || job.title}</h3>
-                      <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-500">
-                        <span className="flex items-center gap-2">
-                          <FaClock /> {job.date}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <FaMapMarkerAlt /> {job.location}
-                        </span>
-                      </div>
+            <FeedList
+              items={jobs}
+              useWindowScroll={true}
+              overscan={200}
+              renderItem={(job) => (
+                <div className="flex flex-col gap-4 rounded-xl border border-slate-100 p-5 transition hover:bg-slate-50 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 className="font-semibold text-slate-900">{job.service || job.title}</h3>
+                    <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-500">
+                      <span className="flex items-center gap-2">
+                        <FaClock /> {job.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <FaMapMarkerAlt /> {job.location}
+                      </span>
                     </div>
-                    <span
-                      className={`self-start rounded-full px-3 py-1 text-xs font-semibold md:self-auto ${
-                        job.status === "Completed"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : job.status === "In Progress"
-                          ? "bg-blue-50 text-blue-600"
-                          : "bg-amber-50 text-amber-600"
-                      }`}
-                    >
-                      {job.status}
-                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <span
+                    className={`self-start rounded-full px-3 py-1 text-xs font-semibold md:self-auto ${
+                      job.status === "Completed"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : job.status === "In Progress"
+                        ? "bg-blue-50 text-blue-600"
+                        : "bg-amber-50 text-amber-600"
+                    }`}
+                  >
+                    {job.status}
+                  </span>
+                </div>
+              )}
+              emptyState={
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
+                  <FaWrench className="mx-auto mb-3 text-3xl text-slate-300" />
+                  <p className="font-medium text-slate-700">No jobs assigned yet.</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Jobs booked by customers will appear here.
+                  </p>
+                </div>
+              }
+            />
           </div>
 
           {/* Quick Actions */}
