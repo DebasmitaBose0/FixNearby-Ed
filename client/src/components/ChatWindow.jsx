@@ -68,7 +68,12 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
             )}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
+                {conversation.serviceCategory || 'AC Repair Service'}
+              </span>
+            </div>
             <p className="text-xs text-slate-500">{conversation.role}</p>
           </div>
         </div>
@@ -94,7 +99,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
         <div className="space-y-3">
           {messages.map((msg) => (
             <div
-              key={msg.id}
+              key={msg.id || msg._id}
               className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -105,13 +110,16 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
-                <p
-                  className={`mt-1 text-[10px] ${
-                    msg.isOwn ? 'text-blue-200' : 'text-slate-400'
-                  }`}
-                >
-                  {formatTime(msg.timestamp)}
-                </p>
+                <div className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                  msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                }`}>
+                  <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
+                  {msg.isOwn && (
+                    <span>
+                      {msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓✓' : '✓'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}

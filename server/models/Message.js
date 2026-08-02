@@ -25,6 +25,24 @@ const messageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    default: null
+  },
+  serviceCategory: {
+    type: String,
+    default: 'General Service'
+  },
+  status: {
+    type: String,
+    enum: ['sent', 'delivered', 'read'],
+    default: 'sent'
+  },
+  readAt: {
+    type: Date,
+    default: null
+  },
   attachment: {
     fileUrl: String,
     fileName: String,
@@ -35,6 +53,7 @@ const messageSchema = new mongoose.Schema({
 
 messageSchema.index({ senderId: 1, receiverId: 1, createdAt: -1 });
 messageSchema.index({ receiverId: 1, senderId: 1 });
+messageSchema.index({ bookingId: 1 });
 messageSchema.index({ createdAt: -1 });
 
 const Message = mongoose.model('Message', messageSchema);
