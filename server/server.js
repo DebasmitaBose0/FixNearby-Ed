@@ -1,4 +1,6 @@
 import healthRoutes from './routes/healthRoutes.js';
+import complianceRoutes from './routes/complianceRoutes.js';
+import gratuityBonusRoutes from './routes/gratuityBonusRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import express from 'express';
 import cors from 'cors';
@@ -165,8 +167,8 @@ connectDB();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', healthRoutes);
-app.use('/api/workers/service-zones', zoneManagementRoutes);
-app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/workers/compliance', complianceRoutes);
+app.use('/api/bookings/gratuity-bonus', gratuityBonusRoutes);
 app.use('/api/workers', workerRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/search', searchRoutes);
