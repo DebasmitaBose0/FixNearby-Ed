@@ -43,6 +43,9 @@ import moderationRoutes from './routes/moderationRoutes.js';
 import disputeEscalationRoutes from './routes/disputeEscalationRoutes.js';
 import reliabilityRoutes from './routes/reliabilityRoutes.js';
 import verificationRoutes from './routes/verificationRoutes.js';
+import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import skillCertificationRoutes from './routes/skillCertificationRoutes.js';
+import disputeEscalationRoutes from './routes/disputeEscalationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
@@ -60,6 +63,7 @@ import geofenceRoutes from './routes/geofenceRoutes.js';
 import estimatorRoutes from './routes/estimatorRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
+import skillCertificationRoutes from './routes/skillCertificationRoutes.js';
 
 dotenv.config();
 
@@ -186,6 +190,7 @@ app.use('/api/emergency', emergencyRoutes);
 app.use('/api/rewards', rewardsRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
+app.use('/api/workers/skills-certifications', skillCertificationRoutes);
 
 // Start background workers after DB connection is established
 (async () => {
