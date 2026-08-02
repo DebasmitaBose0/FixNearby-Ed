@@ -15,6 +15,7 @@ import {
   getWorkersByBounds,
   getWorkerClusters,
   updateWorkerProfile,
+  updateAvailableNowStatus,
 } from '../controllers/workerController.js';
 import { protectWorker } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
@@ -34,6 +35,7 @@ router.post('/batch', getWorkersBatch);
 router.post('/register', upload.single('profilePicture'), validateGeoCoordinates, registerWorker);
 router.post('/login', loginWorker);
 router.get('/profile', protectWorker, getWorkerProfile);
+router.patch('/profile/available-now', protectWorker, updateAvailableNowStatus);
 router.put('/profile', protectWorker, updateWorkerProfile);
 router.get('/nearby', getNearbyWorkers);
 router.get('/map-bounds', getWorkersByBounds);

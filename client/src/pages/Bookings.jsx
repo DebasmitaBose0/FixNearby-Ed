@@ -852,7 +852,6 @@ const Bookings = () => {
                       />
                      </div>
 
-                     {/* PHOTO UPLOADER */}
                      <div className="mb-6">
                        <label className="text-sm font-medium text-slate-700 block mb-2">
                          Add Photos (Optional, max 5)
@@ -864,23 +863,6 @@ const Bookings = () => {
                          onChange={handleImageChange}
                          className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                        />
-                       {reviewImages.length > 0 && (
-                         <div className="flex gap-2 flex-wrap mt-3">
-                           {reviewImages.map((img, idx) => (
-                             <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
-                               <img src={URL.createObjectURL(img)} alt="upload preview" className="w-full h-full object-cover" />
-                               <button
-                                 type="button"
-                                 onClick={() => handleRemoveImage(idx)}
-                                 className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-black"
-                                 title="Remove photo"
-                               >
-                                 <X size={10} />
-                               </button>
-                             </div>
-                           ))}
-                         </div>
-                       )}
                      </div>
 
                     {/* QUICK TAGS */}
@@ -907,15 +889,32 @@ const Bookings = () => {
                     </div>
 
                     {/* PREVIEW */}
-                    {(rating > 0 || comment) && (
+                    {(rating > 0 || comment || reviewImages.length > 0) && (
                       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
                         <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">Preview</p>
                         <div className="flex items-center gap-1 text-yellow-400 text-lg mb-2">
                           {"★".repeat(rating)}
                         </div>
-                        <p className="text-slate-700 text-sm leading-relaxed">
+                        <p className="text-slate-700 text-sm leading-relaxed mb-3">
                           {comment || "Your review preview will appear here..."}
                         </p>
+                        {reviewImages.length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {reviewImages.map((img, idx) => (
+                              <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
+                                <img src={URL.createObjectURL(img)} alt="upload preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveImage(idx)}
+                                  className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-black"
+                                  title="Remove photo"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 

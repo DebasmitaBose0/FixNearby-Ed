@@ -45,6 +45,11 @@ const WorkerDashboard = () => {
           setIsAvailable(savedAvailability === "true");
         }
 
+        const profileRes = await api.get("/workers/profile");
+        if (profileRes.data?.success && profileRes.data.worker) {
+          setIsAvailable(profileRes.data.worker.isAvailableNow === true);
+        }
+
         // Fetch dashboard stats from backend
         const statsResponse = await api.get("/workers/dashboard/stats");
         if (statsResponse.data?.success) {
@@ -92,12 +97,18 @@ const WorkerDashboard = () => {
   const toggleAvailability = () => {
     const newStatus = !isAvailable;
 
-    setIsAvailable(newStatus);
-
-    localStorage.setItem(
-        "workerAvailability",
-        newStatus.toString()
-    );
+    try {
+      const res = await api.patch("/workers/profile/available-now", { isAvailableNow: newStatus });
+      if (res.data?.success) {
+        setIsAvailable(res.data.isAvailableNow);
+        localStorage.setItem("workerAvailability", res.data.isAvailableNow.toString());
+        showToast(res.data.isAvailableNow ? "You are now online" : "You are now offline", "success");
+      }
+    } catch (error) {
+      console.error("Failed to update availability status", error);
+      showToast("Failed to update status", "error");
+      setIsAvailable(!newStatus); // Revert back
+    }
   };
 
   const statIcons = [
