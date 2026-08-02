@@ -38,6 +38,7 @@ import { getEstimatorConfig } from "../utils/estimatorConfig";
 import EstimateWizard from "../components/EstimateWizard";
 import CostEstimatorWidget from "../components/calculator/CostEstimatorWidget";
 import WorkerMap from "../components/WorkerMap";
+import SearchResults from "../components/SearchResults";
 
 
 const mockWorkers = [
@@ -522,6 +523,7 @@ const Services = () => {
           outcomeText: w.outcomeText || `Review past work and request a ${w.category?.toLowerCase() || 'service'} visit.`,
           mockOffset: w.mockOffset || (w.coordinates ? { lat: w.coordinates.lat, lon: w.coordinates.lon } : null),
           verified: w.verificationStatus ? w.verificationStatus === 'verified' : (w.verified ?? true),
+          isAvailableNow: w.isAvailableNow === true,
           rating: Number(w.rating) || 4.5,
           completedJobs: w.completedJobs || 12,
           slaResponseMins: w.slaResponseMins,
@@ -670,13 +672,21 @@ const Services = () => {
         !urgentFilter ||
         /today|emergency|open/i.test(w.availability || "");
 
+      // Availability filter
+      const matchesAvailability = 
+        advancedFilters.availability === 'all' || 
+        (advancedFilters.availability === 'available' && w.isAvailableNow) ||
+        (advancedFilters.availability === 'today' && /today/i.test(w.availability || "")) ||
+        (advancedFilters.availability === 'week' && /week|today|tomorrow/i.test(w.availability || ""));
+
       return (
         matchesSearch &&
         matchesCategory &&
         matchesPrice &&
         matchesRating &&
         matchesDistance &&
-        matchesUrgent
+        matchesUrgent &&
+        matchesAvailability
       );
     });
 
@@ -1088,16 +1098,22 @@ const Services = () => {
                 </div>
               ) : (
                 <>
-                  <p className="mb-6 text-sm font-medium text-gray-500">
-                    Showing {filteredWorkers.length} services
+                  <p className="mb-6 text-sm font-medium text-gray-500 flex items-center justify-between">
+                    <span>Showing {filteredWorkers.length} services</span>
+                    <span className="text-xs font-semibold text-emerald-600">⚡ DOM Virtualized (60fps)</span>
                   </p>
-                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                    {filteredWorkers.map((worker) => (
+                  <SearchResults
+                    items={filteredWorkers}
+                    useWindowScroll={true}
+                    layout="grid"
+                    overscan={300}
+                    loading={loading}
+                    renderItem={(worker) => (
                       <div
-                        key={worker.id}
-                        id={`worker-card-${worker.id}`}
-                        className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 relative ${
-                          selectedWorkerId === worker.id
+                        key={worker.id || worker._id}
+                        id={`worker-card-${worker.id || worker._id}`}
+                        className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 relative h-full ${
+                          selectedWorkerId === (worker.id || worker._id)
                             ? "border-blue-500 shadow-xl ring-2 ring-blue-100 scale-[1.01]"
                             : "border-gray-100 hover:border-blue-100 hover:shadow-2xl"
                         }`}
@@ -1163,7 +1179,15 @@ const Services = () => {
                         {/* CONTENT */}
                         <div className="flex flex-1 flex-col p-6">
                           <div className="mb-2 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900">{worker.name}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold text-gray-900">{worker.name}</h3>
+                              {worker.isAvailableNow && (
+                                <span className="relative flex h-3 w-3" title="Available Now">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                               <span className="text-sm font-bold text-gray-700">{worker.rating}</span>
@@ -1218,8 +1242,8 @@ const Services = () => {
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  />
                 </>
               )}
             </div>

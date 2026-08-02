@@ -59,7 +59,21 @@ const bookingSchema = new mongoose.Schema({
     },
     note: { type: String, default: '' },
     changedAt: { type: Date, default: Date.now }
-  }]
+  }],
+  // Escrow & Customer Approval tracking
+  escrowStatus: {
+    type: String,
+    enum: ['not_applicable', 'held_in_escrow', 'released', 'disputed', 'refunded'],
+    default: 'not_applicable'
+  },
+  completionApprovedByCustomer: {
+    type: Boolean,
+    default: false
+  },
+  customerApprovedAt: {
+    type: Date,
+    default: null
+  }
 }, {
   timestamps: true
 });

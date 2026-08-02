@@ -32,4 +32,10 @@ router.get('/escrow/status/:bookingId', getEscrowStatus);
 router.get('/:id', getPaymentById);
 router.post('/:id/refund', requireRole('customer', 'admin'), requestRefund);
 
+// Escrow & Stripe Connect Multi-Party Routing Routes
+router.post('/escrow/:bookingId/release', releaseEscrowFunds);
+router.get('/escrow/status/:bookingId', getEscrowStatus);
+router.post('/escrow/connect-account', linkStripeConnectAccount);
+
 export default router;
+

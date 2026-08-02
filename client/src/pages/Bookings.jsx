@@ -14,6 +14,8 @@ import { showApiError } from "../utils/apiErrorHandler";
 import CancelBookingModal from "../components/CancelBookingModal";
 import useBookingSocket from "../hooks/useBookingSocket";
 import AnimatedBookingProgressBar from "../components/AnimatedBookingProgressBar";
+import JobCompletionFlow from "../components/JobCompletionFlow";
+
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
 
@@ -367,6 +369,8 @@ const Bookings = () => {
   // Timeline toggle state
   const [expandedTimelineId, setExpandedTimelineId] = useState(null);
   const [liveUpdatedId, setLiveUpdatedId] = useState(null);
+  const [activeEscrowBooking, setActiveEscrowBooking] = useState(null);
+
 
   // Subscribe to real-time booking socket status updates
   const handleSocketStatusUpdate = (eventData) => {
@@ -630,6 +634,16 @@ const Bookings = () => {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-4 text-sm items-center">
+                {/* Escrow Release Action */}
+                {booking.status !== "Cancelled" && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveEscrowBooking(booking)}
+                    className="inline-flex items-center gap-1 font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-xl text-xs transition shadow-sm"
+                  >
+                    🔒 Escrow Approval
+                  </button>
+                )}
                 {(booking.status === "Pending" || booking.status === "Confirmed" || booking.status === "Reminder Sent" || booking.status === "Technician En Route") && (
                   <button
                     type="button"
@@ -838,7 +852,6 @@ const Bookings = () => {
                       />
                      </div>
 
-                     {/* PHOTO UPLOADER */}
                      <div className="mb-6">
                        <label className="text-sm font-medium text-slate-700 block mb-2">
                          Add Photos (Optional, max 5)
@@ -850,23 +863,6 @@ const Bookings = () => {
                          onChange={handleImageChange}
                          className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                        />
-                       {reviewImages.length > 0 && (
-                         <div className="flex gap-2 flex-wrap mt-3">
-                           {reviewImages.map((img, idx) => (
-                             <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
-                               <img src={URL.createObjectURL(img)} alt="upload preview" className="w-full h-full object-cover" />
-                               <button
-                                 type="button"
-                                 onClick={() => handleRemoveImage(idx)}
-                                 className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-black"
-                                 title="Remove photo"
-                               >
-                                 <X size={10} />
-                               </button>
-                             </div>
-                           ))}
-                         </div>
-                       )}
                      </div>
 
                     {/* QUICK TAGS */}
@@ -893,15 +889,32 @@ const Bookings = () => {
                     </div>
 
                     {/* PREVIEW */}
-                    {(rating > 0 || comment) && (
+                    {(rating > 0 || comment || reviewImages.length > 0) && (
                       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
                         <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">Preview</p>
                         <div className="flex items-center gap-1 text-yellow-400 text-lg mb-2">
                           {"★".repeat(rating)}
                         </div>
-                        <p className="text-slate-700 text-sm leading-relaxed">
+                        <p className="text-slate-700 text-sm leading-relaxed mb-3">
                           {comment || "Your review preview will appear here..."}
                         </p>
+                        {reviewImages.length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {reviewImages.map((img, idx) => (
+                              <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200">
+                                <img src={URL.createObjectURL(img)} alt="upload preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveImage(idx)}
+                                  className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-black/60 text-white hover:bg-black"
+                                  title="Remove photo"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -941,6 +954,17 @@ const Bookings = () => {
         onClose={() => { setCancelModalOpen(false); setCancelTargetId(null); }}
         onConfirm={confirmCancel}
       />
+
+      {activeEscrowBooking && (
+        <JobCompletionFlow
+          booking={activeEscrowBooking}
+          isOpen={!!activeEscrowBooking}
+          onClose={() => setActiveEscrowBooking(null)}
+          onEscrowReleased={() => {
+            refresh();
+          }}
+        />
+      )}
     </div>
   );
 };

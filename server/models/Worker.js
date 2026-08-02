@@ -79,6 +79,11 @@ const workerSchema = new mongoose.Schema(
       default: "offline",
     },
 
+    isAvailableNow: {
+      type: Boolean,
+      default: false,
+    },
+
     lastActive: {
       type: Date,
       default: Date.now,
@@ -258,7 +263,11 @@ const workerSchema = new mongoose.Schema(
         type: Date,
         default: Date.now
       }
-    }]
+    }],
+    stripeConnectAccountId: {
+      type: String,
+      default: ''
+    }
   },
   {
     timestamps: true,
@@ -303,6 +312,7 @@ workerSchema.index({ location: 1, averageRating: -1 });
 workerSchema.index({ availabilityStatus: 1, averageRating: -1 });
 workerSchema.index({ email: 1 }, { unique: true });
 workerSchema.index({ karmaScore: -1 });
+workerSchema.index({ isAvailableNow: 1 });
 
 const Worker = mongoose.model(
   "Worker",

@@ -47,6 +47,7 @@ const WORKERS = {
     id: 1,
     name: "John Doe",
     profession: "Electrician",
+    isAvailableNow: true,
     price: "$45/hr",
     rating: 4.8,
     experience: "10+ Years",
@@ -632,6 +633,7 @@ const WorkerProfile = () => {
             id: backendWorker._id || backendWorker.id,
             name: backendWorker.name,
             profession: backendWorker.category || backendWorker.profession,
+            isAvailableNow: backendWorker.isAvailableNow === true,
             price: backendWorker.price ? (backendWorker.price.toString().startsWith('$') ? backendWorker.price : `$${backendWorker.price}/hr`) : "$30/hr",
             rating: backendWorker.rating || 4.5,
             experience: backendWorker.experience ? (backendWorker.experience.toString().toLowerCase().includes("year") ? backendWorker.experience : `${backendWorker.experience} Years`) : "3 Years",
@@ -872,6 +874,18 @@ const WorkerProfile = () => {
         bookingDetails={bookingDetails}
       />
 
+      <div className="max-w-6xl mx-auto flex justify-end mb-4 px-2">
+        <button
+          type="button"
+          onClick={handleShareProfile}
+          className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 border border-gray-200 rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={`Share ${worker.name}'s profile`}
+        >
+          <Share2 className="w-5 h-5" />
+          Share Profile
+        </button>
+      </div>
+
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* LEFT PROFILE CARD */}
@@ -880,8 +894,16 @@ const WorkerProfile = () => {
 
             {/* Avatar */}
             <div className="flex flex-col items-center text-center">
-              <div className="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center text-4xl font-bold text-blue-700">
-                {worker.name.charAt(0)}
+              <div className="relative">
+                <div className="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center text-4xl font-bold text-blue-700">
+                  {worker.name.charAt(0)}
+                </div>
+                {worker.isAvailableNow && (
+                  <span className="absolute bottom-2 right-2 flex h-5 w-5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-5 w-5 bg-green-500 border-2 border-white"></span>
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-4 justify-center">
                 <h1 className="text-2xl font-bold">{worker.name}</h1>
@@ -896,15 +918,6 @@ const WorkerProfile = () => {
                       isSaved ? "fill-red-500 text-red-500" : "text-slate-400"
                     }`}
                   />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleShareProfile}
-                  className="p-2 rounded-full hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label={`Share ${worker.name}'s profile`}
-                  title="Share profile"
-                >
-                  <Share2 className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
               <p className="text-blue-600 font-medium">{worker.profession}</p>

@@ -15,6 +15,7 @@ import {
   getWorkersByBounds,
   getWorkerClusters,
   updateWorkerProfile,
+  updateAvailableNowStatus,
 } from '../controllers/workerController.js';
 import { protectWorker, requireRole } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
