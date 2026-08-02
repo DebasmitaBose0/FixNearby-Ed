@@ -1065,15 +1065,11 @@ const Services = () => {
           <div className="flex-grow lg:grid lg:grid-cols-12 lg:gap-8 items-start w-full">
             {/* MAP VIEW */}
             {viewMode === 'map' ? (
-              <div className="lg:col-span-12 h-[600px]">
-                <WorkerMap
+              <div className="lg:col-span-12 h-[600px] shadow-lg rounded-3xl overflow-hidden border border-slate-200">
+                <MapView
                   workers={filteredWorkers}
-                  center={coords ? { lat: coords.latitude, lng: coords.longitude } : { lat: 17.385, lng: 78.4867 }}
-                  zoom={1.2}
-                  onWorkerClick={(id) => {
-                    const el = document.getElementById(`worker-card-${id}`);
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }}
+                  selectedWorkerId={selectedWorkerId}
+                  onMarkerClick={handleMarkerClick}
                 />
               </div>
             ) : (
