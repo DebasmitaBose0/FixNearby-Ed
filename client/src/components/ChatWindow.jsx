@@ -123,6 +123,16 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
               </div>
             </div>
           ))}
+          {conversation.isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl px-4 py-2 flex items-center space-x-1.5">
+                <span className="text-xs text-slate-500 font-medium">{conversation.participant} is typing</span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
       </div>
