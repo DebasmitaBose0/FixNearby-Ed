@@ -1,0 +1,45 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  ci-pipeline:
+    name: Automated CI Pipeline (Install, Lint, Format & Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install server dependencies
+        run: npm --prefix server install
+
+      - name: Install client dependencies
+        run: npm --prefix client install
+
+      - name: Check code formatting (Prettier)
+        run: npx prettier --check .prettierrc .prettierignore package.json server/package.json client/package.json .github/workflows/ci.yml
+
+      - name: Lint client code
+        run: npm --prefix client run lint --if-present
+
+      - name: Lint server code
+        run: npm --prefix server run lint --if-present
+
+      - name: Run server verification test suite
+        run: node server/tests/verifyFastAPIInstantiation.js && node server/tests/verifyThemeContextFix.js && node server/tests/verifyInteractiveMapView.js && node server/tests/verifyAuthRateLimiting.js && node server/tests/verifyPrettierSetup.js
+
+      - name: Build client application
+        run: npm --prefix client run build
