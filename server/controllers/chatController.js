@@ -34,12 +34,15 @@ export const getChatHistory = async (req, res) => {
     // Format the response with the next cursor for the client to retrieve subsequent messages
     const nextCursor = messages.length > 0 ? messages[messages.length - 1]._id : null;
     const hasMore = messages.length === limit;
+    const { calculateMessageRetryDelay } = await import('../services/messageRetryService.js');
+    const retryPolicy = calculateMessageRetryDelay(1);
 
     res.status(200).json({
       success: true,
       messages,
       nextCursor,
-      hasMore
+      hasMore,
+      retryPolicy
     });
   } catch (error) {
     res.status(500).json({
