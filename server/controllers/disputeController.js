@@ -1,5 +1,6 @@
 import Dispute from '../models/Dispute.js';
 import Booking from '../models/Booking.js';
+import { processDisputeEvidence } from '../services/disputeWorkflowService.js';
 
 export const createDispute = async (req, res) => {
   try {
@@ -9,16 +10,18 @@ export const createDispute = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
+    const processedEvidence = processDisputeEvidence(evidenceUrls || []);
+
     const dispute = await Dispute.create({
       bookingId,
       disputedBy: req.user._id || req.user.id,
       againstUser,
       reason,
       claimAmount,
-      evidenceUrls: evidenceUrls || []
+      evidenceUrls: processedEvidence.validUrls
     });
 
-    res.status(201).json({ success: true, data: dispute });
+    res.status(201).json({ success: true, data: dispute, metadata: { sanitizationSummary: processedEvidence } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
