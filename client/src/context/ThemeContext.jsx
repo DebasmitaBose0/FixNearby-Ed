@@ -28,7 +28,7 @@ export const ThemeProvider = ({ children }) => {
         localStorage.setItem('theme', theme);
       }
     } catch (e) {
-      console.warn('[ThemeContext] Error saving theme to localStorage:', e);
+      console.warn('[ThemeContext] Error writing theme to localStorage:', e);
     }
   }, [theme]);
 
@@ -46,7 +46,7 @@ export const ThemeProvider = ({ children }) => {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    console.warn('[ThemeContext] useTheme called outside of ThemeProvider. Falling back to default light theme.');
+    console.warn('[ThemeContext] useTheme called outside of ThemeProvider context. Falling back to default light theme.');
     return {
       theme: 'light',
       toggleTheme: () => {}
