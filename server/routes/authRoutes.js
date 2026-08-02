@@ -1,5 +1,7 @@
 import { globalApiLimiter } from '../middleware/rateLimiter.js';
+import { createSlidingWindowLimiter } from '../middleware/adaptiveRateLimiter.js';
 import express from 'express';
+
 import {
   registerUser,
   loginUser,
