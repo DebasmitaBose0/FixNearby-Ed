@@ -1,5 +1,4 @@
-import express from 'express';
-import { protect, protectWorker, adminOnly } from '../middleware/authMiddleware.js';
+import { protect, protectWorker, adminOnly, requireRole } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 import {
   submitVerification,
@@ -17,6 +16,7 @@ const router = express.Router();
 router.post(
   '/submit',
   protectWorker,
+  requireRole('provider', 'worker', 'admin'),
   upload.fields([
     { name: 'idDocument', maxCount: 1 },
     { name: 'selfieWithId', maxCount: 1 },
@@ -28,7 +28,7 @@ router.post(
 );
 
 // Worker checks their own verification status
-router.get('/status', protectWorker, getVerificationStatus);
+router.get('/status', protectWorker, requireRole('provider', 'worker', 'admin'), getVerificationStatus);
 
 // Admin: list pending verifications
 router.get('/pending', protect, adminOnly, getPendingVerifications);
@@ -41,6 +41,6 @@ router.patch('/:id/approve', protect, adminOnly, approveVerification);
 router.patch('/:id/reject', protect, adminOnly, rejectVerification);
 
 // Worker: upload a single document
-router.post('/upload', protectWorker, upload.single('document'), uploadDocument);
+router.post('/upload', protectWorker, requireRole('provider', 'worker', 'admin'), upload.single('document'), uploadDocument);
 
 export default router;

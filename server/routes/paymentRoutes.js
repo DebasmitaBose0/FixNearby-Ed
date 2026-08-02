@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, requireRole } from '../middleware/authMiddleware.js';
 import {
   createPaymentIntent,
   confirmPayment,
@@ -23,8 +23,14 @@ router.use(protect);
 router.post('/create-intent', createPaymentIntent);
 router.post('/confirm', confirmPayment);
 router.get('/history', getPaymentHistory);
+
+// Escrow endpoints with RBAC role authorization
+router.post('/escrow/connect-account', requireRole('worker', 'provider', 'admin'), linkStripeConnectAccount);
+router.post('/escrow/:bookingId/release', requireRole('customer', 'admin'), releaseEscrowFunds);
+router.get('/escrow/status/:bookingId', getEscrowStatus);
+
 router.get('/:id', getPaymentById);
-router.post('/:id/refund', requestRefund);
+router.post('/:id/refund', requireRole('customer', 'admin'), requestRefund);
 
 // Escrow & Stripe Connect Multi-Party Routing Routes
 router.post('/escrow/:bookingId/release', releaseEscrowFunds);

@@ -3,6 +3,10 @@ import User from '../models/User.js';
 import Worker from "../models/Worker.js";
 import Blacklist from '../models/Blacklist.js';
 
+/**
+ * Protect middleware: Verifies JWT token and populates req.user.
+ * Works for both User (Customer/Admin/Worker) and Worker models.
+ */
 export const protect = async (req, res, next) => {
   let token;
 
@@ -10,116 +14,140 @@ export const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
       
-      // Check blacklist
+      // Check token blacklist
       const isBlacklisted = await Blacklist.findOne({ token });
       if (isBlacklisted) {
         return res.status(401).json({ success: false, message: 'Token has been invalidated' });
       }
       
-      // Verify token
+      // Verify token payload
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Get user from token
-      req.user = await User.findById(decoded.id).select('-password');
+      // Try resolving User model first
+      let principal = await User.findById(decoded.id).select('-password');
       
-      if (!req.user) {
-        // Check if the token belongs to a Worker
-        const worker = await Worker.findById(decoded.id).select('-password');
-        if (worker) {
-          req.user = worker;
+      if (!principal) {
+        // Fallback to Worker model
+        const workerDoc = await Worker.findById(decoded.id).select('-password');
+        if (workerDoc) {
+          principal = workerDoc.toObject ? workerDoc.toObject() : workerDoc;
+          principal.role = principal.role || 'worker';
         }
+      } else {
+        principal = principal.toObject ? principal.toObject() : principal;
+        principal.role = principal.role || 'customer';
       }
       
-      if (!req.user) {
-        return res.status(401).json({ success: false, message: 'User not found' });
+      if (!principal) {
+        return res.status(401).json({ success: false, message: 'Not authorized: User or Worker account not found' });
       }
       
+      req.user = principal;
       return next();
     } catch (error) {
-      return res.status(401).json({ success: false, message: 'Not authorized, token failed' });
+      return res.status(401).json({ success: false, message: 'Not authorized, token validation failed' });
     }
   }
 
   if (!token) {
-    return res.status(401).json({ success: false, message: 'Not authorized, no token' });
+    return res.status(401).json({ success: false, message: 'Not authorized, no authorization token provided' });
   }
 };
 
-/*  WORKER AUTH MIDDLEWARE*/
-
+/**
+ * Dedicated Worker auth middleware: Ensures req.worker & req.user are populated.
+ */
 export const protectWorker = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith(
-      "Bearer"
-    )
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
-      token =
-        req.headers.authorization.split(
-          " "
-        )[1];
+      token = req.headers.authorization.split(" ")[1];
 
-      // Check blacklist
       const isBlacklisted = await Blacklist.findOne({ token });
       if (isBlacklisted) {
         return res.status(401).json({ success: false, message: 'Token has been invalidated' });
       }
 
-      // VERIFY TOKEN
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const worker = await Worker.findById(decoded.id).select("-password");
 
-      // GET WORKER
-      req.worker =
-        await Worker.findById(
-          decoded.id
-        ).select("-password");
-
-      if (!req.worker) {
+      if (!worker) {
         return res.status(401).json({
           success: false,
-          message: "Worker not found",
+          message: "Worker account not found",
         });
       }
 
+      const workerObj = worker.toObject ? worker.toObject() : worker;
+      workerObj.role = workerObj.role || 'worker';
+
+      req.worker = workerObj;
+      req.user = workerObj;
+
       return next();
-
     } catch (error) {
-
       return res.status(401).json({
         success: false,
-        message:
-          "Not authorized, invalid token",
+        message: "Not authorized, invalid token",
       });
-
     }
   }
 
   return res.status(401).json({
     success: false,
-    message: "Not authorized, no token",
+    message: "Not authorized, no token provided",
   });
 };
 
+/**
+ * Role-Based Access Control (RBAC) middleware:
+ * Usage:
+ *   requireRole('admin')
+ *   requireRole('provider', 'worker')
+ *   requireRole(['admin', 'provider'])
+ */
+export const authorize = (...allowedRoles) => {
+  // Flatten array if passed as single array argument (e.g., requireRole(['admin', 'provider']))
+  const flatRoles = allowedRoles.flat();
 
-export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || (!roles.includes(req.user.role) && req.user.role !== 'admin')) {
-      return res.status(403).json({
+    if (!req.user) {
+      return res.status(401).json({
         success: false,
-        message: `User role '${req.user?.role || 'guest'}' is not authorized to access this route`
+        message: 'Forbidden: Authentication required before authorization check'
       });
     }
+
+    const currentRole = (req.user.role || 'customer').toLowerCase();
+
+    // Map role aliases: 'provider' <-> 'worker', 'customer' <-> 'user'
+    const normalizedAllowedRoles = flatRoles.flatMap(r => {
+      const lowerR = r.toLowerCase();
+      if (lowerR === 'provider') return ['provider', 'worker'];
+      if (lowerR === 'worker') return ['worker', 'provider'];
+      if (lowerR === 'customer') return ['customer', 'user'];
+      return [lowerR];
+    });
+
+    const isAuthorized = normalizedAllowedRoles.includes(currentRole) || currentRole === 'admin';
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: User role '${currentRole}' is not authorized to access this route.`
+      });
+    }
+
     next();
   };
 };
 
+export const requireRole = authorize;
+export const requireProvider = authorize('provider', 'worker');
+export const requireWorker = authorize('worker', 'provider');
+export const requireCustomer = authorize('customer');
+export const requireAdmin = authorize('admin');
 export const adminOnly = authorize('admin');
 
 export default protect;
-

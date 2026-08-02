@@ -11,7 +11,7 @@ import {
   updateBookingStatusController,
   getBookingTimeline
 } from '../controllers/bookingController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, requireRole } from '../middleware/authMiddleware.js';
 import { checkBookingOverlap } from '../middleware/bookingValidation.js';
 import {
   loadBooking,
@@ -34,11 +34,12 @@ router.route('/')
 router.route('/:id')
   .get(loadBooking, requireBookingParticipant, getBookingById);
 
+// Provider-only status actions (require worker/provider/admin role & valid status transition)
 router.route('/:id/accept')
-  .patch(loadBooking, authorizeStatusTransition, acceptBooking);
+  .patch(requireRole('provider', 'worker', 'admin'), loadBooking, authorizeStatusTransition, acceptBooking);
 
 router.route('/:id/complete')
-  .patch(loadBooking, authorizeStatusTransition, completeBooking);
+  .patch(requireRole('provider', 'worker', 'admin'), loadBooking, authorizeStatusTransition, completeBooking);
 
 router.route('/:id/cancel')
   .patch(loadBooking, authorizeStatusTransition, cancelBooking)
@@ -48,7 +49,7 @@ router.route('/:id/reschedule')
   .patch(loadBooking, rescheduleBooking);
 
 router.route('/:id/status')
-  .patch(loadBooking, authorizeStatusTransition, updateBookingStatusController);
+  .patch(requireRole('provider', 'worker', 'admin'), loadBooking, authorizeStatusTransition, updateBookingStatusController);
 
 router.route('/:id/timeline')
   .get(loadBooking, requireBookingParticipant, getBookingTimeline);

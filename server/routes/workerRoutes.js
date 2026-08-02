@@ -17,7 +17,7 @@ import {
   updateWorkerProfile,
   updateAvailableNowStatus,
 } from '../controllers/workerController.js';
-import { protectWorker } from '../middleware/authMiddleware.js';
+import { protectWorker, requireRole } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
 import { validateGeoCoordinates } from '../middleware/geoValidator.js';
 import {
@@ -34,21 +34,22 @@ const router = express.Router();
 router.post('/batch', getWorkersBatch);
 router.post('/register', upload.single('profilePicture'), validateGeoCoordinates, registerWorker);
 router.post('/login', loginWorker);
-router.get('/profile', protectWorker, getWorkerProfile);
-router.patch('/profile/available-now', protectWorker, updateAvailableNowStatus);
-router.put('/profile', protectWorker, updateWorkerProfile);
+
+// Protected Worker Endpoints (require worker/provider/admin role)
+router.get('/profile', protectWorker, requireRole('provider', 'worker', 'admin'), getWorkerProfile);
+router.put('/profile', protectWorker, requireRole('provider', 'worker', 'admin'), updateWorkerProfile);
 router.get('/nearby', getNearbyWorkers);
 router.get('/map-bounds', getWorkersByBounds);
 router.get('/clusters', getWorkerClusters);
-router.get('/dashboard/stats', protectWorker, getWorkerDashboardStats);
-router.post('/recalculate-karma', protectWorker, recalculateKarmaScoresController);
+router.get('/dashboard/stats', protectWorker, requireRole('provider', 'worker', 'admin'), getWorkerDashboardStats);
+router.post('/recalculate-karma', protectWorker, requireRole('provider', 'worker', 'admin'), recalculateKarmaScoresController);
 
-// Service catalog management (protected - worker only)
-router.get('/services', protectWorker, getMyServices);
-router.post('/services', protectWorker, addService);
-router.put('/services/:serviceId', protectWorker, updateService);
-router.delete('/services/:serviceId', protectWorker, removeService);
-router.put('/hourly-rate', protectWorker, updateHourlyRate);
+// Service catalog management (protected - worker/provider/admin only)
+router.get('/services', protectWorker, requireRole('provider', 'worker', 'admin'), getMyServices);
+router.post('/services', protectWorker, requireRole('provider', 'worker', 'admin'), addService);
+router.put('/services/:serviceId', protectWorker, requireRole('provider', 'worker', 'admin'), updateService);
+router.delete('/services/:serviceId', protectWorker, requireRole('provider', 'worker', 'admin'), removeService);
+router.put('/hourly-rate', protectWorker, requireRole('provider', 'worker', 'admin'), updateHourlyRate);
 
 // Public routes
 router.get('/', getWorkers);
