@@ -1,21 +1,16 @@
-/**
- * Middleware for validating service warranty claims
- */
-import { verifyWarrantyCoverage, sanitizeWarrantyClaimPayload } from '../services/serviceWarrantyCoverageService.js';
+export const validateWarrantyClaimPayload = (req, res, next) => {
+  const { bookingId, originalWorkerId, claimDescription } = req.body;
 
-export const warrantyValidationMiddleware = (req, res, next) => {
-  const { completionDate, notes } = req.body || {};
+  if (!bookingId) {
+    return res.status(400).json({ success: false, message: 'Booking ID is required.' });
+  }
 
-  if (req.method === 'POST') {
-    if (completionDate !== undefined) {
-      const check = verifyWarrantyCoverage(completionDate);
-      if (!check.valid) {
-        return res.status(400).json({ success: false, message: check.reason });
-      }
-    }
-    if (notes) {
-      req.sanitizedWarrantyNotes = sanitizeWarrantyClaimPayload(notes);
-    }
+  if (!originalWorkerId) {
+    return res.status(400).json({ success: false, message: 'Original worker ID is required.' });
+  }
+
+  if (!claimDescription || typeof claimDescription !== 'string' || claimDescription.trim().length < 15) {
+    return res.status(400).json({ success: false, message: 'Claim description must be at least 15 characters.' });
   }
 
   next();
