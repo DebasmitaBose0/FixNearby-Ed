@@ -11,6 +11,8 @@ import { messageRetryService } from './services/messageRetryService.js';
 import { handleSendMessage, handleTyping } from './socketHandlers/chatHandler.js';
 import { handlePresenceUpdate } from './socketHandlers/presenceHandler.js';
 import { registerBookingHandlers } from './socketHandlers/bookingHandler.js';
+import { handleSocketStateMachine } from './socketHandlers/socketStateMachine.js';
+
 
 // Map to track active user socket mappings
 // Map format: userId -> Set of socket.ids
