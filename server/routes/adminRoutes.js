@@ -8,11 +8,15 @@ import {
   getUserBookings
 } from '../controllers/adminController.js';
 
+import { auditStreamMiddleware } from '../middleware/auditStreamMiddleware.js';
+
 const router = express.Router();
 
 // Require both authentication and admin role authorization
 router.use(protect);
 router.use(adminOnly);
+router.use(auditStreamMiddleware);
+
 
 router.get('/stats', getAdminStats);
 router.get('/users', getAdminUsers);
