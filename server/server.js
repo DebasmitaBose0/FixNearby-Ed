@@ -51,6 +51,7 @@ import disputeEscalationRoutes from './routes/disputeEscalationRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
@@ -159,6 +160,8 @@ connectDB();
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', healthRoutes);
+app.use('/api/workers/service-zones', zoneManagementRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/workers', workerRoutes);
 app.use('/api/issues', issueRoutes);
 app.use('/api/search', searchRoutes);
