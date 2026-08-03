@@ -39,6 +39,12 @@ import EstimateWizard from "../components/EstimateWizard";
 import CostEstimatorWidget from "../components/calculator/CostEstimatorWidget";
 import WorkerMap from "../components/WorkerMap";
 import SearchResults from "../components/SearchResults";
+import {
+  addRecentWorker,
+  clearRecentWorkers,
+  getRecentWorkers,
+  removeRecentWorker,
+} from "../utils/recentWorkers";
 
 
 const mockWorkers = [
@@ -1035,8 +1041,14 @@ const Services = () => {
                   </p>
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <span>⭐ {worker.rating}</span>
-                    <span>${worker.price}/hr</span>
+                    <span>{typeof worker.price === "number" ? `$${worker.price}/hr` : worker.price || "Rate unavailable"}</span>
                   </div>
+                  <Link
+                    to={`/worker/${worker.id}`}
+                    className="mt-4 inline-flex text-sm font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    View profile →
+                  </Link>
                 </div>
               ))}
             </div>
