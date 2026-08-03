@@ -8,7 +8,7 @@ import { verifySocketAuth } from './utils/verifySocketAuth.js';
 import { socketAuthMiddleware } from './middleware/socketAuthMiddleware.js';
 import { initSocketLifecycle } from './utils/socketLifecycle.js';
 import { messageRetryService } from './services/messageRetryService.js';
-import { handleSendMessage, handleTyping } from './socketHandlers/chatHandler.js';
+import { handleSendMessage, handleTyping, handleMessageRead } from './socketHandlers/chatHandler.js';
 import { handlePresenceUpdate } from './socketHandlers/presenceHandler.js';
 import { registerBookingHandlers } from './socketHandlers/bookingHandler.js';
 import { handleSocketStateMachine } from './socketHandlers/socketStateMachine.js';
@@ -78,6 +78,8 @@ export const initSocket = (server) => {
 
     // Typing indicators
     socket.on('typing', handleTyping(io, io, userId));
+
+    socket.on('mark_read', handleMessageRead(io, socket, userId));
 
     socket.on('stop_typing', (data) => {
       const { receiverId } = data;
