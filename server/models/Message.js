@@ -27,6 +27,24 @@ const messageSchema = new mongoose.Schema({
     trim: true,
     maxlength: 5000
   },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    default: null
+  },
+  serviceCategory: {
+    type: String,
+    default: 'General Service'
+  },
+  status: {
+    type: String,
+    enum: ['sent', 'delivered', 'read'],
+    default: 'sent'
+  },
+  readAt: {
+    type: Date,
+    default: null
+  },
   attachment: {
     fileUrl: String,
     fileName: String,

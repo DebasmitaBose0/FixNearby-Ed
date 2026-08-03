@@ -68,7 +68,12 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
             )}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
+                {conversation.serviceCategory || 'AC Repair Service'}
+              </span>
+            </div>
             <p className="text-xs text-slate-500">{conversation.role}</p>
           </div>
         </div>
@@ -94,7 +99,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
         <div className="space-y-3">
           {messages.map((msg) => (
             <div
-              key={msg.id}
+              key={msg.id || msg._id}
               className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -105,17 +110,46 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
-                <p
-                  className={`mt-1 text-[10px] ${
-                    msg.isOwn ? 'text-blue-200' : 'text-slate-400'
-                  }`}
-                >
-                  {formatTime(msg.timestamp)}
-                </p>
+                <div className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                  msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                }`}>
+                  <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
+                  {msg.isOwn && (
+                    <span>
+                      {msg.status === 'read' ? '✓✓' : msg.status === 'delivered' ? '✓✓' : '✓'}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}
+          {conversation.isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-slate-100 dark:bg-slate-700 rounded-2xl px-4 py-2 flex items-center space-x-1.5">
+                <span className="text-xs text-slate-500 font-medium">{conversation.participant} is typing</span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <span className="text-slate-400 font-medium shrink-0">Quick Replies:</span>
+          {['Hi, are you available for AC Repair today?', 'Can you share price estimate?', 'I have shared my location.', 'Please call me when you reach.'].map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => onSendMessage(chip)}
+              className="shrink-0 rounded-full bg-white border border-slate-200 px-3 py-1 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition"
+            >
+              {chip}
+            </button>
+          ))}
         </div>
       </div>
 
