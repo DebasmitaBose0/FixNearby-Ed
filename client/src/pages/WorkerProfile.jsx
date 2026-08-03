@@ -890,27 +890,31 @@ const WorkerProfile = () => {
 
         {/* LEFT PROFILE CARD */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sticky top-6">
+          <div className={`bg-white dark:bg-slate-800 rounded-3xl shadow-lg border p-6 sticky top-6 transition-all duration-300 ${
+            worker.isAvailableNow
+              ? "border-emerald-400/80 dark:border-emerald-500/60 shadow-emerald-500/10 ring-2 ring-emerald-500/20"
+              : "border-amber-300/80 dark:border-amber-500/50 shadow-amber-500/10 ring-2 ring-amber-400/20"
+          }`}>
 
             {/* Avatar */}
             <div className="flex flex-col items-center text-center">
               <div className="relative">
-                <div className="w-28 h-28 rounded-full bg-blue-100 flex items-center justify-center text-4xl font-bold text-blue-700">
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center text-4xl font-black text-blue-700 dark:text-blue-400 shadow-inner">
                   {worker.name.charAt(0)}
                 </div>
                 {worker.isAvailableNow && (
                   <span className="absolute bottom-2 right-2 flex h-5 w-5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-5 w-5 bg-green-500 border-2 border-white"></span>
+                    <span className="relative inline-flex rounded-full h-5 w-5 bg-green-500 border-2 border-white dark:border-slate-800"></span>
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2 mt-4 justify-center">
-                <h1 className="text-2xl font-bold">{worker.name}</h1>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white">{worker.name}</h1>
                 <button
                   type="button"
                   onClick={handleToggleFavorite}
-                  className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-red-500 transition-all focus:outline-none"
+                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 transition-all focus:outline-none"
                   title={isSaved ? "Remove from Saved" : "Save Professional"}
                 >
                   <Heart
@@ -920,11 +924,12 @@ const WorkerProfile = () => {
                   />
                 </button>
               </div>
-              <p className="text-blue-600 font-medium">{worker.profession}</p>
+              <p className="text-blue-600 dark:text-blue-400 font-extrabold text-sm tracking-wide mt-0.5">{worker.profession}</p>
               <div className="flex items-center gap-2 mt-3">
-                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-full">
-                  <Star size={16} className="fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold">{worker.rating}</span>
+                {/* High-Contrast Floating Rating Pill */}
+                <div className="flex items-center gap-1.5 bg-amber-400 dark:bg-amber-500 px-3.5 py-1.5 rounded-full shadow-md shadow-amber-500/20 border border-amber-300/50 backdrop-blur-md">
+                  <Star size={16} className="fill-slate-950 text-slate-950" />
+                  <span className="font-black text-slate-950 text-xs">{worker.rating}</span>
                 </div>
                 <ReviewBadge rating={worker.rating} count={worker.completedJobs} />
               </div>

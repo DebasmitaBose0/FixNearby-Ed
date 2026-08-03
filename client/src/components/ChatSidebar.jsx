@@ -5,7 +5,9 @@ const ChatSidebar = ({ conversations, activeConversation, onSelectConversation, 
   const [search, setSearch] = useState('');
 
   const filtered = conversations.filter((c) =>
-    c.participant.toLowerCase().includes(search.toLowerCase())
+    c.participant.toLowerCase().includes(search.toLowerCase()) ||
+    (c.lastMessage && c.lastMessage.toLowerCase().includes(search.toLowerCase())) ||
+    (c.serviceCategory && c.serviceCategory.toLowerCase().includes(search.toLowerCase()))
   );
 
   const formatRelativeTime = (date) => {

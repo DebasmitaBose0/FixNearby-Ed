@@ -87,12 +87,21 @@ const ChatPage = () => {
   };
 
   const handleSendMessage = (text) => {
-    if (!activeConversation || !text.trim()) return;
+    if (!activeConversation || typeof text !== 'string' || !text.trim()) return;
+
+    const sanitized = text
+      .trim()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
 
     const newMsg = {
       id: `msg-${Date.now()}`,
       senderId: 'user',
-      text: text.trim(),
+      text: sanitized,
       timestamp: new Date(),
       isOwn: true,
     };
@@ -105,7 +114,7 @@ const ChatPage = () => {
     setConversations(prev =>
       prev.map(c =>
         c.id === activeConversation
-          ? { ...c, lastMessage: text.trim(), timestamp: new Date() }
+          ? { ...c, lastMessage: sanitized, timestamp: new Date() }
           : c
       )
     );
