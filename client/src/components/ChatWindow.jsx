@@ -76,7 +76,12 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
             )}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
+                {conversation.serviceCategory || 'AC Repair Service'}
+              </span>
+            </div>
             <p className="text-xs text-slate-500">{conversation.role}</p>
           </div>
         </div>
@@ -144,6 +149,22 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           )}
 
           <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+          <span className="text-slate-400 font-medium shrink-0">Quick Replies:</span>
+          {['Hi, are you available for AC Repair today?', 'Can you share price estimate?', 'I have shared my location.', 'Please call me when you reach.'].map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => onSendMessage(chip)}
+              className="shrink-0 rounded-full bg-white border border-slate-200 px-3 py-1 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition"
+            >
+              {chip}
+            </button>
+          ))}
         </div>
       </div>
 
