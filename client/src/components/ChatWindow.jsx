@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck } from 'lucide-react';
+import ChatAttachmentModal from './chat/ChatAttachmentModal';
 
-const ChatWindow = ({ conversation, messages, onSendMessage }) => {
+const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -26,6 +28,12 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+    }
+  };
+
+  const handleSendAttachment = (attachmentData) => {
+    if (onSendMessage) {
+      onSendMessage(`[Attachment: ${attachmentData.fileName || 'File'}]`, attachmentData);
     }
   };
 
@@ -94,7 +102,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
         <div className="space-y-3">
           {messages.map((msg) => (
             <div
-              key={msg.id}
+              key={msg.id || msg._id}
               className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -105,16 +113,36 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
-                <p
-                  className={`mt-1 text-[10px] ${
+                <div
+                  className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
                     msg.isOwn ? 'text-blue-200' : 'text-slate-400'
                   }`}
                 >
-                  {formatTime(msg.timestamp)}
-                </p>
+                  <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
+                  {msg.isOwn && (
+                    <span>
+                      {msg.status === 'read' ? (
+                        <CheckCheck size={12} className="text-emerald-300" />
+                      ) : msg.status === 'delivered' ? (
+                        <CheckCheck size={12} className="text-blue-200" />
+                      ) : (
+                        <Check size={12} className="text-blue-200" />
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))}
+
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl bg-slate-100 px-4 py-2 text-xs text-slate-500 italic animate-pulse">
+                {conversation.participant} is typing...
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -123,6 +151,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsAttachmentModalOpen(true)}
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             title="Attach file"
           >
@@ -146,6 +175,12 @@ const ChatWindow = ({ conversation, messages, onSendMessage }) => {
           </button>
         </div>
       </form>
+
+      <ChatAttachmentModal
+        isOpen={isAttachmentModalOpen}
+        onClose={() => setIsAttachmentModalOpen(false)}
+        onSendAttachment={handleSendAttachment}
+      />
     </div>
   );
 };
