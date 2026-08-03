@@ -13,12 +13,13 @@ export const getChatHistory = async (req, res) => {
 
     const currentUserId = req.user._id;
 
-    // Build the query to find messages between current user and partnerId
+    // Build the query to find messages between current user and partnerId excluding soft-deleted
     const query = {
       $or: [
         { senderId: currentUserId, receiverId: partnerId },
         { senderId: partnerId, receiverId: currentUserId }
-      ]
+      ],
+      isDeleted: { $ne: true }
     };
 
     // If cursor exists, fetch messages older than the cursor (created before cursor)
@@ -49,3 +50,81 @@ export const getChatHistory = async (req, res) => {
     });
   }
 };
+
+/**
+ * Marks unread messages from partnerId as read.
+ * PATCH /api/chat/read/:partnerId
+ */
+export const markAsRead = async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+    const currentUserId = req.user._id;
+
+    const result = await Message.updateMany(
+      {
+        senderId: partnerId,
+        receiverId: currentUserId,
+        status: { $ne: 'read' }
+      },
+      {
+        $set: {
+          status: 'read',
+          readAt: new Date()
+        }
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Messages marked as read',
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error marking messages as read',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Retrieves total unread message counts grouped by sender.
+ * GET /api/chat/unread-count
+ */
+export const getUnreadCount = async (req, res) => {
+  try {
+    const currentUserId = req.user._id;
+
+    const unreadCounts = await Message.aggregate([
+      {
+        $match: {
+          receiverId: currentUserId,
+          status: { $ne: 'read' },
+          isDeleted: { $ne: true }
+        }
+      },
+      {
+        $group: {
+          _id: '$senderId',
+          unreadCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const totalUnread = unreadCounts.reduce((acc, curr) => acc + curr.unreadCount, 0);
+
+    res.status(200).json({
+      success: true,
+      totalUnread,
+      bySender: unreadCounts
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error retrieving unread message counts',
+      error: error.message
+    });
+  }
+};
+
