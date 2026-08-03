@@ -1,5 +1,16 @@
 import Message from '../models/Message.js';
 
+const sanitizeText = (input) => {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
 export const handleSendMessage = (io, socket, userId, userType) => async (data, callback) => {
   try {
     const { receiverId, receiverModel, text, timestamp } = data;
@@ -7,6 +18,13 @@ export const handleSendMessage = (io, socket, userId, userType) => async (data, 
       if (callback) callback({ success: false, error: 'Invalid message payload' });
       return;
     }
+
+    const sanitizedText = sanitizeText(text);
+    if (!sanitizedText.trim()) {
+      if (callback) callback({ success: false, error: 'Message contains invalid or empty content' });
+      return;
+    }
+
     if (!['User', 'Worker'].includes(receiverModel)) {
       if (callback) callback({ success: false, error: 'Invalid receiver model' });
       return;
@@ -24,13 +42,13 @@ export const handleSendMessage = (io, socket, userId, userType) => async (data, 
         return;
       }
     }
-    // Persist message
+    // Persist message with sanitized text
     const message = await Message.create({
       senderId: userId,
       senderModel: userType,
       receiverId,
       receiverModel,
-      text,
+      text: sanitizedText,
       createdAt: timestamp ? new Date(timestamp) : undefined
     });
     const msgData = {
