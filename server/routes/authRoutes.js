@@ -118,6 +118,7 @@ router.post(
 
 router.put(
   '/reset-password/:token',
+  passwordResetLimiter,
   resetUserPassword
 );
 
@@ -129,6 +130,7 @@ router.post(
 
 router.put(
   '/worker/reset-password/:token',
+  passwordResetLimiter,
   resetWorkerPassword
 );
 
