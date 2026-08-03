@@ -1,4 +1,5 @@
 import RewardPoints from '../models/RewardPoints.js';
+import { calculateLoyaltyPointsEarned } from '../services/loyaltyRewardMultiplierService.js';
 
 export const getUserRewards = async (req, res) => {
   try {
@@ -14,11 +15,14 @@ export const getUserRewards = async (req, res) => {
       { _id: 'c3', title: '50% Off House Cleaning', discount: 50, pointsCost: 200 }
     ];
 
+    const loyaltyPreview = calculateLoyaltyPointsEarned(100, userRewards.tier || 'BRONZE');
+
     res.status(200).json({
       balance: userRewards.balance,
       tier: userRewards.tier,
       history: userRewards.transactions,
-      availableCoupons
+      availableCoupons,
+      loyaltyPreview
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching rewards', error: error.message });

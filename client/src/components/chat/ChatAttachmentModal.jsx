@@ -78,12 +78,12 @@ const ChatAttachmentModal = ({ isOpen, onClose, onSendAttachment }) => {
             onChange={handleFileChange}
             className="hidden"
             id="chat-file-input"
-            accept="image/*,.pdf,.doc,.docx,.txt"
+            accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
           />
           <label htmlFor="chat-file-input" className="cursor-pointer flex flex-col items-center">
             <UploadCloud className="w-10 h-10 text-indigo-500 mb-2" />
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Click to select photo or document</span>
-            <span className="text-xs text-slate-400 mt-1">PNG, JPG, PDF, DOCX up to 10MB</span>
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Click to select photo, audio, or document</span>
+            <span className="text-xs text-slate-400 mt-1">PNG, JPG, MP3, PDF, DOCX up to 10MB</span>
           </label>
         </div>
 
