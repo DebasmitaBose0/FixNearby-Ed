@@ -4,7 +4,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import CenteredLoadingSpinner from "../components/CenteredLoadingSpinner";
 import SkeletonLoader from "../components/SkeletonLoader";
 import StarRating from "../components/StarRating";
-import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History, MessageSquare } from "lucide-react";
+import { Package, Clock, DollarSign, ChevronDown, ChevronUp, Zap, AlertCircle, X, History, MessageSquare, CalendarPlus } from "lucide-react";
 import BookingTimeline from "../components/BookingTimeline";
 import useBookingTimeline from "../hooks/useBookingTimeline";
 import { useBookings } from "../hooks/useBookings";
@@ -15,6 +15,7 @@ import CancelBookingModal from "../components/CancelBookingModal";
 import useBookingSocket from "../hooks/useBookingSocket";
 import AnimatedBookingProgressBar from "../components/AnimatedBookingProgressBar";
 import JobCompletionFlow from "../components/JobCompletionFlow";
+import { downloadBookingCalendarEvent } from "../utils/bookingCalendar";
 
 
 const statusOptions = ["All", "Pending", "Confirmed", "Reminder Sent", "Technician En Route", "Completed", "Cancelled"];
@@ -515,6 +516,15 @@ const Bookings = () => {
     setReviewImages(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const handleCalendarExport = (booking) => {
+    try {
+      downloadBookingCalendarEvent(booking);
+      showToast("Booking calendar event downloaded.", "success");
+    } catch {
+      showToast("This booking does not have a valid scheduled time.", "error");
+    }
+  };
+
   useDocumentTitle("My Bookings");
 
   const totalBookings = bookings.length;
@@ -708,6 +718,14 @@ const Bookings = () => {
                   <MessageSquare size={14} />
                   Chat
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => handleCalendarExport(booking)}
+                  className="inline-flex items-center gap-1 font-medium text-blue-600 hover:text-blue-700 transition"
+                >
+                  <CalendarPlus size={14} />
+                  Add to Calendar
+                </button>
                 <button
                   type="button"
                   onClick={() =>
@@ -964,6 +982,8 @@ const Bookings = () => {
                   </div>
                 </div>
               )}
+            </div>
+          ))}
           {/* Pagination Controls Bar */}
           {totalPages > 1 && (
             <div className="mt-8 flex items-center justify-between border-t border-slate-200 pt-6">
