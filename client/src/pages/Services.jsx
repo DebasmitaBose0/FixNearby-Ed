@@ -1167,6 +1167,9 @@ const Services = () => {
                             <span className="rounded-lg bg-slate-900/90 dark:bg-slate-950/90 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur-sm shadow-sm border border-white/10">
                               {worker.profession}
                             </span>
+                            <span className="rounded-lg bg-blue-600/90 px-2.5 py-1 text-xs font-black text-white backdrop-blur-sm shadow-xs border border-blue-400/40">
+                              📍 {worker.distanceText || (worker.distanceKm !== undefined ? `${worker.distanceKm} km away` : '1.8 km away')}
+                            </span>
                             {worker.verified && (
                               <span className="rounded-lg bg-emerald-600/90 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur-sm shadow-sm border border-emerald-400/30">
                                 Verified
