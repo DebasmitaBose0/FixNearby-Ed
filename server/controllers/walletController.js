@@ -50,14 +50,16 @@ export const getWalletBalance = async (req, res, next) => {
 export const topupWallet = async (req, res, next) => {
   try {
     const { amount, method = 'card', stripePaymentIntentId } = req.body;
-    const numAmount = Number(amount);
+    const { validateWalletAmount, sanitizeWalletDescription } = await import('../services/walletVerificationService.js');
+    const check = validateWalletAmount(amount);
 
-    if (!numAmount || numAmount <= 0) {
+    if (!check.valid) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a valid top-up amount greater than zero'
+        message: check.reason
       });
     }
+    const numAmount = check.amount;
 
     const wallet = await getOrCreateUserWallet(req.user._id);
 

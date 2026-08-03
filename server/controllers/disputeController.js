@@ -3,6 +3,7 @@ import Booking from '../models/Booking.js';
 import Wallet from '../models/Wallet.js';
 import AdminLog from '../models/AdminLog.js';
 import crypto from 'crypto';
+import { processDisputeEvidence } from '../services/disputeWorkflowService.js';
 
 // @desc    Raise a new customer-worker booking dispute
 // @route   POST /api/disputes
@@ -25,6 +26,8 @@ export const createDispute = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'An active dispute is already open for this booking' });
     }
 
+    const processedEvidence = processDisputeEvidence(evidenceUrls || []);
+
     const dispute = await Dispute.create({
       bookingId,
       raisedBy: req.user._id,
@@ -40,6 +43,14 @@ export const createDispute = async (req, res, next) => {
       message: 'Dispute submitted successfully to arbitration queue',
       dispute
     });
+      disputedBy: req.user._id || req.user.id,
+      againstUser,
+      reason,
+      claimAmount,
+      evidenceUrls: processedEvidence.validUrls
+    });
+
+    res.status(201).json({ success: true, data: dispute, metadata: { sanitizationSummary: processedEvidence } });
   } catch (error) {
     next(error);
   }

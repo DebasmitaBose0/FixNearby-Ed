@@ -225,12 +225,15 @@ export const previewEstimate = async (req, res, next) => {
     // Default hourly rate if not present
     const hourlyRate = parseFloat(String(worker.experience || "").replace(/[^0-9.]/g, "")) || 40;
     const breakdown = formula.calculate(inputs || {}, hourlyRate);
+    const { calculateServicePriceEstimate } = await import('../services/priceEstimateMatrixService.js');
+    const matrixEstimate = calculateServicePriceEstimate(hourlyRate, breakdown.laborHours || 1);
 
     res.status(200).json({
       success: true,
       profession: worker.category,
       inputs,
-      breakdown
+      breakdown,
+      matrixEstimate
     });
   } catch (error) {
     next(error);
