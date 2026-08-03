@@ -59,3 +59,19 @@ export const handleTyping = (io, socket, userId) => (data) => {
     io.to(receiverId).emit('typing', { senderId: userId });
   }
 };
+
+export const handleJoinConversation = (io, socket) => (data) => {
+  const { conversationId } = data || {};
+  if (conversationId) {
+    socket.join(`conv_${conversationId}`);
+    socket.emit('joined_conversation', { conversationId });
+  }
+};
+
+export const handleLeaveConversation = (io, socket) => (data) => {
+  const { conversationId } = data || {};
+  if (conversationId) {
+    socket.leave(`conv_${conversationId}`);
+    socket.emit('left_conversation', { conversationId });
+  }
+};
