@@ -939,28 +939,27 @@ const Services = () => {
 
         {/* CATEGORY CHIPS (FULL FIX) */}
         <div className="mb-10">
-          <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-1 py-2 scrollbar-hide">
+          <div className="flex gap-2.5 overflow-x-auto whitespace-nowrap px-1 py-3 scrollbar-hide">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`shrink-0 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 active:scale-95
-                ${categoryFilter === cat
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "bg-white border text-gray-600 hover:border-blue-400 hover:text-blue-600"
-                  }`}
+                className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-extrabold transition-all duration-300 ease-out active:scale-95 flex items-center gap-2 ${
+                  categoryFilter === cat
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-400/50 scale-105"
+                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md hover:-translate-y-0.5"
+                }`}
               >
                 {cat !== "All" && iconMap[cat] && (
-                  <span className="mb-1 flex h-6 w-6 items-center justify-center text-2xl">
+                  <span className="flex h-5 w-5 items-center justify-center">
                     {(() => {
                       const Icon = iconMap[cat];
-                      return <Icon className="h-5 w-5" aria-hidden="true" />;
+                      return <Icon className="h-4 w-4" aria-hidden="true" />;
                     })()}
                   </span>
                 )}
                 {cat}
               </button>
-
             ))}
           </div>
         </div>
@@ -1104,14 +1103,18 @@ const Services = () => {
                     layout="grid"
                     overscan={300}
                     loading={loading}
-                    renderItem={(worker) => (
+                    renderItem={(worker) => {
+                      const isAvailable = worker.isAvailableNow || /available|today|emergency/i.test(worker.availability || "");
+                      return (
                       <div
                         key={worker.id || worker._id}
                         id={`worker-card-${worker.id || worker._id}`}
-                        className={`flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 relative h-full ${
+                        className={`group flex flex-col overflow-hidden rounded-3xl border bg-white dark:bg-slate-800 transition-all duration-300 ease-out relative h-full hover:-translate-y-1.5 ${
                           selectedWorkerId === (worker.id || worker._id)
-                            ? "border-blue-500 shadow-xl ring-2 ring-blue-100 scale-[1.01]"
-                            : "border-gray-100 hover:border-blue-100 hover:shadow-2xl"
+                            ? "border-blue-500 shadow-xl ring-2 ring-blue-500/50 scale-[1.01]"
+                            : isAvailable
+                            ? "border-emerald-400/80 dark:border-emerald-500/60 shadow-md shadow-emerald-500/5 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/15 ring-1 ring-emerald-500/20"
+                            : "border-amber-300/80 dark:border-amber-500/50 shadow-md shadow-amber-500/5 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/15 ring-1 ring-amber-400/20"
                         }`}
                       >
                         {/* Favorite/Save Toggle Button */}
@@ -1122,7 +1125,7 @@ const Services = () => {
                             e.stopPropagation();
                             handleToggleFavorite(worker._id || worker.id);
                           }}
-                          className="absolute top-4 right-4 p-2.5 rounded-full bg-white/95 hover:bg-white text-gray-400 hover:text-red-500 transition-all shadow-sm border border-gray-100/60 z-10 focus:outline-none"
+                          className="absolute top-4 right-4 p-2.5 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-white text-gray-400 hover:text-red-500 transition-all shadow-sm border border-gray-100/60 z-10 focus:outline-none"
                           title={favoritedWorkerIds.has(worker._id || worker.id) ? "Remove from Saved" : "Save Professional"}
                         >
                           <Heart
@@ -1145,7 +1148,7 @@ const Services = () => {
                           className={`absolute top-4 left-4 p-2.5 rounded-full transition-all shadow-sm border z-10 focus:outline-none ${
                             compareIds.includes(worker._id || worker.id)
                               ? "bg-blue-600 border-blue-600 text-white"
-                              : "bg-white/95 hover:bg-white border-gray-100/60 text-gray-400 hover:text-blue-500"
+                              : "bg-white/95 dark:bg-slate-900/95 hover:bg-white border-gray-100/60 text-gray-400 hover:text-blue-500"
                           }`}
                           title={compareIds.includes(worker._id || worker.id) ? "Remove from comparison" : "Add to comparison"}
                         >
@@ -1153,19 +1156,19 @@ const Services = () => {
                         </button>
 
                         {/* WORKER IMAGE & BADGES */}
-                        <div className="relative h-48 bg-slate-100">
+                        <div className="relative h-48 bg-slate-100 dark:bg-slate-900 overflow-hidden">
                           {/* Image placeholder or fallback */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-bold text-5xl">
+                          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center text-slate-400 font-bold text-5xl group-hover:scale-105 transition-transform duration-500">
                             {worker.name.charAt(0)}
                           </div>
                           
                           {/* Badges Overlay */}
                           <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
-                            <span className="rounded-lg bg-slate-900/80 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
+                            <span className="rounded-lg bg-slate-900/90 dark:bg-slate-950/90 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur-sm shadow-sm border border-white/10">
                               {worker.profession}
                             </span>
                             {worker.verified && (
-                              <span className="rounded-lg bg-emerald-500/80 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
+                              <span className="rounded-lg bg-emerald-600/90 px-2.5 py-1 text-xs font-extrabold text-white backdrop-blur-sm shadow-sm border border-emerald-400/30">
                                 Verified
                               </span>
                             )}
@@ -1176,7 +1179,7 @@ const Services = () => {
                         <div className="flex flex-1 flex-col p-6">
                           <div className="mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-bold text-gray-900">{worker.name}</h3>
+                              <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{worker.name}</h3>
                               {worker.isAvailableNow && (
                                 <span className="relative flex h-3 w-3" title="Available Now">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -1184,9 +1187,10 @@ const Services = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-bold text-gray-700">{worker.rating}</span>
+                            {/* High-Contrast Floating Rating Pill */}
+                            <div className="flex items-center gap-1.5 rounded-full bg-amber-400 dark:bg-amber-500 px-3 py-1 text-xs font-black text-slate-950 shadow-md shadow-amber-500/20 border border-amber-300/50 transition-transform group-hover:scale-105">
+                              <Star className="h-3.5 w-3.5 fill-slate-950 text-slate-950" />
+                              <span>{Number(worker.rating).toFixed(1)}</span>
                             </div>
                           </div>
 
@@ -1238,7 +1242,8 @@ const Services = () => {
                           </div>
                         </div>
                       </div>
-                    )}
+                    );
+                  }}
                   />
                 </>
               )}
