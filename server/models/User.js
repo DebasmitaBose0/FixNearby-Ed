@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema({
     sms: { type: Boolean, default: true },
     push: { type: Boolean, default: true }
   },
+  passwordChangedAt: { type: Date },
   role: { type: String, enum: ['customer', 'worker', 'support', 'admin'], default: 'customer' },
   isBanned: { type: Boolean, default: false },
 }, {

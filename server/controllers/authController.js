@@ -383,6 +383,7 @@ export const resetUserPassword = async (req, res) => {
     }
 
     user.password = password;
+    user.passwordChangedAt = new Date();
 
     user.resetPasswordToken = null;
     user.resetPasswordExpire = null;
@@ -526,6 +527,7 @@ export const resetWorkerPassword = async (req, res) => {
     }
 
     worker.password = password;
+    worker.passwordChangedAt = new Date();
 
     worker.resetPasswordToken = undefined;
     worker.resetPasswordExpire = undefined;
