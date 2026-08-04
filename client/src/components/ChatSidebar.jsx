@@ -77,9 +77,12 @@ const ChatSidebar = ({ conversations, activeConversation, onSelectConversation, 
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
                 {conv.participant.charAt(0)}
               </div>
-              {conv.online && (
-                <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-              )}
+              <span
+                className={`absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white ${
+                  conv.online ? 'bg-emerald-500 shadow-xs' : 'bg-slate-300'
+                }`}
+                title={conv.online ? 'Active now' : 'Offline'}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
