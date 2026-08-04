@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, BadgeCheck } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
@@ -78,6 +78,9 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              {conversation.isVerified && (
+                <BadgeCheck className="h-4 w-4 shrink-0 text-cyan-500" title="Verified Worker" />
+              )}
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
                 {conversation.serviceCategory || 'AC Repair Service'}
               </span>
