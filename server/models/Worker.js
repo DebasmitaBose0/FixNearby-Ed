@@ -267,6 +267,9 @@ const workerSchema = new mongoose.Schema(
     stripeConnectAccountId: {
       type: String,
       default: ''
+    },
+    passwordChangedAt: {
+      type: Date
     }
   },
   {

@@ -2,6 +2,7 @@ import { io } from 'socket.io-client';
 
 let socket = null;
 let listeners = new Map();
+let offlineQueue = [];
 
 const getSocketUrl = () => {
   if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
@@ -20,7 +21,7 @@ export const connectSocket = (token) => {
     auth: { token },
     transports: ['websocket', 'polling'],
     reconnection: true,
-    reconnectionAttempts: 10,
+    reconnectionAttempts: 15,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 10000,
     timeout: 20000,
@@ -28,6 +29,7 @@ export const connectSocket = (token) => {
 
   socket.on('connect', () => {
     console.debug('[Socket] Connected:', socket.id);
+    flushOfflineQueue();
   });
 
   socket.on('disconnect', (reason) => {
@@ -43,6 +45,15 @@ export const connectSocket = (token) => {
   });
 
   return socket;
+};
+
+const flushOfflineQueue = () => {
+  if (!socket?.connected || offlineQueue.length === 0) return;
+  console.debug(`[Socket] Flushing ${offlineQueue.length} queued offline messages...`);
+  while (offlineQueue.length > 0) {
+    const item = offlineQueue.shift();
+    socket.emit(item.event, item.data);
+  }
 };
 
 export const disconnectSocket = () => {
@@ -62,7 +73,8 @@ export const isConnected = () => socket?.connected || false;
 
 export const sendMessage = (data) => {
   if (!socket?.connected) {
-    console.warn('[Socket] Cannot send message: not connected');
+    console.warn('[Socket] Disconnected: Queueing message for reconnect send');
+    offlineQueue.push({ event: 'send_message', data });
     return false;
   }
   socket.emit('send_message', data);

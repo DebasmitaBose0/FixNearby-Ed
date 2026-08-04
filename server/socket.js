@@ -81,6 +81,8 @@ export const initSocket = (server) => {
     // Typing indicators
     socket.on('typing', handleTyping(io, io, userId));
 
+    socket.on('mark_read', handleMessageRead(io, socket, userId));
+
     socket.on('stop_typing', (data) => {
       const { receiverId } = data;
       if (receiverId) {

@@ -288,3 +288,79 @@ export const confirmEstimate = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get estimate details by ID with strict ownership authorization
+// @route   GET /api/estimates/:id
+// @access  Private
+export const getEstimateById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.length !== 24) {
+      return res.status(400).json({ success: false, message: 'Invalid estimate ID' });
+    }
+
+    const estimate = await Estimate.findById(id);
+    if (!estimate) {
+      return res.status(404).json({ success: false, message: 'Estimate document not found' });
+    }
+
+    // Strict IDOR Authorization Check
+    const currentUserId = req.user._id.toString();
+    const isOwnerUser = estimate.userId.toString() === currentUserId;
+    const isAssignedWorker = estimate.workerId.toString() === currentUserId;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwnerUser && !isAssignedWorker && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You are not authorized to view or download this estimate'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      estimate
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Download estimate PDF with IDOR verification
+// @route   GET /api/estimates/:id/download
+// @access  Private
+export const downloadEstimatePdf = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id || id.length !== 24) {
+      return res.status(400).json({ success: false, message: 'Invalid estimate ID' });
+    }
+
+    const estimate = await Estimate.findById(id);
+    if (!estimate) {
+      return res.status(404).json({ success: false, message: 'Estimate document not found' });
+    }
+
+    // Strict IDOR Authorization Check
+    const currentUserId = req.user._id.toString();
+    const isOwnerUser = estimate.userId.toString() === currentUserId;
+    const isAssignedWorker = estimate.workerId.toString() === currentUserId;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwnerUser && !isAssignedWorker && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: You are not authorized to download this estimate document'
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=Estimate_${id}.json`);
+    res.status(200).json({
+      success: true,
+      estimate
+    });
+  } catch (error) {
+    next(error);
+  }
+};

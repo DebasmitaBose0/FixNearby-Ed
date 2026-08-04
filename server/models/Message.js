@@ -23,7 +23,9 @@ const messageSchema = new mongoose.Schema({
   },
   text: {
     type: String,
-    required: true
+    required: true,
+    trim: true,
+    maxlength: 5000
   },
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -48,12 +50,26 @@ const messageSchema = new mongoose.Schema({
     fileName: String,
     fileType: String,
     fileSize: Number
+  },
+  status: {
+    type: String,
+    enum: ['sent', 'delivered', 'read'],
+    default: 'sent',
+    index: true
+  },
+  readAt: {
+    type: Date,
+    default: null
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 
 messageSchema.index({ senderId: 1, receiverId: 1, createdAt: -1 });
-messageSchema.index({ receiverId: 1, senderId: 1 });
-messageSchema.index({ bookingId: 1 });
+messageSchema.index({ receiverId: 1, senderId: 1, createdAt: -1 });
+messageSchema.index({ receiverId: 1, status: 1 });
 messageSchema.index({ createdAt: -1 });
 
 const Message = mongoose.model('Message', messageSchema);
