@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, Star } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
+import ChatFeedbackModal from './chat/ChatFeedbackModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -34,6 +36,13 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const handleSendAttachment = (attachmentData) => {
     if (onSendMessage) {
       onSendMessage(`[Attachment: ${attachmentData.fileName || 'File'}]`, attachmentData);
+    }
+  };
+
+  const handleFeedbackSubmit = (feedbackData) => {
+    // Send feedback text over real-time chat socket stream as visible feedback
+    if (onSendMessage) {
+      onSendMessage(`⭐ Left a ${feedbackData.rating}-star review: "${feedbackData.comment}"`);
     }
   };
 
@@ -86,6 +95,17 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {conversation.role === 'Worker' && (
+            <button
+              type="button"
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="flex items-center gap-1 rounded-xl bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition cursor-pointer"
+              title="Leave Review"
+            >
+              <Star size={14} className="fill-amber-500 text-amber-500" />
+              <span>Leave Feedback</span>
+            </button>
+          )}
           <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Call">
             <Phone size={18} />
           </button>
@@ -201,6 +221,13 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         isOpen={isAttachmentModalOpen}
         onClose={() => setIsAttachmentModalOpen(false)}
         onSendAttachment={handleSendAttachment}
+      />
+
+      <ChatFeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        onSubmit={handleFeedbackSubmit}
+        workerName={conversation.participant}
       />
     </div>
   );
