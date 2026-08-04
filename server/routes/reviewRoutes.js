@@ -6,7 +6,8 @@ import {
   getReviewById,
   updateReview,
   deleteReview,
-  reportReview
+  reportReview,
+  submitChatFeedback
 } from '../controllers/reviewController.js';
 import { getWorkerReviews } from '../controllers/workerController.js';
 import { protect } from '../middleware/authMiddleware.js';
@@ -16,6 +17,7 @@ const router = express.Router();
 router.get('/', getReviews);
 router.get('/worker/:id', getWorkerReviews);
 router.post('/', protect, createReview);
+router.post('/chat-feedback', protect, submitChatFeedback);
 
 router.post('/:id/report', protect, reportReview);
 

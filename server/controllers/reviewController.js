@@ -401,3 +401,62 @@ export const reportReview = async (req, res, next) => {
     }
   }
 };
+
+// @desc    Submit feedback/review from live chat window session
+// @route   POST /api/reviews/chat-feedback
+// @access  Private
+export const submitChatFeedback = async (req, res, next) => {
+  try {
+    const { rating, reviewText, workerId } = req.body;
+
+    if (!rating || !reviewText || !workerId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide rating (1-5), review text, and workerId'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(workerId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid worker ID'
+      });
+    }
+
+    // Limit users from spamming multiple chat reviews for the same worker
+    const existing = await Review.findOne({
+      user: req.user._id,
+      worker: workerId,
+      bookingReference: { $exists: false } // identifying as chat-only feedback
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already submitted chat feedback for this service provider'
+      });
+    }
+
+    const review = await Review.create({
+      rating: Number(rating),
+      reviewText,
+      user: req.user._id,
+      worker: workerId,
+      isVerified: false,
+      moderationStatus: 'approved'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Chat feedback registered successfully',
+      review
+    });
+  } catch (error) {
+    if (next) {
+      next(error);
+    } else {
+      console.error(error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+};
