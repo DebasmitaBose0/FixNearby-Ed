@@ -5,9 +5,9 @@ import ChatSidebar from '../components/ChatSidebar';
 import { connectSocket, disconnectSocket, onPresenceUpdate } from '../services/socketService';
 
 const MOCK_CONVERSATIONS = [
-  { id: 'conv1', participant: 'John Doe', role: 'Electrician', lastMessage: 'I can come by tomorrow at 2pm', timestamp: new Date(Date.now() - 300000), unread: 2, online: true },
-  { id: 'conv2', participant: 'Jane Smith', role: 'Plumber', lastMessage: 'Thanks for the quick response!', timestamp: new Date(Date.now() - 7200000), unread: 0, online: false },
-  { id: 'conv3', participant: 'Mike Johnson', role: 'Carpenter', lastMessage: 'The materials will cost around $50', timestamp: new Date(Date.now() - 86400000), unread: 1, online: true },
+  { id: 'conv1', participant: 'John Doe', role: 'Electrician', lastMessage: 'I can come by tomorrow at 2pm', timestamp: new Date(Date.now() - 300000), unread: 2, online: true, isVerified: true },
+  { id: 'conv2', participant: 'Jane Smith', role: 'Plumber', lastMessage: 'Thanks for the quick response!', timestamp: new Date(Date.now() - 7200000), unread: 0, online: false, isVerified: false },
+  { id: 'conv3', participant: 'Mike Johnson', role: 'Carpenter', lastMessage: 'The materials will cost around $50', timestamp: new Date(Date.now() - 86400000), unread: 1, online: true, isVerified: true },
 ];
 
 const MOCK_MESSAGES = {

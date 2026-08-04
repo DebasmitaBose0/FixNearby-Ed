@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, MessageSquare, Wifi, WifiOff } from 'lucide-react';
+import { Search, MessageSquare, Wifi, WifiOff, BadgeCheck } from 'lucide-react';
 
 const ChatSidebar = ({ conversations, activeConversation, onSelectConversation, connected }) => {
   const [search, setSearch] = useState('');
@@ -83,9 +83,14 @@ const ChatSidebar = ({ conversations, activeConversation, onSelectConversation, 
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-900 truncate">
-                  {conv.participant}
-                </span>
+                <div className="flex items-center">
+                  <span className="text-sm font-semibold text-slate-900 truncate">
+                    {conv.participant}
+                  </span>
+                  {conv.isVerified && (
+                    <BadgeCheck className="ml-1 h-4 w-4 shrink-0 text-cyan-500" />
+                  )}
+                </div>
                 <span className="shrink-0 text-[10px] text-slate-400">
                   {formatRelativeTime(conv.timestamp)}
                 </span>
