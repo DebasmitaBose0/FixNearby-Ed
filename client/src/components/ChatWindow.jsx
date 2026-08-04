@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, Star } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
+import ChatWorkerFeedbackCard from './chat/ChatWorkerFeedbackCard';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [showReputationCard, setShowReputationCard] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -76,8 +78,28 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
             )}
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative">
               <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              {conversation.role === 'Worker' && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowReputationCard((prev) => !prev)}
+                    className="flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200 cursor-pointer"
+                  >
+                    <Star size={10} className="fill-amber-500 text-amber-500" />
+                    <span>4.8 (12)</span>
+                  </button>
+                  {showReputationCard && (
+                    <ChatWorkerFeedbackCard
+                      rating={4.8}
+                      reviewCount={12}
+                      karmaScore={95}
+                      category={conversation.serviceCategory}
+                    />
+                  )}
+                </div>
+              )}
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
                 {conversation.serviceCategory || 'AC Repair Service'}
               </span>
