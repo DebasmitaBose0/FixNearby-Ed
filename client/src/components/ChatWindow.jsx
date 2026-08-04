@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, BadgeCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, BadgeCheck, ShieldCheck, MapPin, Search, X } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [showVerifiedTooltip, setShowVerifiedTooltip] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -37,6 +41,22 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
     }
   };
 
+  const handleShareLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const locText = `📍 Shared Location: https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+          onSendMessage(locText);
+        },
+        () => {
+          onSendMessage('📍 Shared Location: Local Service Area');
+        }
+      );
+    } else {
+      onSendMessage('📍 Shared Location: Local Service Area');
+    }
+  };
+
   if (!conversation) {
     return (
       <div className="flex flex-1 items-center justify-center bg-slate-50">
@@ -63,9 +83,14 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
     return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  const filteredMessages = searchQuery
+    ? messages.filter((m) => m.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3">
+    <div className="flex flex-1 flex-col relative">
+      {/* Active Conversation Header */}
+      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3 bg-white z-10">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
@@ -76,11 +101,44 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
             )}
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative">
               <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
+              
+              {/* Verified Badge Checkmark with Interactive Security Card Popover */}
               {conversation.isVerified && (
-                <BadgeCheck className="h-4 w-4 shrink-0 text-cyan-500" title="Verified Worker" />
+                <div className="relative flex items-center">
+                  <button
+                    type="button"
+                    onMouseEnter={() => setShowVerifiedTooltip(true)}
+                    onMouseLeave={() => setShowVerifiedTooltip(false)}
+                    onClick={() => setShowVerifiedTooltip((prev) => !prev)}
+                    className="focus:outline-none flex items-center"
+                  >
+                    <BadgeCheck className="h-4 w-4 shrink-0 text-cyan-500 hover:text-cyan-600 transition cursor-pointer" />
+                  </button>
+
+                  {/* Verified Details Popover Card */}
+                  {showVerifiedTooltip && (
+                    <div className="absolute top-6 left-0 z-30 w-64 rounded-xl border border-cyan-100 bg-white p-3.5 shadow-xl transition-all animate-in fade-in zoom-in-95 duration-150">
+                      <div className="flex items-start gap-2.5">
+                        <ShieldCheck className="h-5 w-5 text-cyan-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-slate-900">Verified Service Professional</p>
+                          <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+                            Identity document and background check verified by FixNearby Accreditation Trust Team.
+                          </p>
+                          <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">
+                            <span>✓ Identity Verified</span>
+                            <span>•</span>
+                            <span>✓ License Approved</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
+
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
                 {conversation.serviceCategory || 'AC Repair Service'}
               </span>
@@ -88,36 +146,85 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
             <p className="text-xs text-slate-500">{conversation.role}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Call">
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-1">
+          {showSearch ? (
+            <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2 py-1">
+              <Search size={14} className="text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search chat..."
+                className="w-32 bg-transparent text-xs outline-none text-slate-700"
+                autoFocus
+              />
+              <button onClick={() => { setSearchQuery(''); setShowSearch(false); }} className="text-slate-400 hover:text-slate-600">
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowSearch(true)}
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              title="Search in conversation"
+            >
+              <Search size={18} />
+            </button>
+          )}
+
+          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition" title="Call Provider">
             <Phone size={18} />
           </button>
-          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Video call">
+          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition" title="Video Call">
             <Video size={18} />
           </button>
-          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="More">
-            <MoreVertical size={18} />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowMenu((prev) => !prev)}
+              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              title="More options"
+            >
+              <MoreVertical size={18} />
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-10 z-20 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-lg text-xs">
+                <button
+                  type="button"
+                  onClick={() => { handleShareLocation(); setShowMenu(false); }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50"
+                >
+                  <MapPin size={14} className="text-blue-500" /> Share Location
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        {messages.length === 0 && (
+      {/* Messages Stream */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50/30">
+        {filteredMessages.length === 0 && (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-slate-400">No messages yet. Start a conversation!</p>
+            <p className="text-sm text-slate-400">
+              {searchQuery ? `No messages found matching "${searchQuery}"` : 'No messages yet. Start a conversation!'}
+            </p>
           </div>
         )}
         <div className="space-y-3">
-          {messages.map((msg) => (
+          {filteredMessages.map((msg) => (
             <div
               key={msg.id || msg._id}
               className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${
                   msg.isOwn
                     ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-800'
+                    : 'bg-white text-slate-800 border border-slate-200/80'
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
@@ -145,7 +252,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
 
           {isTyping && (
             <div className="flex justify-start">
-              <div className="rounded-2xl bg-slate-100 px-4 py-2 text-xs text-slate-500 italic animate-pulse">
+              <div className="rounded-2xl bg-white border border-slate-200 px-4 py-2 text-xs text-slate-500 italic animate-pulse shadow-sm">
                 {conversation.participant} is typing...
               </div>
             </div>
@@ -155,15 +262,27 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         </div>
       </div>
 
+      {/* Quick Action Pills */}
       <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-2">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-          <span className="text-slate-400 font-medium shrink-0">Quick Replies:</span>
-          {['Hi, are you available for AC Repair today?', 'Can you share price estimate?', 'I have shared my location.', 'Please call me when you reach.'].map((chip, idx) => (
+          <span className="text-slate-400 font-medium shrink-0">Quick Actions:</span>
+          {[
+            'Hi, are you available for AC Repair today?',
+            'Can you share price estimate?',
+            '📍 Share Location',
+            'Please call me when you reach.'
+          ].map((chip, idx) => (
             <button
               key={idx}
               type="button"
-              onClick={() => onSendMessage(chip)}
-              className="shrink-0 rounded-full bg-white border border-slate-200 px-3 py-1 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition"
+              onClick={() => {
+                if (chip === '📍 Share Location') {
+                  handleShareLocation();
+                } else {
+                  onSendMessage(chip);
+                }
+              }}
+              className="shrink-0 rounded-full bg-white border border-slate-200 px-3 py-1 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition shadow-xs"
             >
               {chip}
             </button>
@@ -171,12 +290,13 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-slate-200 px-6 py-3">
+      {/* Message Input Box */}
+      <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white px-6 py-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsAttachmentModalOpen(true)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
             title="Attach file"
           >
             <Paperclip size={18} />
@@ -193,7 +313,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           <button
             type="submit"
             disabled={!input.trim()}
-            className="rounded-xl bg-blue-600 p-2.5 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-xl bg-blue-600 p-2.5 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             <Send size={18} />
           </button>
@@ -210,3 +330,4 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
 };
 
 export default ChatWindow;
+
