@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck, Download, Maximize2, X, UploadCloud } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const [modalFileType, setModalFileType] = useState('all');
+  const [activeLightboxImage, setActiveLightboxImage] = useState(null);
+  const [isDragOverWindow, setIsDragOverWindow] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -16,6 +18,28 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   useEffect(() => {
     inputRef.current?.focus();
   }, [conversation?.id]);
+
+  const handleWindowDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(true);
+  };
+
+  const handleWindowDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(false);
+  };
+
+  const handleWindowDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setModalFileType('image');
+      setIsAttachmentModalOpen(true);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -65,7 +89,21 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div
+      onDragOver={handleWindowDragOver}
+      onDragLeave={handleWindowDragLeave}
+      onDrop={handleWindowDrop}
+      className="relative flex flex-1 flex-col"
+    >
+      {/* Drag & Drop Visual Overlay Zone */}
+      {isDragOverWindow && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-blue-600/90 text-white backdrop-blur-xs border-4 border-dashed border-white rounded-xl transition-all animate-in fade-in duration-200">
+          <UploadCloud className="w-16 h-16 mb-2 animate-bounce" />
+          <h3 className="text-xl font-bold">Drop Image to Upload</h3>
+          <p className="text-sm opacity-90">Release file anywhere in the chat window</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -106,40 +144,70 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           </div>
         )}
         <div className="space-y-3">
-          {messages.map((msg) => (
-            <div
-              key={msg.id || msg._id}
-              className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
-            >
+          {messages.map((msg) => {
+            const hasImageAttachment =
+              msg.attachment &&
+              (msg.attachment.fileType?.startsWith('image/') ||
+                /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.attachment.fileUrl || msg.attachment.fileName || ''));
+
+            return (
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
-                  msg.isOwn
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-800'
-                }`}
+                key={msg.id || msg._id}
+                className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
                 <div
-                  className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
-                    msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                  className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                    msg.isOwn
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-800'
                   }`}
                 >
-                  <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
-                  {msg.isOwn && (
-                    <span>
-                      {msg.status === 'read' ? (
-                        <CheckCheck size={12} className="text-emerald-300" />
-                      ) : msg.status === 'delivered' ? (
-                        <CheckCheck size={12} className="text-blue-200" />
-                      ) : (
-                        <Check size={12} className="text-blue-200" />
-                      )}
-                    </span>
+                  {/* Image Attachment Rendering */}
+                  {hasImageAttachment && (
+                    <div className="mb-2 relative group overflow-hidden rounded-xl border border-black/10">
+                      <img
+                        src={msg.attachment.fileUrl}
+                        alt={msg.attachment.fileName || 'Chat attachment'}
+                        className="max-h-60 w-full object-cover rounded-xl cursor-pointer hover:scale-102 transition duration-200"
+                        onClick={() => setActiveLightboxImage(msg.attachment)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setActiveLightboxImage(msg.attachment)}
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition backdrop-blur-xs"
+                        title="View Fullscreen"
+                      >
+                        <Maximize2 size={14} />
+                      </button>
+                    </div>
                   )}
+
+                  {msg.text && (
+                    <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+                  )}
+
+                  <div
+                    className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                      msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                    }`}
+                  >
+                    <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
+                    {msg.isOwn && (
+                      <span>
+                        {msg.status === 'read' ? (
+                          <CheckCheck size={12} className="text-emerald-300" />
+                        ) : msg.status === 'delivered' ? (
+                          <CheckCheck size={12} className="text-blue-200" />
+                        ) : (
+                          <Check size={12} className="text-blue-200" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {isTyping && (
             <div className="flex justify-start">
@@ -212,6 +280,41 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         onSendAttachment={handleSendAttachment}
         initialFileType={modalFileType}
       />
+
+      {/* Lightbox Fullscreen Modal */}
+      {activeLightboxImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center">
+            <button
+              onClick={() => setActiveLightboxImage(null)}
+              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition"
+              title="Close image view"
+            >
+              <X size={20} />
+            </button>
+            <img
+              src={activeLightboxImage.fileUrl}
+              alt={activeLightboxImage.fileName || 'Full image'}
+              className="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl border border-white/10"
+            />
+            <div className="mt-4 flex items-center gap-4 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800 text-xs text-white">
+              <span className="font-semibold">{activeLightboxImage.fileName || 'Image Attachment'}</span>
+              {activeLightboxImage.fileSize && (
+                <span className="text-slate-400">({(activeLightboxImage.fileSize / 1024).toFixed(1)} KB)</span>
+              )}
+              <a
+                href={activeLightboxImage.fileUrl}
+                download={activeLightboxImage.fileName || 'attachment'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold"
+              >
+                <Download size={14} /> Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
