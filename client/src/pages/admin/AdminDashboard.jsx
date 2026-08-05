@@ -270,6 +270,10 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-blue-600" />
               Platform Growth Analytics (30 Days)
             </h2>
@@ -436,9 +440,8 @@ const AdminDashboard = () => {
               </span>
             </Link>
           </div>
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

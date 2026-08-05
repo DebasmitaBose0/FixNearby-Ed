@@ -964,6 +964,9 @@ const Bookings = () => {
                   </div>
                 </div>
               )}
+            </div>
+          ))}
+
           {/* Pagination Controls Bar */}
           {totalPages > 1 && (
             <div className="mt-8 flex items-center justify-between border-t border-slate-200 pt-6">
