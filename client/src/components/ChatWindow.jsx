@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck, UploadCloud } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [isDragOverWindow, setIsDragOverWindow] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -15,6 +16,27 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   useEffect(() => {
     inputRef.current?.focus();
   }, [conversation?.id]);
+
+  const handleWindowDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(true);
+  };
+
+  const handleWindowDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(false);
+  };
+
+  const handleWindowDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOverWindow(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setIsAttachmentModalOpen(true);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,7 +86,20 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div
+      onDragOver={handleWindowDragOver}
+      onDragLeave={handleWindowDragLeave}
+      onDrop={handleWindowDrop}
+      className="relative flex flex-1 flex-col"
+    >
+      {/* Drag & Drop Visual Overlay Zone */}
+      {isDragOverWindow && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-blue-600/90 text-white backdrop-blur-xs border-4 border-dashed border-white rounded-xl transition-all animate-in fade-in duration-200">
+          <UploadCloud className="w-16 h-16 mb-2 animate-bounce" />
+          <h3 className="text-xl font-bold">Drop Image to Upload</h3>
+          <p className="text-sm opacity-90">Release file anywhere in the chat window</p>
+        </div>
+      )}
       <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3">
         <div className="flex items-center gap-3">
           <div className="relative">
