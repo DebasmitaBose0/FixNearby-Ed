@@ -72,6 +72,9 @@ import badgeRoutes from './routes/badgeRoutes.js';
 import geofenceRoutes from './routes/geofenceRoutes.js';
 import estimatorRoutes from './routes/estimatorRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
+import pricingRoutes from './routes/pricingRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
 import serviceRequestRoutes from './routes/serviceRequestRoutes.js';
 import skillCertificationRoutes from './routes/skillCertificationRoutes.js';
 
@@ -208,6 +211,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/rewards', rewardsRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/pricing', pricingRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/service-requests', serviceRequestRoutes);
 app.use('/api/workers/skills-certifications', skillCertificationRoutes);
 

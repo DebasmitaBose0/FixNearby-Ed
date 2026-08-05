@@ -85,18 +85,18 @@ export const handleTyping = (io, socket, userId) => (data) => {
   }
 };
 
-export const handleMessageRead = (io, socket, userId) => async (data) => {
-  try {
-    const { partnerId } = data;
-    if (!partnerId) return;
+export const handleJoinConversation = (io, socket) => (data) => {
+  const { conversationId } = data || {};
+  if (conversationId) {
+    socket.join(`conv_${conversationId}`);
+    socket.emit('joined_conversation', { conversationId });
+  }
+};
 
-    await Message.updateMany(
-      { senderId: partnerId, receiverId: userId, status: { $ne: 'read' } },
-      { $set: { status: 'read', readAt: new Date() } }
-    );
-
-    io.to(partnerId).emit('message_read', { readerId: userId, partnerId });
-  } catch (err) {
-    console.error('Error handling message read event:', err);
+export const handleLeaveConversation = (io, socket) => (data) => {
+  const { conversationId } = data || {};
+  if (conversationId) {
+    socket.leave(`conv_${conversationId}`);
+    socket.emit('left_conversation', { conversationId });
   }
 };
