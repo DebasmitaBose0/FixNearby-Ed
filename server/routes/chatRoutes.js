@@ -10,7 +10,10 @@ router.get('/conversations', protect, getConversations);
 // Get paginated chat history between current user and partnerId
 router.get('/history/:partnerId', protect, getChatHistory);
 
-// Mark incoming unread messages as read
-router.patch('/read/:partnerId', protect, markMessagesAsRead);
+// Get total and per-sender unread message counts
+router.get('/unread-count', protect, getUnreadCount);
+
+// Mark all unread messages from a specific partner as read
+router.patch('/read/:partnerId', protect, markAsRead);
 
 export default router;
