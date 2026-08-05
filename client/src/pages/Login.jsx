@@ -31,9 +31,12 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const validateEmail = (email) => (!email ? "Email is required" : /\S+@\S+\.\S+/.test(email) ? "" : "Invalid email address");
+  const validatePassword = (pass) => (!pass ? "Password is required" : pass.length >= 6 ? "" : "Password must be at least 6 characters");
+
   const validateFields = (name, value) => {
-    if (name === "email") return validateEmail(value) || (value.trim() ? "" : "Email is required");
-    if (name === "password") return validatePassword(value) || (value.trim() ? "" : "Password is required");
+    if (name === "email") return validateEmail(value);
+    if (name === "password") return validatePassword(value);
     return "";
   };
   // ---------------- HANDLE CHANGE ----------------
