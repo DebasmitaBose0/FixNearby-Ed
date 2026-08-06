@@ -79,8 +79,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
 
   return (
     <div className="flex flex-1 flex-col relative">
-      {/* Active Conversation Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3 bg-white z-10">
+      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-3">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">
@@ -90,8 +89,8 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
               <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2 relative">
+          <div className="relative">
+            <div className="flex items-center gap-2">
               <h3 className="text-sm font-semibold text-slate-900">{conversation.participant}</h3>
               
               {/* Verified Badge Checkmark with Interactive Security Card Popover */}
@@ -132,22 +131,70 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
               <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-200">
                 {conversation.serviceCategory || 'AC Repair Service'}
               </span>
+              <button
+                type="button"
+                id="rating-pill-button"
+                onClick={() => setIsReputationCardOpen(!isReputationCardOpen)}
+                className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200 hover:bg-amber-100 transition cursor-pointer"
+              >
+                <span>⭐</span>
+                <span>4.8 (12)</span>
+              </button>
             </div>
             <p className="text-xs text-slate-500">{conversation.role}</p>
+
+            {isReputationCardOpen && (
+              <div id="reputation-card-popover" className="absolute left-0 top-12 z-50 w-72 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <h4 className="text-xs font-bold text-slate-900">Worker Reputation</h4>
+                  <button
+                    onClick={() => setIsReputationCardOpen(false)}
+                    className="text-slate-400 hover:text-slate-600 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="text-2xl font-black text-amber-500">4.8</div>
+                  <div>
+                    <div className="flex text-amber-400 text-xs">★★★★★</div>
+                    <div className="text-[10px] text-slate-500">Based on 12 reviews</div>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Completion Rate</span>
+                    <span className="font-semibold text-slate-800">98%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '98%' }}></div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Responsiveness</span>
+                    <span className="font-semibold text-slate-800">Replies in 20 min</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Reliability Score</span>
+                    <span className="font-semibold text-blue-600">96 / 100</span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2 border-t border-slate-100 flex gap-1 flex-wrap">
+                  <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-medium text-blue-600">Top Pro</span>
+                  <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium text-emerald-600">Verified Identity</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {conversation.role === 'Worker' && (
-            <button
-              type="button"
-              onClick={() => setIsFeedbackModalOpen(true)}
-              className="flex items-center gap-1 rounded-xl bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition cursor-pointer"
-              title="Leave Review"
-            >
-              <Star size={14} className="fill-amber-500 text-amber-500" />
-              <span>Leave Feedback</span>
-            </button>
-          )}
+          <button
+            type="button"
+            id="leave-feedback-button"
+            onClick={() => setIsFeedbackModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 text-xs font-semibold transition shadow-sm"
+          >
+            Leave Feedback
+          </button>
           <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Call">
             <Phone size={18} />
           </button>
@@ -298,11 +345,19 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsAttachmentModalOpen(true)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            onClick={() => { setModalFileType('all'); setIsAttachmentModalOpen(true); }}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             title="Attach file"
           >
             <Paperclip size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => { setModalFileType('image'); setIsAttachmentModalOpen(true); }}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-indigo-600"
+            title="Send image"
+          >
+            <ImageIcon size={18} />
           </button>
           <input
             ref={inputRef}
@@ -327,6 +382,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         isOpen={isAttachmentModalOpen}
         onClose={() => setIsAttachmentModalOpen(false)}
         onSendAttachment={handleSendAttachment}
+        initialFileType={modalFileType}
       />
 
       {/* Lightbox Fullscreen Modal */}

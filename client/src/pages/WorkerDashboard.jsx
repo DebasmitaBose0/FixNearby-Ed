@@ -94,7 +94,7 @@ const WorkerDashboard = () => {
     }
   };
 
-  const toggleAvailability = () => {
+  const toggleAvailability = async () => {
     const newStatus = !isAvailable;
 
     try {
