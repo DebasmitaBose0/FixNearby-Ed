@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Check, CheckCheck, Star } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 import ChatFeedbackModal from './chat/ChatFeedbackModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
-  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
-  const [isReputationCardOpen, setIsReputationCardOpen] = useState(false);
-  const [feedbackRating, setFeedbackRating] = useState(5);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [feedbackComment, setFeedbackComment] = useState('');
+  const [modalFileType, setModalFileType] = useState('all');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -318,11 +314,19 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsAttachmentModalOpen(true)}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+            onClick={() => { setModalFileType('all'); setIsAttachmentModalOpen(true); }}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
             title="Attach file"
           >
             <Paperclip size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => { setModalFileType('image'); setIsAttachmentModalOpen(true); }}
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-indigo-600"
+            title="Send image"
+          >
+            <ImageIcon size={18} />
           </button>
           <input
             ref={inputRef}
@@ -347,6 +351,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         isOpen={isAttachmentModalOpen}
         onClose={() => setIsAttachmentModalOpen(false)}
         onSendAttachment={handleSendAttachment}
+        initialFileType={modalFileType}
       />
 
       {isFeedbackModalOpen && (
