@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck, Download, Maximize2, X, ExternalLink } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
+import ChatFeedbackModal from './chat/ChatFeedbackModal';
 
 const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
@@ -39,19 +40,10 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
     }
   };
 
-  const handleShareLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const locText = `📍 Shared Location: https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
-          onSendMessage(locText);
-        },
-        () => {
-          onSendMessage('📍 Shared Location: Local Service Area');
-        }
-      );
-    } else {
-      onSendMessage('📍 Shared Location: Local Service Area');
+  const handleFeedbackSubmit = (feedbackData) => {
+    // Send feedback text over real-time chat socket stream as visible feedback
+    if (onSendMessage) {
+      onSendMessage(`⭐ Left a ${feedbackData.rating}-star review: "${feedbackData.comment}"`);
     }
   };
 
@@ -144,36 +136,19 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
             <p className="text-xs text-slate-500">{conversation.role}</p>
           </div>
         </div>
-
-        {/* Action Controls */}
-        <div className="flex items-center gap-1">
-          {showSearch ? (
-            <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2 py-1">
-              <Search size={14} className="text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search chat..."
-                className="w-32 bg-transparent text-xs outline-none text-slate-700"
-                autoFocus
-              />
-              <button onClick={() => { setSearchQuery(''); setShowSearch(false); }} className="text-slate-400 hover:text-slate-600">
-                <X size={14} />
-              </button>
-            </div>
-          ) : (
+        <div className="flex items-center gap-2">
+          {conversation.role === 'Worker' && (
             <button
               type="button"
-              onClick={() => setShowSearch(true)}
-              className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
-              title="Search in conversation"
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="flex items-center gap-1 rounded-xl bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition cursor-pointer"
+              title="Leave Review"
             >
-              <Search size={18} />
+              <Star size={14} className="fill-amber-500 text-amber-500" />
+              <span>Leave Feedback</span>
             </button>
           )}
-
-          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition" title="Call Provider">
+          <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600" title="Call">
             <Phone size={18} />
           </button>
           <button type="button" className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition" title="Video Call">
