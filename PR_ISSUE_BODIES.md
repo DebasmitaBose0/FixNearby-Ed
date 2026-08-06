@@ -596,3 +596,49 @@ wsl redis-server
 3. `cd client && npm run dev` — frontend renders without crash overlay
 4. Start Redis via Docker/Memurai, restart backend — verify `[Worker] Notification background worker listening...` shows Redis is connected
 5. Start MongoDB, restart backend — verify `[BullMQ Expiry Worker]: Registered BullMQ consumer.` shows worker is active
+
+---
+
+## Issue #12 — Worker Trust Rating & Aggregated Feedback Metrics Engine
+
+**Title:** feat(reviews): implement worker trust rating system with karma score and aggregated feedback metrics
+
+**Description:**
+Build a system that allows users to leave reviews and ratings for workers after booking completion, and automatically calculates dynamic worker metrics (e.g. completion rate, average rating, a weighted karma score, and interactive chat-integrated review tools).
+
+**Requirements:**
+- Create a Review mongoose schema representing user feedback for completed bookings (rating 1-5, review text, booking reference).
+- Restrict review submission only to users who have completed bookings with that specific worker.
+- Use mongoose post-save hooks to automatically recalculate and update a worker's overall rating (averageRating, reviewCount) inside the Worker document.
+- Design a background algorithm that updates a worker's 'Karma/Reliability Score' weekly based on: completion rate (completed vs cancelled bookings), responsiveness, and average ratings.
+- Integrate Chat Review Modal into the active chat window to allow feedback submission directly inside the chat flow.
+- Add Reputation Card popover on the rating pill within the chat header showing the worker's key performance metrics.
+
+**Acceptance Criteria:**
+- Submitting a review for a non-completed booking returns 400.
+- Duplicate review submissions for the same booking return 400.
+- averageRating on Worker document updates automatically inside the same request cycle after a review is created.
+- karmaScore updates weekly via automated background worker.
+- Chat Review Modal opens properly and allows submitting a 5-star rating and description text.
+- Clicking the rating pill inside the chat header opens the Reputation Card dropdown popover correctly.
+
+---
+
+## PR #12 — feat(reviews): implement worker trust rating system with karma score and aggregated feedback metrics
+
+Closes #12
+
+### Changes
+
+- **client/src/components/ChatWindow.jsx** (MODIFIED, +120 lines): Integrated "Leave Feedback" button, interactive Chat Review Modal overlays, rating pill buttons, and dynamic Reputation Card popover panel.
+- **server/models/Review.js** (NEW, +95 lines): Mongoose schema with all rating fields, `calculateAverageRating` static method, and post-save recalculation hook.
+- **server/controllers/reviewController.js** (NEW, +404 lines): Completed reviews handlers including Completed booking status gates, user-ownership checks, duplicate checks, AI toxicity filtering, and public query scopes.
+- **server/routes/reviewRoutes.js** (NEW, +28 lines): Review API endpoints exposing CRUD review actions, booking review creation helper, and report action routes.
+- **server/workers/karmaWorker.js** (NEW, +80 lines): Weekly background interval worker that aggregates worker bookings, computes karma score, and sets reliability tiers.
+
+### Testing
+1. Navigate to `/chat` and click "Leave Feedback" in the header -> verify feedback modal opens.
+2. Submit a review -> verify response status is successful and the worker's average rating updates in the database.
+3. Click on the rating pill next to the worker's name -> verify the Reputation Card popover displays with verified metrics.
+4. Try to submit a duplicate review for the same booking reference ID -> verify it is blocked.
+
