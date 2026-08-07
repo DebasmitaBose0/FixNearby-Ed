@@ -44,6 +44,11 @@ const serviceWarrantyClaimSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  claimCategory: {
+    type: String,
+    enum: ['Workmanship Defect', 'Part Failure', 'Recurring Leak', 'Electrical Short', 'Other'],
+    default: 'Workmanship Defect'
+  }
 }, {
   timestamps: true,
 });
