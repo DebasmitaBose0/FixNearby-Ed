@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck } from 'lucide-react';
+import { Send, Phone, Video, MoreVertical, Paperclip, Image as ImageIcon, Check, CheckCheck, Download, Maximize2, X, ExternalLink } from 'lucide-react';
 import ChatAttachmentModal from './chat/ChatAttachmentModal';
 import ChatFeedbackModal from './chat/ChatFeedbackModal';
 
@@ -7,6 +7,7 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
   const [input, setInput] = useState('');
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const [modalFileType, setModalFileType] = useState('all');
+  const [activeLightboxImage, setActiveLightboxImage] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -234,40 +235,70 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
           </div>
         )}
         <div className="space-y-3">
-          {filteredMessages.map((msg) => (
-            <div
-              key={msg.id || msg._id}
-              className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
-            >
+          {messages.map((msg) => {
+            const hasImageAttachment =
+              msg.attachment &&
+              (msg.attachment.fileType?.startsWith('image/') ||
+                /\.(jpg|jpeg|png|gif|webp)$/i.test(msg.attachment.fileUrl || msg.attachment.fileName || ''));
+
+            return (
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                  msg.isOwn
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-slate-800 border border-slate-200/80'
-                }`}
+                key={msg.id || msg._id}
+                className={`flex ${msg.isOwn ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
                 <div
-                  className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
-                    msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                  className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                    msg.isOwn
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-100 text-slate-800'
                   }`}
                 >
-                  <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
-                  {msg.isOwn && (
-                    <span>
-                      {msg.status === 'read' ? (
-                        <CheckCheck size={12} className="text-emerald-300" />
-                      ) : msg.status === 'delivered' ? (
-                        <CheckCheck size={12} className="text-blue-200" />
-                      ) : (
-                        <Check size={12} className="text-blue-200" />
-                      )}
-                    </span>
+                  {/* Image Attachment Rendering */}
+                  {hasImageAttachment && (
+                    <div className="mb-2 relative group overflow-hidden rounded-xl border border-black/10">
+                      <img
+                        src={msg.attachment.fileUrl}
+                        alt={msg.attachment.fileName || 'Chat attachment'}
+                        className="max-h-60 w-full object-cover rounded-xl cursor-pointer hover:scale-102 transition duration-200"
+                        onClick={() => setActiveLightboxImage(msg.attachment)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setActiveLightboxImage(msg.attachment)}
+                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-lg opacity-0 group-hover:opacity-100 transition backdrop-blur-xs"
+                        title="View Fullscreen"
+                      >
+                        <Maximize2 size={14} />
+                      </button>
+                    </div>
                   )}
+
+                  {msg.text && (
+                    <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+                  )}
+
+                  <div
+                    className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                      msg.isOwn ? 'text-blue-200' : 'text-slate-400'
+                    }`}
+                  >
+                    <span>{formatTime(msg.timestamp || msg.createdAt)}</span>
+                    {msg.isOwn && (
+                      <span>
+                        {msg.status === 'read' ? (
+                          <CheckCheck size={12} className="text-emerald-300" />
+                        ) : msg.status === 'delivered' ? (
+                          <CheckCheck size={12} className="text-blue-200" />
+                        ) : (
+                          <Check size={12} className="text-blue-200" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {isTyping && (
             <div className="flex justify-start">
@@ -354,81 +385,36 @@ const ChatWindow = ({ conversation, messages, onSendMessage, isTyping }) => {
         initialFileType={modalFileType}
       />
 
-      {isFeedbackModalOpen && (
-        <div id="feedback-modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div id="feedback-modal-content" className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-2xl transition-all animate-in zoom-in-95 duration-200 text-left">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="text-lg font-bold text-slate-900">Leave Feedback</h3>
-              <button
-                onClick={() => setIsFeedbackModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+      {/* Lightbox Fullscreen Modal */}
+      {activeLightboxImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center">
+            <button
+              onClick={() => setActiveLightboxImage(null)}
+              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition"
+              title="Close image view"
+            >
+              <X size={20} />
+            </button>
+            <img
+              src={activeLightboxImage.fileUrl}
+              alt={activeLightboxImage.fileName || 'Full image'}
+              className="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl border border-white/10"
+            />
+            <div className="mt-4 flex items-center gap-4 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800 text-xs text-white">
+              <span className="font-semibold">{activeLightboxImage.fileName || 'Image Attachment'}</span>
+              {activeLightboxImage.fileSize && (
+                <span className="text-slate-400">({(activeLightboxImage.fileSize / 1024).toFixed(1)} KB)</span>
+              )}
+              <a
+                href={activeLightboxImage.fileUrl}
+                download={activeLightboxImage.fileName || 'attachment'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold"
               >
-                ✕
-              </button>
-            </div>
-            
-            <div className="mb-4 text-center">
-              <p className="text-sm text-slate-600">
-                How was your service with <span className="font-semibold text-slate-900">{conversation.participant}</span>?
-              </p>
-            </div>
-
-            <div className="flex justify-center gap-2 mb-6">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setFeedbackRating(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className="p-1 focus:outline-none transition-transform active:scale-95"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill={star <= (hoverRating || feedbackRating) ? "#fbbf24" : "none"}
-                    stroke={star <= (hoverRating || feedbackRating) ? "#fbbf24" : "#cbd5e1"}
-                    strokeWidth={2}
-                    className="h-9 w-9 transition"
-                  >
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </button>
-              ))}
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Comments
-              </label>
-              <textarea
-                value={feedbackComment}
-                onChange={(e) => setFeedbackComment(e.target.value)}
-                placeholder="Share your experience working with this professional..."
-                rows={4}
-                className="w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setIsFeedbackModalOpen(false)}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  alert(`Thank you for submitting a ${feedbackRating}-star review: "${feedbackComment}"`);
-                  setIsFeedbackModalOpen(false);
-                  setFeedbackComment("");
-                  setFeedbackRating(5);
-                }}
-                className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition"
-              >
-                Submit Feedback
-              </button>
+                <Download size={14} /> Download
+              </a>
             </div>
           </div>
         </div>
