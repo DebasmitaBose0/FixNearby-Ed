@@ -100,3 +100,20 @@ export const handleLeaveConversation = (io, socket) => (data) => {
     socket.emit('left_conversation', { conversationId });
   }
 };
+
+export const handleMessageRead = (io, socket, userId) => async (data) => {
+  try {
+    const { partnerId } = data;
+    if (!partnerId) return;
+
+    await Message.updateMany(
+      { senderId: partnerId, receiverId: userId, status: { $ne: 'read' } },
+      { $set: { status: 'read', readAt: new Date() } }
+    );
+
+    io.to(partnerId).emit('message_read', { readerId: userId, partnerId });
+    io.to(userId).emit('message_read', { readerId: userId, partnerId });
+  } catch (err) {
+    console.error('Error handling message read event:', err);
+  }
+};
