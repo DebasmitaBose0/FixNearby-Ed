@@ -42,11 +42,11 @@ export const submitBadgeRequest = async (req, res) => {
 export const reviewBadgeRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { status } = req.body;
+    const { status, reviewNotes } = req.body;
 
     const request = await BadgeRequest.findByIdAndUpdate(
       requestId,
-      { status, reviewedBy: req.user.id },
+      { status, reviewNotes, reviewedBy: req.user.id },
       { new: true }
     );
 

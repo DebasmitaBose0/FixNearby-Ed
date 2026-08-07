@@ -48,3 +48,19 @@ export const getParts = async (req, res) => {
     });
   }
 };
+
+export const deletePartsInvoice = async (req, res) => {
+  try {
+    const inventory = await PartsBillingService.deletePartsInvoice(req.params.bookingId);
+    return res.status(200).json({
+      success: true,
+      message: 'Parts invoice removed',
+      data: inventory
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
