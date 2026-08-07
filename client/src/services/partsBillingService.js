@@ -16,3 +16,8 @@ export const fetchPartsForBooking = async (bookingId) => {
   const response = await axios.get(`${API_BASE}/booking/${bookingId}`);
   return response.data;
 };
+
+export const removePartsInvoice = async (bookingId) => {
+  const response = await axios.delete(`${API_BASE}/booking/${bookingId}`);
+  return response.data;
+};

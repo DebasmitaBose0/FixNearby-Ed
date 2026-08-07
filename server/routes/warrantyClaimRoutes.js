@@ -7,5 +7,6 @@ const router = express.Router();
 router.post('/file', validateWarrantyClaimPayload, warrantyController.submitClaim);
 router.patch('/:claimId/resolve', warrantyController.resolveClaim);
 router.get('/customer/:customerId', warrantyController.getCustomerClaims);
+router.get('/:claimId', warrantyController.getClaimById);
 
 export default router;

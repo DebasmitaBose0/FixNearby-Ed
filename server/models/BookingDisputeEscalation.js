@@ -77,6 +77,15 @@ const bookingDisputeEscalationSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  priority: {
+    type: String,
+    enum: ['Low', 'Normal', 'High', 'Urgent'],
+    default: 'Normal'
+  },
+  arbitrationDeadline: {
+    type: Date,
+    default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  }
 }, {
   timestamps: true,
 });

@@ -12,7 +12,9 @@ import {
   forgotWorkerPassword,
   resetWorkerPassword,
   logoutUser,
-  updateNotificationPreferences
+  updateNotificationPreferences,
+  updateUserPresenceStatus,
+  getUserActiveStatus
 } from '../controllers/authController.js';
 import {
   registerWorker,
@@ -143,5 +145,9 @@ router.post('/2fa/disable', protectAny, disableTwoFactor);
 router.post('/2fa/challenge', twoFactorChallengeLimiter, challengeTwoFactorLogin);
 router.post('/2fa/verify-login', twoFactorChallengeLimiter, challengeTwoFactorLogin);
 router.get('/2fa/status', protectAny, getTwoFactorStatus);
+
+/* PRESENCE & ACTIVE STATUS ROUTES */
+router.patch('/presence/status', protectAny, updateUserPresenceStatus);
+router.get('/presence/active-status/:userId', protectAny, getUserActiveStatus);
 
 export default router;
