@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test:recent-workers": "node tests/verifyRecentWorkers.js",
     "test:comparison-export": "node tests/verifyWorkerComparisonExport.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext js,jsx --fix",
