@@ -48,3 +48,20 @@ export const auditExpired = async (req, res) => {
     });
   }
 };
+
+export const deleteSkill = async (req, res) => {
+  try {
+    const workerId = req.user ? req.user.id : req.body.workerId;
+    const result = await SkillVerificationService.removeWorkerSkill(workerId, req.params.skillId);
+    return res.status(200).json({
+      success: true,
+      message: 'Skill certification removed',
+      data: result
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
