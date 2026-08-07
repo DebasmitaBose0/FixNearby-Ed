@@ -51,6 +51,10 @@ const servicePartsInventorySchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  supplierNotes: {
+    type: String,
+    default: null
+  }
 }, {
   timestamps: true,
 });
