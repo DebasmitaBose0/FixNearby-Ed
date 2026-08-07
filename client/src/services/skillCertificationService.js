@@ -16,3 +16,8 @@ export const auditExpiredSkills = async () => {
   const response = await axios.post(`${API_BASE}/audit-expired`);
   return response.data;
 };
+
+export const removeSkillCertification = async (skillId) => {
+  const response = await axios.delete(`${API_BASE}/${skillId}`);
+  return response.data;
+};
