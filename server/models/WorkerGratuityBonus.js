@@ -41,6 +41,15 @@ const workerGratuityBonusSchema = new mongoose.Schema({
     default: 'Pending Transfer',
     index: true,
   },
+  customerNote: {
+    type: String,
+    default: null
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['Card', 'Wallet', 'ApplePay'],
+    default: 'Card'
+  }
 }, {
   timestamps: true,
 });

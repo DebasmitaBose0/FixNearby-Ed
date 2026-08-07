@@ -35,3 +35,18 @@ export const getWorkerGratuityEarnings = async (req, res) => {
     });
   }
 };
+
+export const getGratuityById = async (req, res) => {
+  try {
+    const gratuity = await GratuityBonusService.getGratuityById(req.params.gratuityId);
+    return res.status(200).json({
+      success: true,
+      data: gratuity,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
