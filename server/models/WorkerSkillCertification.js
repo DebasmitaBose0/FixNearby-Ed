@@ -63,6 +63,10 @@ const workerSkillCertificationSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  yearsExperience: {
+    type: Number,
+    default: 1
+  }
 }, {
   timestamps: true,
 });

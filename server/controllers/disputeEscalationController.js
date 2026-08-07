@@ -77,3 +77,18 @@ export const getDisputes = async (req, res) => {
     });
   }
 };
+
+export const getDisputeById = async (req, res) => {
+  try {
+    const dispute = await DisputeEscalationService.getDisputeById(req.params.disputeId);
+    return res.status(200).json({
+      success: true,
+      data: dispute,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

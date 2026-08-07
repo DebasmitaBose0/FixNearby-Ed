@@ -52,3 +52,18 @@ export const getCustomerClaims = async (req, res) => {
     });
   }
 };
+
+export const getClaimById = async (req, res) => {
+  try {
+    const claim = await WarrantyClaimService.getClaimById(req.params.claimId);
+    return res.status(200).json({
+      success: true,
+      data: claim,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

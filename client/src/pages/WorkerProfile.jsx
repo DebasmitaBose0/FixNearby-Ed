@@ -24,6 +24,7 @@ import {
   Share2,
   DollarSign,
   CheckCircle,
+  Download,
 } from "lucide-react";
 
 import SkeletonLoader from "../components/SkeletonLoader";
@@ -40,6 +41,7 @@ import useToast from "../hooks/useToast";
 import ReviewBadge from "../components/ReviewBadge";
 import { shareWorkerProfile } from "../utils/shareWorkerProfile";
 import { getWorkerServices } from "../services/workerService";
+import { downloadWorkerVCard } from "../utils/workerVCard";
 
 /* ✅ Move data outside component */
 const WORKERS = {
@@ -582,6 +584,11 @@ const WorkerProfile = () => {
     }
   };
 
+  const handleSaveContact = () => {
+    downloadWorkerVCard(worker, window.location.href);
+    showToast('Professional contact card downloaded.', 'success');
+  };
+
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -874,7 +881,16 @@ const WorkerProfile = () => {
         bookingDetails={bookingDetails}
       />
 
-      <div className="max-w-6xl mx-auto flex justify-end mb-4 px-2">
+      <div className="max-w-6xl mx-auto flex flex-wrap justify-end gap-2 mb-4 px-2">
+        <button
+          type="button"
+          onClick={handleSaveContact}
+          className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 border border-gray-200 rounded-xl shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={`Save ${worker.name} as a contact`}
+        >
+          <Download className="w-5 h-5" />
+          Save Contact
+        </button>
         <button
           type="button"
           onClick={handleShareProfile}

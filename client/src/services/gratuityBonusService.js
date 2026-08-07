@@ -11,3 +11,8 @@ export const fetchWorkerTipEarnings = async (workerId) => {
   const response = await axios.get(`${API_BASE}/worker-summary/${workerId}`);
   return response.data;
 };
+
+export const fetchGratuityById = async (gratuityId) => {
+  const response = await axios.get(`${API_BASE}/${gratuityId}`);
+  return response.data;
+};
